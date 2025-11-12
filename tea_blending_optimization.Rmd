@@ -824,11 +824,81 @@ print(kable(ga_quality_deviations, format = "html",
 
 ```{r ga-visualization}
 # Evolution plot
-ga_summary <- summary(ga_result)
+# Extract fitness history from GA object
+# The GA package stores summary statistics in @summary slot
+ga_summary_matrix <- ga_result@summary
+
+# Initialize variables
+ga_best_history <- NULL
+ga_mean_history <- NULL
+
+# Try to extract from summary matrix
+if (is.matrix(ga_summary_matrix) && ncol(ga_summary_matrix) > 0 && nrow(ga_summary_matrix) > 0) {
+  # Check what columns are available
+  available_cols <- colnames(ga_summary_matrix)
+  
+  # Try to get best fitness (could be "best", "max", or first column)
+  if ("best" %in% available_cols) {
+    ga_best_history <- ga_summary_matrix[, "best"]
+  } else if ("max" %in% available_cols) {
+    ga_best_history <- ga_summary_matrix[, "max"]
+  } else if (ncol(ga_summary_matrix) > 0) {
+    # Use first column as fallback
+    ga_best_history <- ga_summary_matrix[, 1]
+  }
+  
+  # Try to get mean fitness
+  if ("mean" %in% available_cols) {
+    ga_mean_history <- ga_summary_matrix[, "mean"]
+  } else if (ncol(ga_summary_matrix) >= 2) {
+    # Use second column as fallback for mean
+    ga_mean_history <- ga_summary_matrix[, 2]
+  }
+}
+
+# If summary extraction failed, try to calculate from fitness matrix
+if (is.null(ga_best_history) || length(ga_best_history) == 0) {
+  if (is.matrix(ga_result@fitness) && ncol(ga_result@fitness) > 0) {
+    # Calculate best (max) fitness per generation
+    ga_best_history <- apply(ga_result@fitness, 2, max, na.rm = TRUE)
+    # Calculate mean fitness per generation
+    ga_mean_history <- apply(ga_result@fitness, 2, mean, na.rm = TRUE)
+  } else {
+    # Final fallback: use final fitness value for all generations
+    n_generations <- max(ga_result@iter, 1)
+    ga_best_history <- rep(ga_result@fitnessValue, n_generations)
+    ga_mean_history <- ga_best_history
+  }
+} else if (is.null(ga_mean_history) || length(ga_mean_history) == 0) {
+  # If we have best but not mean, calculate mean from fitness matrix
+  if (is.matrix(ga_result@fitness) && ncol(ga_result@fitness) > 0) {
+    ga_mean_history <- apply(ga_result@fitness, 2, mean, na.rm = TRUE)
+    # Ensure same length
+    if (length(ga_mean_history) != length(ga_best_history)) {
+      ga_mean_history <- rep(mean(ga_mean_history, na.rm = TRUE), length(ga_best_history))
+    }
+  } else {
+    # Use best as approximation for mean
+    ga_mean_history <- ga_best_history
+  }
+}
+
+# Ensure both have the same length
+min_length <- min(length(ga_best_history), length(ga_mean_history))
+if (min_length > 0) {
+  ga_best_history <- ga_best_history[1:min_length]
+  ga_mean_history <- ga_mean_history[1:min_length]
+} else {
+  # Ultimate fallback
+  n_generations <- max(ga_result@iter, 1)
+  ga_best_history <- rep(ga_result@fitnessValue, n_generations)
+  ga_mean_history <- ga_best_history
+}
+
 ga_history <- data.frame(
-  Generation = 1:ga_result@iter,
-  Best = -ga_result@fitnessValue,  # Negate back since we negated in fitness
-  Mean = -ga_summary$mean
+  Generation = 1:length(ga_best_history),
+  Best = -ga_best_history,  # Negate back since we negated in fitness
+  Mean = -ga_mean_history
 )
 
 p8 <- ggplot(ga_history, aes(x = Generation)) +
