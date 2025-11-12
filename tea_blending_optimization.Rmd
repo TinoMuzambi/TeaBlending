@@ -1,6 +1,6 @@
 ---
-title: "Tea Blending Optimization: A Comprehensive Analysis"
-author: "Optimization Analysis"
+title: "Tea Blending Optimisation: A Comprehensive Analysis"
+author: "Optimisation Analysis"
 date: "`r Sys.Date()`"
 output:
   html_document:
@@ -29,18 +29,18 @@ library(kableExtra)
 library(tidyr)
 ```
 
-# 1.0 Introduction
+# 1 Introduction
 
-This document presents a comprehensive analysis of the tea blending optimization problem using multiple computational approaches. The problem requires determining the least-cost combination of raw materials to produce final blends that meet specific quality characteristics, as formalized by Fomeni (2018).
+This document presents a comprehensive analysis of the tea blending optimisation problem using multiple computational approaches. The problem requires determining the least-cost combination of raw materials to produce final blends that meet specific quality characteristics, as formalised by Fomeni (2018).
 
 The primary objectives are:
 
-1. To implement and solve a cost-minimization model using Linear Programming (LP).
+1. To implement and solve a cost-minimisation model using Linear Programming (LP).
 2. To solve the same problem using Simulated Annealing (SA) metaheuristic and compare performance.
 3. To formulate and solve a multi-objective model using Chebyshev Goal Programming.
 4. To explore Genetic Algorithms (GAs) as an alternative solution approach.
 
-# 2.0 Problem Formulation and Data Preparation
+# 2 Problem Formulation and Data Preparation
 
 ## 2.1 Notations and Parameters
 
@@ -137,13 +137,13 @@ s <- as.matrix(blends[, char_names])
 rownames(s) <- blends$Blend_ID
 ```
 
-# 3.0 Approach 1: Cost Minimization using Linear Programming
+# 3 Approach 1: Cost Minimisation using Linear Programming
 
-This section implements the cost-minimization model using Linear Programming with parametric relaxation of the characteristic-matching constraints.
+This section implements the cost-minimisation model using Linear Programming with parametric relaxation of the characteristic-matching constraints.
 
 ## 3.1 Model Formulation
 
-**Objective Function**: Minimize total cost
+**Objective Function**: Minimise total cost
 $$\min \sum_{i} \sum_{j} P_i x_{ij}$$
 
 **Subject to Constraints**:
@@ -163,7 +163,7 @@ lp_model <- MIPModel() %>%
   # Decision variables: x_ij (amount of material i in blend j)
   add_variable(x[i, j], i = 1:n_materials, j = 1:n_blends, type = "continuous", lb = 0) %>%
   
-  # Objective: minimize total cost
+  # Objective: minimise total cost
   set_objective(sum_expr(P[i] * x[i, j], i = 1:n_materials, j = 1:n_blends), sense = "min") %>%
   
   # Constraint 1: Raw material availability
@@ -230,10 +230,10 @@ print(kable(lp_quality_deviations, format = "html",
       kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
 ```
 
-## 3.3 Visualization
+## 3.3 Visualisation
 
-```{r lp-visualization}
-# Visualize the solution
+```{r lp-visualisation}
+# Visualise the solution
 lp_solution_long <- lp_solution %>%
   mutate(Material = raw_materials$Material_ID[i],
          Blend = blends$Blend_ID[j]) %>%
@@ -263,7 +263,7 @@ p2 <- ggplot(lp_matrix_long, aes(x = Blend, y = Material, fill = Amount)) +
 print(p2)
 ```
 
-# 4.0 Approach 2: Cost Minimization using Simulated Annealing
+# 4 Approach 2: Cost Minimisation using Simulated Annealing
 
 Simulated Annealing is a metaheuristic that explores the solution space probabilistically, accepting worse solutions with decreasing probability as the algorithm "cools down."
 
@@ -274,7 +274,7 @@ Simulated Annealing is a metaheuristic that explores the solution space probabil
 simulated_annealing <- function(initial_temp = 1000, cooling_rate = 0.95, 
                                 max_iterations = 1000, min_temp = 0.01) {
   
-  # Initialize solution (feasible starting point)
+  # Initialise solution (feasible starting point)
   # Start with proportional allocation based on demand
   current_solution <- matrix(0, nrow = n_materials, ncol = n_blends)
   for (j in 1:n_blends) {
@@ -363,7 +363,7 @@ simulated_annealing <- function(initial_temp = 1000, cooling_rate = 0.95,
     return(neighbor)
   }
   
-  # Initialize
+  # Initialise
   current_obj <- objective(current_solution)
   best_solution <- current_solution
   best_obj <- current_obj
@@ -459,9 +459,9 @@ print(kable(sa_quality_deviations, format = "html",
       kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
 ```
 
-## 4.2 Visualization
+## 4.2 Visualisation
 
-```{r sa-visualization}
+```{r sa-visualisation}
 # Convergence plot
 p3 <- ggplot(sa_result$history, aes(x = iteration)) +
   geom_line(aes(y = current_obj, color = "Current"), alpha = 0.5) +
@@ -501,13 +501,13 @@ p5 <- ggplot(comparison_data, aes(x = Approach, y = Cost, fill = Approach)) +
 print(p5)
 ```
 
-# 5.0 Approach 3: Multi-objective Optimization using Chebyshev Goal Programming
+# 5 Approach 3: Multi-objective Optimisation using Chebyshev Goal Programming
 
-Chebyshev Goal Programming minimizes the worst-case deviation from multiple goals, providing a balanced solution that trades off cost for quality control.
+Chebyshev Goal Programming minimises the worst-case deviation from multiple goals, providing a balanced solution that trades off cost for quality control.
 
 ## 5.1 Model Formulation
 
-**Objective Function**: Minimize worst-case deviation
+**Objective Function**: Minimise worst-case deviation
 $$\min \max\{w_0 \cdot d_0, w_{jk} \cdot d_{jk}\}$$
 
 Where:
@@ -522,7 +522,7 @@ Where:
 
 ```{r chebyshev-implementation}
 # Chebyshev Goal Programming implementation
-# Reformulate as LP: minimize z subject to z >= w_i * d_i for all goals
+# Reformulate as LP: minimise z subject to z >= w_i * d_i for all goals
 
 # Set goal targets
 cost_target <- lp_objective * 1.1  # Allow 10% above LP optimal
@@ -542,7 +542,7 @@ chebyshev_model <- MIPModel() %>%
   add_variable(d_quality[j, k], j = 1:n_blends, k = 1:n_characteristics, 
                type = "continuous", lb = 0) %>%  # Quality deviations
   
-  # Objective: minimize worst-case deviation
+  # Objective: minimise worst-case deviation
   set_objective(z, sense = "min") %>%
   
   # Constraint: z >= weighted cost deviation
@@ -559,7 +559,7 @@ chebyshev_model <- MIPModel() %>%
   
   # Quality goal constraints (for each blend and characteristic)
   # Actual quality - target quality - deviation = 0
-  # We need to linearize: sum(g_ik * x_ij) / sum(x_ij) = s_jk
+  # We need to linearise: sum(g_ik * x_ij) / sum(x_ij) = s_jk
   # This becomes: sum((g_ik - s_jk) * x_ij) = 0
   # With deviation: sum((g_ik - s_jk) * x_ij) - d_quality[j,k] <= 0
   #                 sum((g_ik - s_jk) * x_ij) + d_quality[j,k] >= 0
@@ -623,13 +623,13 @@ print(kable(chebyshev_x_matrix, format = "html",
 
 cat("\n=== Quality Deviations from Targets ===\n")
 print(kable(chebyshev_quality_deviations, format = "html", 
-            caption = "Quality deviations (minimized in worst-case sense)") %>%
+            caption = "Quality deviations (minimised in worst-case sense)") %>%
       kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
 ```
 
-## 5.3 Visualization
+## 5.3 Visualisation
 
-```{r chebyshev-visualization}
+```{r chebyshev-visualisation}
 # Trade-off analysis
 tradeoff_data <- data.frame(
   Approach = c("LP (Cost Min)", "Chebyshev GP"),
@@ -648,7 +648,7 @@ p6 <- ggplot(tradeoff_data, aes(x = Cost, y = Avg_Quality_Dev, color = Approach,
 
 print(p6)
 
-# Goal achievement visualization
+# Goal achievement visualisation
 goal_data <- data.frame(
   Goal = c("Cost", rep("Quality", n_blends * n_characteristics)),
   Target = c(cost_target, as.vector(s)),
@@ -676,7 +676,7 @@ p7 <- ggplot(goal_data[1:10, ], aes(x = Goal, y = Deviation)) +
 print(p7)
 ```
 
-# 6.0 Approach 4: Genetic Algorithms (Optional)
+# 6 Approach 4: Genetic Algorithms (Optional)
 
 Genetic Algorithms use evolutionary principles to evolve a population of solutions toward better fitness.
 
@@ -731,8 +731,8 @@ fitness_function <- function(chromosome) {
     }
   }
   
-  # Fitness (to minimize, so return negative or use GA's minimization)
-  return(-(cost + quality_penalty))  # GA maximizes, so negate for minimization
+  # Fitness (to minimise, so return negative or use GA's minimisation)
+  return(-(cost + quality_penalty))  # GA maximises, so negate for minimisation
 }
 
 # Define bounds for decision variables
@@ -820,15 +820,15 @@ print(kable(ga_quality_deviations, format = "html",
       kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
 ```
 
-## 6.2 Visualization
+## 6.2 Visualisation
 
-```{r ga-visualization}
+```{r ga-visualisation}
 # Evolution plot
 # Extract fitness history from GA object
 # The GA package stores summary statistics in @summary slot
 ga_summary_matrix <- ga_result@summary
 
-# Initialize variables
+# Initialise variables
 ga_best_history <- NULL
 ga_mean_history <- NULL
 
@@ -929,7 +929,7 @@ p9 <- ggplot(ga_solution_long, aes(x = Blend, y = Amount, fill = Material)) +
 print(p9)
 ```
 
-# 7.0 Summary of Results and Comparative Analysis
+# 7 Summary of Results and Comparative Analysis
 
 This section consolidates results from all approaches for comprehensive comparison.
 
@@ -963,7 +963,7 @@ print(kable(comparison_metrics, format = "html",
             digits = 2) %>%
       kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")))
 
-# Create visualizations
+# Create visualisations
 p10 <- ggplot(comparison_metrics, aes(x = reorder(Approach, Total_Cost), y = Total_Cost, fill = Approach)) +
   geom_bar(stat = "identity") +
   labs(title = "Total Cost Comparison Across All Approaches",
@@ -1047,11 +1047,11 @@ print(kable(blend1_comparison, format = "html",
       kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
 ```
 
-# 8.0 Conclusion
+# 8 Conclusion
 
-This analysis has successfully implemented and compared four distinct optimization approaches for the tea blending problem:
+This analysis has successfully implemented and compared four distinct optimisation approaches for the tea blending problem:
 
-1. **Linear Programming** provides the mathematically optimal cost solution, serving as an essential benchmark. However, it treats quality deviations as hard constraints within tolerance, not as objectives to minimize.
+1. **Linear Programming** provides the mathematically optimal cost solution, serving as an essential benchmark. However, it treats quality deviations as hard constraints within tolerance, not as objectives to minimise.
 
 2. **Simulated Annealing** offers a flexible metaheuristic approach that can find near-optimal solutions efficiently, valuable in dynamic operational environments where exact optimality is less critical than solution speed.
 
@@ -1059,9 +1059,9 @@ This analysis has successfully implemented and compared four distinct optimizati
 
 4. **Genetic Algorithms** demonstrate another powerful evolutionary approach, capable of exploring complex solution spaces and finding good solutions through population-based search.
 
-The comparative analysis reveals that while LP provides the lowest cost, multi-objective approaches like Chebyshev Goal Programming are better aligned with business realities where maintaining brand integrity through consistent quality characteristics is as important as minimizing cost.
+The comparative analysis reveals that while LP provides the lowest cost, multi-objective approaches like Chebyshev Goal Programming are better aligned with business realities where maintaining brand integrity through consistent quality characteristics is as important as minimising cost.
 
-# 9.0 Appendix: Code Execution Notes
+# 9 Appendix: Code Execution Notes
 
 ## 9.1 Required Libraries
 
