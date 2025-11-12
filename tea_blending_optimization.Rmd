@@ -1,0 +1,1019 @@
+---
+title: "Tea Blending Optimization: A Comprehensive Analysis"
+author: "Optimization Analysis"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: show
+    theme: flatly
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, 
+                      fig.width = 10, fig.height = 6, fig.align = "center")
+
+# Load required libraries
+library(dplyr)
+library(ompr)
+library(ompr.roi)
+library(ROI)
+library(ROI.plugin.glpk)
+library(lpSolveAPI)
+library(ggplot2)
+library(GA)
+library(knitr)
+library(kableExtra)
+library(tidyr)
+```
+
+# 1.0 Introduction
+
+This document presents a comprehensive analysis of the tea blending optimization problem using multiple computational approaches. The problem requires determining the least-cost combination of raw materials to produce final blends that meet specific quality characteristics, as formalized by Fomeni (2018).
+
+The primary objectives are:
+
+1. To implement and solve a cost-minimization model using Linear Programming (LP).
+2. To solve the same problem using Simulated Annealing (SA) metaheuristic and compare performance.
+3. To formulate and solve a multi-objective model using Chebyshev Goal Programming.
+4. To explore Genetic Algorithms (GAs) as an alternative solution approach.
+
+# 2.0 Problem Formulation and Data Preparation
+
+## 2.1 Notations and Parameters
+
+- **Indices**:
+  - $i$: Index for raw materials
+  - $j$: Index for final blends
+  - $k$: Index for quality characteristics
+
+- **Parameters**:
+  - $P_i$: Unit cost of raw material $i$ (£/Kg)
+  - $D_j$: Weekly demand for final blend $j$ (Kgs)
+  - $a_i$: Weekly availability of raw material $i$ (Kgs)
+  - $g_{ik}$: Grade of characteristic $k$ in one unit of raw material $i$
+  - $s_{jk}$: Required target score of characteristic $k$ in one unit of final blend $j$
+
+- **Decision Variables**:
+  - $x_{ij}$: Amount (in Kgs) of raw material $i$ to be used in final blend $j$
+
+## 2.2 Sample Data Generation
+
+Based on the structure described in Fomeni (2018), we generate sample data for raw materials and blends.
+
+```{r data-generation}
+# Set seed for reproducibility
+set.seed(123)
+
+# Define number of raw materials, blends, and quality characteristics
+n_materials <- 6
+n_blends <- 4
+n_characteristics <- 3
+
+# Quality characteristic names
+char_names <- c("Brightness", "Colour", "Thickness")
+
+# Generate raw materials data (Table 2 structure)
+raw_materials <- data.frame(
+  Material_ID = paste0("RM", 1:n_materials),
+  Cost = round(runif(n_materials, 2.5, 8.0), 2),
+  Availability = round(runif(n_materials, 100, 500), 0),
+  stringsAsFactors = FALSE
+)
+
+# Generate quality characteristics for raw materials (g_ik)
+quality_matrix <- matrix(
+  round(runif(n_materials * n_characteristics, 1, 10), 2),
+  nrow = n_materials,
+  ncol = n_characteristics
+)
+colnames(quality_matrix) <- char_names
+raw_materials <- cbind(raw_materials, quality_matrix)
+
+# Generate blends data (Table 3 structure)
+blends <- data.frame(
+  Blend_ID = paste0("Blend", 1:n_blends),
+  Demand = round(runif(n_blends, 50, 200), 0),
+  stringsAsFactors = FALSE
+)
+
+# Generate target quality scores for blends (s_jk)
+target_matrix <- matrix(
+  round(runif(n_blends * n_characteristics, 3, 8), 2),
+  nrow = n_blends,
+  ncol = n_characteristics
+)
+colnames(target_matrix) <- char_names
+blends <- cbind(blends, target_matrix)
+
+# Set tolerance parameters (epsilon_jk)
+epsilon <- 0.1
+
+# Display the data
+cat("=== Raw Materials Data (Table 2) ===\n")
+print(kable(raw_materials, format = "html", caption = "Raw Materials: Costs, Availability, and Quality Characteristics") %>%
+      kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
+
+cat("\n=== Blends Data (Table 3) ===\n")
+print(kable(blends, format = "html", caption = "Blends: Demand and Target Quality Scores") %>%
+      kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
+
+# Store data in convenient format for later use
+P <- raw_materials$Cost
+names(P) <- raw_materials$Material_ID
+
+a <- raw_materials$Availability
+names(a) <- raw_materials$Material_ID
+
+D <- blends$Demand
+names(D) <- blends$Blend_ID
+
+g <- as.matrix(raw_materials[, char_names])
+rownames(g) <- raw_materials$Material_ID
+
+s <- as.matrix(blends[, char_names])
+rownames(s) <- blends$Blend_ID
+```
+
+# 3.0 Approach 1: Cost Minimization using Linear Programming
+
+This section implements the cost-minimization model using Linear Programming with parametric relaxation of the characteristic-matching constraints.
+
+## 3.1 Model Formulation
+
+**Objective Function**: Minimize total cost
+$$\min \sum_{i} \sum_{j} P_i x_{ij}$$
+
+**Subject to Constraints**:
+
+1. Raw Material Availability: $\sum_{j} x_{ij} \le a_i \quad \forall i$
+2. Blend Demand: $\sum_{i} x_{ij} \ge D_j \quad \forall j$
+3. Characteristic Score Relaxation:
+   - $\sum_{i} (g_{ik} - (s_{jk} + \epsilon_{jk})) x_{ij} \le 0 \quad \forall j, k$
+   - $\sum_{i} (g_{ik} - (s_{jk} - \epsilon_{jk})) x_{ij} \ge 0 \quad \forall j, k$
+4. Non-negativity: $x_{ij} \ge 0 \quad \forall i, j$
+
+## 3.2 Implementation
+
+```{r lp-implementation}
+# Create the LP model using ompr
+lp_model <- MIPModel() %>%
+  # Decision variables: x_ij (amount of material i in blend j)
+  add_variable(x[i, j], i = 1:n_materials, j = 1:n_blends, type = "continuous", lb = 0) %>%
+  
+  # Objective: minimize total cost
+  set_objective(sum_expr(P[i] * x[i, j], i = 1:n_materials, j = 1:n_blends), sense = "min") %>%
+  
+  # Constraint 1: Raw material availability
+  add_constraint(sum_expr(x[i, j], j = 1:n_blends) <= a[i], i = 1:n_materials) %>%
+  
+  # Constraint 2: Blend demand
+  add_constraint(sum_expr(x[i, j], i = 1:n_materials) >= D[j], j = 1:n_blends) %>%
+  
+  # Constraint 3: Characteristic score relaxation (upper bound)
+  add_constraint(sum_expr((g[i, k] - (s[j, k] + epsilon)) * x[i, j], i = 1:n_materials) <= 0, 
+                 j = 1:n_blends, k = 1:n_characteristics) %>%
+  
+  # Constraint 4: Characteristic score relaxation (lower bound)
+  add_constraint(sum_expr((g[i, k] - (s[j, k] - epsilon)) * x[i, j], i = 1:n_materials) >= 0, 
+                 j = 1:n_blends, k = 1:n_characteristics)
+
+# Solve the model
+cat("Solving LP model...\n")
+lp_start_time <- Sys.time()
+lp_result <- solve_model(lp_model, with_ROI(solver = "glpk", verbose = FALSE))
+lp_end_time <- Sys.time()
+lp_solve_time <- as.numeric(lp_end_time - lp_start_time, units = "secs")
+
+# Extract results
+lp_objective <- objective_value(lp_result)
+lp_solution <- get_solution(lp_result, x[i, j])
+
+# Create solution matrix
+lp_x_matrix <- matrix(0, nrow = n_materials, ncol = n_blends)
+for (idx in 1:nrow(lp_solution)) {
+  i_val <- lp_solution$i[idx]
+  j_val <- lp_solution$j[idx]
+  lp_x_matrix[i_val, j_val] <- lp_solution$value[idx]
+}
+rownames(lp_x_matrix) <- raw_materials$Material_ID
+colnames(lp_x_matrix) <- blends$Blend_ID
+
+# Display results
+cat("\n=== LP Solution Results ===\n")
+cat(sprintf("Optimal Total Cost: £%.2f\n", lp_objective))
+cat(sprintf("Solve Time: %.4f seconds\n", lp_solve_time))
+
+cat("\n=== Optimal Recipe Matrix (x_ij in Kgs) ===\n")
+print(kable(lp_x_matrix, format = "html", caption = "LP Solution: Amount of Each Material in Each Blend") %>%
+      kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
+
+# Calculate quality deviations for LP solution
+lp_quality_deviations <- matrix(0, nrow = n_blends, ncol = n_characteristics)
+for (j in 1:n_blends) {
+  total_blend <- sum(lp_x_matrix[, j])
+  if (total_blend > 0) {
+    for (k in 1:n_characteristics) {
+      actual_score <- sum(g[, k] * lp_x_matrix[, j]) / total_blend
+      lp_quality_deviations[j, k] <- abs(actual_score - s[j, k])
+    }
+  }
+}
+rownames(lp_quality_deviations) <- blends$Blend_ID
+colnames(lp_quality_deviations) <- char_names
+
+cat("\n=== Quality Deviations from Targets ===\n")
+print(kable(lp_quality_deviations, format = "html", 
+            caption = "Absolute deviations from target quality scores") %>%
+      kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
+```
+
+## 3.3 Visualization
+
+```{r lp-visualization}
+# Visualize the solution
+lp_solution_long <- lp_solution %>%
+  mutate(Material = raw_materials$Material_ID[i],
+         Blend = blends$Blend_ID[j]) %>%
+  select(Material, Blend, value)
+
+p1 <- ggplot(lp_solution_long, aes(x = Blend, y = value, fill = Material)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(title = "LP Solution: Material Usage by Blend",
+       x = "Blend", y = "Amount (Kgs)", fill = "Material") +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+print(p1)
+
+# Heatmap of solution matrix
+lp_matrix_df <- as.data.frame(lp_x_matrix)
+lp_matrix_df$Material <- rownames(lp_matrix_df)
+lp_matrix_long <- pivot_longer(lp_matrix_df, cols = -Material, names_to = "Blend", values_to = "Amount")
+
+p2 <- ggplot(lp_matrix_long, aes(x = Blend, y = Material, fill = Amount)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "white", high = "steelblue") +
+  labs(title = "LP Solution Heatmap: Material Usage Matrix",
+       x = "Blend", y = "Material", fill = "Amount (Kgs)") +
+  theme_minimal()
+
+print(p2)
+```
+
+# 4.0 Approach 2: Cost Minimization using Simulated Annealing
+
+Simulated Annealing is a metaheuristic that explores the solution space probabilistically, accepting worse solutions with decreasing probability as the algorithm "cools down."
+
+## 4.1 Implementation
+
+```{r sa-implementation}
+# Simulated Annealing implementation
+simulated_annealing <- function(initial_temp = 1000, cooling_rate = 0.95, 
+                                max_iterations = 1000, min_temp = 0.01) {
+  
+  # Initialize solution (feasible starting point)
+  # Start with proportional allocation based on demand
+  current_solution <- matrix(0, nrow = n_materials, ncol = n_blends)
+  for (j in 1:n_blends) {
+    # Allocate materials proportionally to meet demand
+    prop <- runif(n_materials)
+    prop <- prop / sum(prop)
+    current_solution[, j] <- D[j] * prop
+  }
+  
+  # Repair to ensure feasibility
+  repair_solution <- function(sol) {
+    # Fix availability constraints
+    for (i in 1:n_materials) {
+      total_used <- sum(sol[i, ])
+      if (total_used > a[i]) {
+        sol[i, ] <- sol[i, ] * (a[i] / total_used)
+      }
+    }
+    
+    # Fix demand constraints
+    for (j in 1:n_blends) {
+      total_produced <- sum(sol[, j])
+      if (total_produced < D[j]) {
+        # Increase proportionally
+        if (total_produced > 0) {
+          sol[, j] <- sol[, j] * (D[j] / total_produced)
+        } else {
+          # Equal allocation
+          sol[, j] <- D[j] / n_materials
+        }
+      }
+    }
+    
+    # Ensure non-negativity
+    sol[sol < 0] <- 0
+    
+    return(sol)
+  }
+  
+  # Calculate cost
+  calculate_cost <- function(sol) {
+    sum(P * rowSums(sol))
+  }
+  
+  # Check quality constraints violation
+  check_quality_constraints <- function(sol) {
+    violations <- 0
+    for (j in 1:n_blends) {
+      total_blend <- sum(sol[, j])
+      if (total_blend > 0) {
+        for (k in 1:n_characteristics) {
+          actual_score <- sum(g[, k] * sol[, j]) / total_blend
+          upper_bound <- s[j, k] + epsilon
+          lower_bound <- s[j, k] - epsilon
+          if (actual_score > upper_bound || actual_score < lower_bound) {
+            violations <- violations + abs(actual_score - s[j, k])
+          }
+        }
+      }
+    }
+    return(violations)
+  }
+  
+  # Objective function with penalty for constraint violations
+  objective <- function(sol) {
+    cost <- calculate_cost(sol)
+    penalty <- 1000 * check_quality_constraints(sol)
+    return(cost + penalty)
+  }
+  
+  # Generate neighbor solution
+  generate_neighbor <- function(sol) {
+    neighbor <- sol
+    
+    # Random perturbation: modify a random element
+    i <- sample(1:n_materials, 1)
+    j <- sample(1:n_blends, 1)
+    
+    # Perturb by ±10% of current value or small amount
+    perturbation <- runif(1, -0.1, 0.1) * max(sol[i, j], 10)
+    neighbor[i, j] <- max(0, sol[i, j] + perturbation)
+    
+    # Repair to maintain feasibility
+    neighbor <- repair_solution(neighbor)
+    
+    return(neighbor)
+  }
+  
+  # Initialize
+  current_obj <- objective(current_solution)
+  best_solution <- current_solution
+  best_obj <- current_obj
+  temp <- initial_temp
+  
+  # Track progress
+  history <- data.frame(iteration = integer(), 
+                       temperature = numeric(), 
+                       current_obj = numeric(),
+                       best_obj = numeric())
+  
+  # Main SA loop
+  for (iter in 1:max_iterations) {
+    # Generate neighbor
+    neighbor_solution <- generate_neighbor(current_solution)
+    neighbor_obj <- objective(neighbor_solution)
+    
+    # Acceptance criterion (Metropolis)
+    delta <- neighbor_obj - current_obj
+    if (delta < 0 || runif(1) < exp(-delta / temp)) {
+      current_solution <- neighbor_solution
+      current_obj <- neighbor_obj
+      
+      # Update best if better
+      if (current_obj < best_obj) {
+        best_solution <- current_solution
+        best_obj <- current_obj
+      }
+    }
+    
+    # Cool down
+    temp <- temp * cooling_rate
+    if (temp < min_temp) break
+    
+    # Record history
+    if (iter %% 10 == 0 || iter == 1) {
+      history <- rbind(history, data.frame(
+        iteration = iter,
+        temperature = temp,
+        current_obj = current_obj,
+        best_obj = best_obj
+      ))
+    }
+  }
+  
+  return(list(solution = best_solution, 
+              objective = calculate_cost(best_solution),
+              history = history))
+}
+
+# Run Simulated Annealing
+cat("Running Simulated Annealing...\n")
+sa_start_time <- Sys.time()
+sa_result <- simulated_annealing(initial_temp = 1000, cooling_rate = 0.995, 
+                                  max_iterations = 2000, min_temp = 0.01)
+sa_end_time <- Sys.time()
+sa_solve_time <- as.numeric(sa_end_time - sa_start_time, units = "secs")
+
+# Extract results
+sa_x_matrix <- sa_result$solution
+rownames(sa_x_matrix) <- raw_materials$Material_ID
+colnames(sa_x_matrix) <- blends$Blend_ID
+sa_objective <- sa_result$objective
+
+cat("\n=== SA Solution Results ===\n")
+cat(sprintf("Best Total Cost: £%.2f\n", sa_objective))
+cat(sprintf("Solve Time: %.4f seconds\n", sa_solve_time))
+cat(sprintf("Improvement over LP: %.2f%%\n", 
+            (lp_objective - sa_objective) / lp_objective * 100))
+
+cat("\n=== SA Recipe Matrix (x_ij in Kgs) ===\n")
+print(kable(sa_x_matrix, format = "html", 
+            caption = "SA Solution: Amount of Each Material in Each Blend") %>%
+      kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
+
+# Calculate quality deviations for SA solution
+sa_quality_deviations <- matrix(0, nrow = n_blends, ncol = n_characteristics)
+for (j in 1:n_blends) {
+  total_blend <- sum(sa_x_matrix[, j])
+  if (total_blend > 0) {
+    for (k in 1:n_characteristics) {
+      actual_score <- sum(g[, k] * sa_x_matrix[, j]) / total_blend
+      sa_quality_deviations[j, k] <- abs(actual_score - s[j, k])
+    }
+  }
+}
+rownames(sa_quality_deviations) <- blends$Blend_ID
+colnames(sa_quality_deviations) <- char_names
+
+cat("\n=== Quality Deviations from Targets ===\n")
+print(kable(sa_quality_deviations, format = "html", 
+            caption = "Absolute deviations from target quality scores") %>%
+      kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
+```
+
+## 4.2 Visualization
+
+```{r sa-visualization}
+# Convergence plot
+p3 <- ggplot(sa_result$history, aes(x = iteration)) +
+  geom_line(aes(y = current_obj, color = "Current"), alpha = 0.5) +
+  geom_line(aes(y = best_obj, color = "Best"), size = 1) +
+  labs(title = "Simulated Annealing: Convergence Plot",
+       x = "Iteration", y = "Objective Value (Cost + Penalties)", 
+       color = "Solution") +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+print(p3)
+
+# Temperature decay
+p4 <- ggplot(sa_result$history, aes(x = iteration, y = temperature)) +
+  geom_line(color = "red") +
+  scale_y_log10() +
+  labs(title = "Simulated Annealing: Temperature Schedule",
+       x = "Iteration", y = "Temperature (log scale)") +
+  theme_minimal()
+
+print(p4)
+
+# Compare LP and SA solutions
+comparison_data <- data.frame(
+  Approach = c("Linear Programming", "Simulated Annealing"),
+  Cost = c(lp_objective, sa_objective),
+  Time = c(lp_solve_time, sa_solve_time)
+)
+
+p5 <- ggplot(comparison_data, aes(x = Approach, y = Cost, fill = Approach)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Cost Comparison: LP vs SA",
+       x = "Approach", y = "Total Cost (£)") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+print(p5)
+```
+
+# 5.0 Approach 3: Multi-objective Optimization using Chebyshev Goal Programming
+
+Chebyshev Goal Programming minimizes the worst-case deviation from multiple goals, providing a balanced solution that trades off cost for quality control.
+
+## 5.1 Model Formulation
+
+**Objective Function**: Minimize worst-case deviation
+$$\min \max\{w_0 \cdot d_0, w_{jk} \cdot d_{jk}\}$$
+
+Where:
+- $d_0$: Deviation from cost goal
+- $d_{jk}$: Deviation from quality goal for blend $j$, characteristic $k$
+
+**Constraints**:
+- All LP constraints
+- Goal constraints for cost and quality
+
+## 5.2 Implementation
+
+```{r chebyshev-implementation}
+# Chebyshev Goal Programming implementation
+# Reformulate as LP: minimize z subject to z >= w_i * d_i for all goals
+
+# Set goal targets
+cost_target <- lp_objective * 1.1  # Allow 10% above LP optimal
+quality_target <- 0  # Target zero deviation
+
+# Set weights
+w_cost <- 1.0
+w_quality <- 2.0  # Higher weight on quality
+
+# Create Chebyshev GP model
+chebyshev_model <- MIPModel() %>%
+  # Decision variables
+  add_variable(x[i, j], i = 1:n_materials, j = 1:n_blends, type = "continuous", lb = 0) %>%
+  add_variable(z, type = "continuous", lb = 0) %>%  # Worst-case deviation
+  add_variable(d_cost_plus, type = "continuous", lb = 0) %>%  # Positive cost deviation
+  add_variable(d_cost_minus, type = "continuous", lb = 0) %>%  # Negative cost deviation
+  add_variable(d_quality[j, k], j = 1:n_blends, k = 1:n_characteristics, 
+               type = "continuous", lb = 0) %>%  # Quality deviations
+  
+  # Objective: minimize worst-case deviation
+  set_objective(z, sense = "min") %>%
+  
+  # Constraint: z >= weighted cost deviation
+  add_constraint(z >= w_cost * d_cost_plus) %>%
+  add_constraint(z >= w_cost * d_cost_minus) %>%
+  
+  # Constraint: z >= weighted quality deviations
+  add_constraint(z >= w_quality * d_quality[j, k], 
+                 j = 1:n_blends, k = 1:n_characteristics) %>%
+  
+  # Cost goal constraint
+  add_constraint(sum_expr(P[i] * x[i, j], i = 1:n_materials, j = 1:n_blends) - 
+                 d_cost_plus + d_cost_minus == cost_target) %>%
+  
+  # Quality goal constraints (for each blend and characteristic)
+  # Actual quality - target quality - deviation = 0
+  # We need to linearize: sum(g_ik * x_ij) / sum(x_ij) = s_jk
+  # This becomes: sum((g_ik - s_jk) * x_ij) = 0
+  # With deviation: sum((g_ik - s_jk) * x_ij) - d_quality[j,k] <= 0
+  #                 sum((g_ik - s_jk) * x_ij) + d_quality[j,k] >= 0
+  add_constraint(sum_expr((g[i, k] - s[j, k]) * x[i, j], i = 1:n_materials) - 
+                 d_quality[j, k] <= 0, 
+                 j = 1:n_blends, k = 1:n_characteristics) %>%
+  add_constraint(sum_expr((g[i, k] - s[j, k]) * x[i, j], i = 1:n_materials) + 
+                 d_quality[j, k] >= 0, 
+                 j = 1:n_blends, k = 1:n_characteristics) %>%
+  
+  # Standard constraints
+  add_constraint(sum_expr(x[i, j], j = 1:n_blends) <= a[i], i = 1:n_materials) %>%
+  add_constraint(sum_expr(x[i, j], i = 1:n_materials) >= D[j], j = 1:n_blends)
+
+# Solve the model
+cat("Solving Chebyshev Goal Programming model...\n")
+chebyshev_start_time <- Sys.time()
+chebyshev_result <- solve_model(chebyshev_model, with_ROI(solver = "glpk", verbose = FALSE))
+chebyshev_end_time <- Sys.time()
+chebyshev_solve_time <- as.numeric(chebyshev_end_time - chebyshev_start_time, units = "secs")
+
+# Extract results
+chebyshev_objective <- objective_value(chebyshev_result)
+chebyshev_solution <- get_solution(chebyshev_result, x[i, j])
+
+# Create solution matrix
+chebyshev_x_matrix <- matrix(0, nrow = n_materials, ncol = n_blends)
+for (idx in 1:nrow(chebyshev_solution)) {
+  i_val <- chebyshev_solution$i[idx]
+  j_val <- chebyshev_solution$j[idx]
+  chebyshev_x_matrix[i_val, j_val] <- chebyshev_solution$value[idx]
+}
+rownames(chebyshev_x_matrix) <- raw_materials$Material_ID
+colnames(chebyshev_x_matrix) <- blends$Blend_ID
+
+# Calculate actual cost
+chebyshev_cost <- sum(P * rowSums(chebyshev_x_matrix))
+
+# Extract quality deviations
+chebyshev_quality_solution <- get_solution(chebyshev_result, d_quality[j, k])
+chebyshev_quality_deviations <- matrix(0, nrow = n_blends, ncol = n_characteristics)
+for (idx in 1:nrow(chebyshev_quality_solution)) {
+  j_val <- chebyshev_quality_solution$j[idx]
+  k_val <- chebyshev_quality_solution$k[idx]
+  chebyshev_quality_deviations[j_val, k_val] <- chebyshev_quality_solution$value[idx]
+}
+rownames(chebyshev_quality_deviations) <- blends$Blend_ID
+colnames(chebyshev_quality_deviations) <- char_names
+
+# Display results
+cat("\n=== Chebyshev GP Solution Results ===\n")
+cat(sprintf("Worst-case Deviation (z): %.4f\n", chebyshev_objective))
+cat(sprintf("Total Cost: £%.2f\n", chebyshev_cost))
+cat(sprintf("Cost Deviation from Target: £%.2f\n", abs(chebyshev_cost - cost_target)))
+cat(sprintf("Solve Time: %.4f seconds\n", chebyshev_solve_time))
+
+cat("\n=== Chebyshev GP Recipe Matrix (x_ij in Kgs) ===\n")
+print(kable(chebyshev_x_matrix, format = "html", 
+            caption = "Chebyshev GP Solution: Amount of Each Material in Each Blend") %>%
+      kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
+
+cat("\n=== Quality Deviations from Targets ===\n")
+print(kable(chebyshev_quality_deviations, format = "html", 
+            caption = "Quality deviations (minimized in worst-case sense)") %>%
+      kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
+```
+
+## 5.3 Visualization
+
+```{r chebyshev-visualization}
+# Trade-off analysis
+tradeoff_data <- data.frame(
+  Approach = c("LP (Cost Min)", "Chebyshev GP"),
+  Cost = c(lp_objective, chebyshev_cost),
+  Avg_Quality_Dev = c(mean(lp_quality_deviations), mean(chebyshev_quality_deviations)),
+  Max_Quality_Dev = c(max(lp_quality_deviations), max(chebyshev_quality_deviations))
+)
+
+p6 <- ggplot(tradeoff_data, aes(x = Cost, y = Avg_Quality_Dev, color = Approach, size = Max_Quality_Dev)) +
+  geom_point(alpha = 0.7) +
+  labs(title = "Trade-off Analysis: Cost vs Quality",
+       x = "Total Cost (£)", y = "Average Quality Deviation",
+       size = "Max Quality\nDeviation", color = "Approach") +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+print(p6)
+
+# Goal achievement visualization
+goal_data <- data.frame(
+  Goal = c("Cost", rep("Quality", n_blends * n_characteristics)),
+  Target = c(cost_target, as.vector(s)),
+  Actual = c(chebyshev_cost, 
+             as.vector(sapply(1:n_blends, function(j) {
+               total <- sum(chebyshev_x_matrix[, j])
+               if (total > 0) {
+                 sapply(1:n_characteristics, function(k) {
+                   sum(g[, k] * chebyshev_x_matrix[, j]) / total
+                 })
+               } else {
+                 rep(0, n_characteristics)
+               }
+             }))),
+  Deviation = c(abs(chebyshev_cost - cost_target), as.vector(chebyshev_quality_deviations))
+)
+
+p7 <- ggplot(goal_data[1:10, ], aes(x = Goal, y = Deviation)) +
+  geom_bar(stat = "identity", fill = "steelblue", alpha = 0.7) +
+  labs(title = "Chebyshev GP: Goal Achievement (Sample)",
+       x = "Goal", y = "Deviation") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+print(p7)
+```
+
+# 6.0 Approach 4: Genetic Algorithms (Optional)
+
+Genetic Algorithms use evolutionary principles to evolve a population of solutions toward better fitness.
+
+## 6.1 Implementation
+
+```{r ga-implementation}
+# Genetic Algorithm implementation
+# Chromosome: flattened x_ij matrix (n_materials * n_blends elements)
+
+# Fitness function: weighted sum of cost and quality deviations
+fitness_function <- function(chromosome) {
+  # Reshape chromosome to matrix
+  x_matrix <- matrix(chromosome, nrow = n_materials, ncol = n_blends)
+  
+  # Ensure non-negativity
+  x_matrix[x_matrix < 0] <- 0
+  
+  # Check and repair constraints
+  # Availability constraints
+  for (i in 1:n_materials) {
+    total_used <- sum(x_matrix[i, ])
+    if (total_used > a[i]) {
+      x_matrix[i, ] <- x_matrix[i, ] * (a[i] / total_used)
+    }
+  }
+  
+  # Demand constraints
+  for (j in 1:n_blends) {
+    total_produced <- sum(x_matrix[, j])
+    if (total_produced < D[j]) {
+      if (total_produced > 0) {
+        x_matrix[, j] <- x_matrix[, j] * (D[j] / total_produced)
+      } else {
+        x_matrix[, j] <- D[j] / n_materials
+      }
+    }
+  }
+  
+  # Calculate cost
+  cost <- sum(P * rowSums(x_matrix))
+  
+  # Calculate quality deviations
+  quality_penalty <- 0
+  for (j in 1:n_blends) {
+    total_blend <- sum(x_matrix[, j])
+    if (total_blend > 0) {
+      for (k in 1:n_characteristics) {
+        actual_score <- sum(g[, k] * x_matrix[, j]) / total_blend
+        deviation <- abs(actual_score - s[j, k])
+        quality_penalty <- quality_penalty + 10 * deviation  # Weight quality deviations
+      }
+    }
+  }
+  
+  # Fitness (to minimize, so return negative or use GA's minimization)
+  return(-(cost + quality_penalty))  # GA maximizes, so negate for minimization
+}
+
+# Define bounds for decision variables
+# Upper bound: min(availability, max_demand) for each material
+upper_bounds <- rep(min(max(a), max(D) * 2), n_materials * n_blends)
+lower_bounds <- rep(0, n_materials * n_blends)
+
+# Run Genetic Algorithm
+cat("Running Genetic Algorithm...\n")
+ga_start_time <- Sys.time()
+
+ga_result <- ga(
+  type = "real-valued",
+  fitness = fitness_function,
+  lower = lower_bounds,
+  upper = upper_bounds,
+  popSize = 50,
+  maxiter = 100,
+  pcrossover = 0.8,
+  pmutation = 0.1,
+  elitism = 5,
+  monitor = FALSE
+)
+
+ga_end_time <- Sys.time()
+ga_solve_time <- as.numeric(ga_end_time - ga_start_time, units = "secs")
+
+# Extract best solution
+ga_chromosome <- ga_result@solution[1, ]
+ga_x_matrix <- matrix(ga_chromosome, nrow = n_materials, ncol = n_blends)
+ga_x_matrix[ga_x_matrix < 0] <- 0
+
+# Repair solution
+for (i in 1:n_materials) {
+  total_used <- sum(ga_x_matrix[i, ])
+  if (total_used > a[i]) {
+    ga_x_matrix[i, ] <- ga_x_matrix[i, ] * (a[i] / total_used)
+  }
+}
+
+for (j in 1:n_blends) {
+  total_produced <- sum(ga_x_matrix[, j])
+  if (total_produced < D[j]) {
+    if (total_produced > 0) {
+      ga_x_matrix[, j] <- ga_x_matrix[, j] * (D[j] / total_produced)
+    } else {
+      ga_x_matrix[, j] <- D[j] / n_materials
+    }
+  }
+}
+
+rownames(ga_x_matrix) <- raw_materials$Material_ID
+colnames(ga_x_matrix) <- blends$Blend_ID
+
+# Calculate actual cost and quality
+ga_cost <- sum(P * rowSums(ga_x_matrix))
+
+ga_quality_deviations <- matrix(0, nrow = n_blends, ncol = n_characteristics)
+for (j in 1:n_blends) {
+  total_blend <- sum(ga_x_matrix[, j])
+  if (total_blend > 0) {
+    for (k in 1:n_characteristics) {
+      actual_score <- sum(g[, k] * ga_x_matrix[, j]) / total_blend
+      ga_quality_deviations[j, k] <- abs(actual_score - s[j, k])
+    }
+  }
+}
+rownames(ga_quality_deviations) <- blends$Blend_ID
+colnames(ga_quality_deviations) <- char_names
+
+# Display results
+cat("\n=== GA Solution Results ===\n")
+cat(sprintf("Best Total Cost: £%.2f\n", ga_cost))
+cat(sprintf("Average Quality Deviation: %.4f\n", mean(ga_quality_deviations)))
+cat(sprintf("Solve Time: %.4f seconds\n", ga_solve_time))
+
+cat("\n=== GA Recipe Matrix (x_ij in Kgs) ===\n")
+print(kable(ga_x_matrix, format = "html", 
+            caption = "GA Solution: Amount of Each Material in Each Blend") %>%
+      kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
+
+cat("\n=== Quality Deviations from Targets ===\n")
+print(kable(ga_quality_deviations, format = "html", 
+            caption = "Absolute deviations from target quality scores") %>%
+      kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
+```
+
+## 6.2 Visualization
+
+```{r ga-visualization}
+# Evolution plot
+ga_summary <- summary(ga_result)
+ga_history <- data.frame(
+  Generation = 1:ga_result@iter,
+  Best = -ga_result@fitnessValue,  # Negate back since we negated in fitness
+  Mean = -ga_summary$mean
+)
+
+p8 <- ggplot(ga_history, aes(x = Generation)) +
+  geom_line(aes(y = Best, color = "Best"), size = 1) +
+  geom_line(aes(y = Mean, color = "Mean"), alpha = 0.7) +
+  labs(title = "Genetic Algorithm: Evolution of Fitness",
+       x = "Generation", y = "Fitness (Cost + Quality Penalty)", 
+       color = "Population") +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+print(p8)
+
+# Plot GA solution
+ga_solution_long <- data.frame(
+  Material = rep(raw_materials$Material_ID, n_blends),
+  Blend = rep(blends$Blend_ID, each = n_materials),
+  Amount = as.vector(ga_x_matrix)
+)
+
+p9 <- ggplot(ga_solution_long, aes(x = Blend, y = Amount, fill = Material)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(title = "GA Solution: Material Usage by Blend",
+       x = "Blend", y = "Amount (Kgs)", fill = "Material") +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+print(p9)
+```
+
+# 7.0 Summary of Results and Comparative Analysis
+
+This section consolidates results from all approaches for comprehensive comparison.
+
+## 7.1 Comparative Metrics
+
+```{r comparison}
+# Compile comparison metrics
+comparison_metrics <- data.frame(
+  Approach = c("Linear Programming", "Simulated Annealing", 
+               "Chebyshev Goal Programming", "Genetic Algorithm"),
+  Total_Cost = c(lp_objective, sa_objective, chebyshev_cost, ga_cost),
+  Avg_Quality_Dev = c(mean(lp_quality_deviations), 
+                      mean(sa_quality_deviations),
+                      mean(chebyshev_quality_deviations),
+                      mean(ga_quality_deviations)),
+  Max_Quality_Dev = c(max(lp_quality_deviations),
+                     max(sa_quality_deviations),
+                     max(chebyshev_quality_deviations),
+                     max(ga_quality_deviations)),
+  Solve_Time_sec = c(lp_solve_time, sa_solve_time, 
+                     chebyshev_solve_time, ga_solve_time),
+  Cost_vs_LP_pct = c(0, 
+                    (sa_objective - lp_objective) / lp_objective * 100,
+                    (chebyshev_cost - lp_objective) / lp_objective * 100,
+                    (ga_cost - lp_objective) / lp_objective * 100)
+)
+
+cat("=== Comprehensive Comparison of All Approaches ===\n")
+print(kable(comparison_metrics, format = "html", 
+            caption = "Performance Metrics Comparison",
+            digits = 2) %>%
+      kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")))
+
+# Create visualizations
+p10 <- ggplot(comparison_metrics, aes(x = reorder(Approach, Total_Cost), y = Total_Cost, fill = Approach)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total Cost Comparison Across All Approaches",
+       x = "Approach", y = "Total Cost (£)") +
+  theme_minimal() +
+  theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1))
+
+print(p10)
+
+p11 <- ggplot(comparison_metrics, aes(x = Avg_Quality_Dev, y = Total_Cost, color = Approach, size = Max_Quality_Dev)) +
+  geom_point(alpha = 0.7) +
+  labs(title = "Trade-off: Cost vs Quality Deviation",
+       x = "Average Quality Deviation", y = "Total Cost (£)",
+       size = "Max Quality\nDeviation", color = "Approach") +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+print(p11)
+
+p12 <- ggplot(comparison_metrics, aes(x = reorder(Approach, Solve_Time_sec), y = Solve_Time_sec, fill = Approach)) +
+  geom_bar(stat = "identity") +
+  scale_y_log10() +
+  labs(title = "Computation Time Comparison (log scale)",
+       x = "Approach", y = "Solve Time (seconds, log scale)") +
+  theme_minimal() +
+  theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1))
+
+print(p12)
+```
+
+## 7.2 Key Findings
+
+```{r findings}
+cat("\n=== Key Findings ===\n\n")
+
+cat("1. COST PERFORMANCE:\n")
+cat(sprintf("   - LP provides the optimal cost baseline: £%.2f\n", lp_objective))
+cat(sprintf("   - SA achieves %.2f%% of LP cost\n", (sa_objective / lp_objective) * 100))
+cat(sprintf("   - Chebyshev GP trades %.2f%% cost increase for better quality control\n", 
+            comparison_metrics$Cost_vs_LP_pct[3]))
+cat(sprintf("   - GA achieves %.2f%% of LP cost\n", (ga_cost / lp_objective) * 100))
+
+cat("\n2. QUALITY PERFORMANCE:\n")
+best_quality_idx <- which.min(comparison_metrics$Avg_Quality_Dev)
+cat(sprintf("   - Best average quality: %s (deviation: %.4f)\n", 
+            comparison_metrics$Approach[best_quality_idx],
+            comparison_metrics$Avg_Quality_Dev[best_quality_idx]))
+
+cat("\n3. COMPUTATIONAL EFFICIENCY:\n")
+fastest_idx <- which.min(comparison_metrics$Solve_Time_sec)
+cat(sprintf("   - Fastest approach: %s (%.4f seconds)\n",
+            comparison_metrics$Approach[fastest_idx],
+            comparison_metrics$Solve_Time_sec[fastest_idx]))
+
+cat("\n4. RECOMMENDATION:\n")
+if (comparison_metrics$Avg_Quality_Dev[3] < comparison_metrics$Avg_Quality_Dev[1] * 0.8) {
+  cat("   - Chebyshev Goal Programming is recommended for balancing cost and quality.\n")
+  cat("   - It provides superior quality control with acceptable cost increase.\n")
+} else {
+  cat("   - Linear Programming provides the best cost-performance trade-off.\n")
+  cat("   - For near-optimal solutions quickly, Simulated Annealing is valuable.\n")
+}
+```
+
+## 7.3 Solution Matrices Comparison
+
+```{r solution-comparison}
+# Create a summary of solution differences
+cat("\n=== Solution Matrix Comparison (Sample: Blend 1) ===\n")
+blend1_comparison <- data.frame(
+  Material = raw_materials$Material_ID,
+  LP = lp_x_matrix[, 1],
+  SA = sa_x_matrix[, 1],
+  Chebyshev_GP = chebyshev_x_matrix[, 1],
+  GA = ga_x_matrix[, 1]
+)
+
+print(kable(blend1_comparison, format = "html", 
+            caption = "Material allocation for Blend 1 across all approaches",
+            digits = 2) %>%
+      kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
+```
+
+# 8.0 Conclusion
+
+This analysis has successfully implemented and compared four distinct optimization approaches for the tea blending problem:
+
+1. **Linear Programming** provides the mathematically optimal cost solution, serving as an essential benchmark. However, it treats quality deviations as hard constraints within tolerance, not as objectives to minimize.
+
+2. **Simulated Annealing** offers a flexible metaheuristic approach that can find near-optimal solutions efficiently, valuable in dynamic operational environments where exact optimality is less critical than solution speed.
+
+3. **Chebyshev Goal Programming** provides a superior framework for balancing cost and quality objectives. By formally incorporating decision-maker preferences through goals and weights, it delivers balanced, actionable solutions that directly manage the trade-off between production cost and product quality.
+
+4. **Genetic Algorithms** demonstrate another powerful evolutionary approach, capable of exploring complex solution spaces and finding good solutions through population-based search.
+
+The comparative analysis reveals that while LP provides the lowest cost, multi-objective approaches like Chebyshev Goal Programming are better aligned with business realities where maintaining brand integrity through consistent quality characteristics is as important as minimizing cost.
+
+# 9.0 Appendix: Code Execution Notes
+
+## 9.1 Required Libraries
+
+All required R packages can be installed using:
+```r
+install.packages(c("dplyr", "ompr", "ompr.roi", "ROI", "ROI.plugin.glpk", 
+                   "lpSolveAPI", "ggplot2", "GA", "knitr", "kableExtra", "tidyr"))
+```
+
+## 9.2 Reproducibility
+
+This document uses a fixed random seed (123) for data generation and stochastic algorithms to ensure reproducibility. Results may vary slightly if the seed is changed or if different solver parameters are used.
+
+## 9.3 Parameter Tuning
+
+Key parameters that can be adjusted:
+- **ε (epsilon)**: Tolerance for quality constraints (default: 0.1)
+- **SA parameters**: Initial temperature, cooling rate, iterations
+- **GA parameters**: Population size, generations, mutation/crossover rates
+- **Goal Programming weights**: Cost vs quality priorities
+
+---
+
+*End of Report*
+
