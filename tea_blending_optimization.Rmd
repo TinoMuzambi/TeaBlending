@@ -126,16 +126,37 @@ blends <- data.frame(
 )
 
 # Generate target quality scores for blends (s_jk)
-target_matrix <- matrix(
-  round(runif(n_blends * n_characteristics, 1, 10), 2),
-  nrow = n_blends,
-  ncol = n_characteristics
-)
+# Ensure targets are achievable by setting them within the range of raw material qualities
+quality_mins <- apply(quality_matrix, 2, min)
+quality_maxs <- apply(quality_matrix, 2, max)
+quality_means <- apply(quality_matrix, 2, mean)
+
+target_matrix <- matrix(0, nrow = n_blends, ncol = n_characteristics)
+for (j in 1:n_blends) {
+  for (k in 1:n_characteristics) {
+    # Generate target within the range of available qualities, biased toward the mean
+    target_matrix[j, k] <- round(
+      quality_means[k] + runif(1, -0.3, 0.3) * (quality_maxs[k] - quality_mins[k]),
+      2
+    )
+    # Ensure it's within bounds
+    target_matrix[j, k] <- max(quality_mins[k], min(quality_maxs[k], target_matrix[j, k]))
+  }
+}
 colnames(target_matrix) <- char_names
 blends <- cbind(blends, target_matrix)
 
-# Set tolerance parameter (epsilon)
-epsilon <- 1.0
+# Set tolerance parameter (epsilon) - increased to ensure feasibility
+epsilon <- 2.0
+
+# Basic feasibility check: ensure total availability exceeds total demand
+total_availability <- sum(raw_materials$Availability)
+total_demand <- sum(blends$Demand)
+if (total_availability < total_demand) {
+  # Scale up availability proportionally to meet demand
+  scale_factor <- total_demand / total_availability * 1.1  # 10% buffer
+  raw_materials$Availability <- round(raw_materials$Availability * scale_factor, 0)
+}
 
 # Display the data
 cat("=== Raw Materials Data (Table 2) ===\n")
@@ -275,6 +296,12 @@ for (j in 1:n_blends) {
 bounds <- list(lower = list(ind = 1:n_vars, val = rep(0, n_vars)),
                 upper = list(ind = 1:n_vars, val = rep(Inf, n_vars)))
 
+# Verify constraint matrix dimensions
+if (nrow(constraint_matrix) != n_constraints || ncol(constraint_matrix) != n_vars) {
+  stop(sprintf("Constraint matrix dimension mismatch: expected %dx%d, got %dx%d",
+               n_constraints, n_vars, nrow(constraint_matrix), ncol(constraint_matrix)))
+}
+
 # Solve the LP
 result <- Rglpk_solve_LP(obj = obj_coef, 
                          mat = constraint_matrix, 
@@ -287,6 +314,11 @@ result <- Rglpk_solve_LP(obj = obj_coef,
 lp_objective <- result$optimum
 lp_solution_vector <- result$solution
 
+# Check if solution is valid
+if (is.null(lp_solution_vector)) {
+  stop("LP solver returned NULL solution vector.")
+}
+
 # Reshape solution vector into matrix
 # Solution vector is: x[1,1], x[1,2], ..., x[1,n_blends], x[2,1], ..., x[n_materials,n_blends]
 lp_x_matrix <- matrix(lp_solution_vector, nrow = n_materials, ncol = n_blends, byrow = TRUE)
@@ -294,7 +326,10 @@ rownames(lp_x_matrix) <- raw_materials$Material_ID
 colnames(lp_x_matrix) <- blends$Blend_ID
 
 cat(sprintf("\n=== LP Solution Results ===\n"))
+cat(sprintf("Solver Status: %d (0 = optimal)\n", result$status))
 cat(sprintf("Optimal Total Cost: £%.2f\n", lp_objective))
+cat(sprintf("Total material used: %.2f Kgs\n", sum(lp_x_matrix)))
+cat(sprintf("Total demand required: %.2f Kgs\n", sum(D)))
 
 cat("\n=== Optimal Recipe Matrix (x_ij in Kgs) ===\n")
 print_table(as.data.frame(lp_x_matrix), caption = "LP Solution: Amount of Each Material in Each Blend")
@@ -748,7 +783,7 @@ p7 <- ggplot(goal_data[1:10, ], aes(x = Goal, y = Deviation)) +
 print(p7)
 ```
 
-# 6 Approach 4: Genetic Algorithms (Optional)
+# 6 Approach 4: Genetic Algorithms
 
 Genetic Algorithms use evolutionary principles to evolve a population of solutions toward better fitness.
 
@@ -1111,12 +1146,12 @@ install.packages(c("dplyr", "Rglpk", "ompr", "ompr.roi", "ROI", "ROI.plugin.glpk
 
 ## 9.2 Reproducibility
 
-This document uses a fixed random seed (123) for data generation and stochastic algorithms to ensure reproducibility. Results may vary slightly if the seed is changed or if different solver parameters are used.
+This document uses a fixed random seed (2025) for data generation and stochastic algorithms to ensure reproducibility. Results may vary slightly if the seed is changed or if different solver parameters are used.
 
 ## 9.3 Parameter Tuning
 
 Key parameters that can be adjusted:
-- **$\epsilon$ (epsilon)**: Tolerance for quality constraints (default: 0.1)
+- **$\epsilon$ (epsilon)**: Tolerance for quality constraints (default: 2)
 - **SA parameters**: Initial temperature, cooling rate, iterations
 - **GA parameters**: Population size, generations, mutation/crossover rates
 - **Goal Programming weights**: Cost vs quality priorities
