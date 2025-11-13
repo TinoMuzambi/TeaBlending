@@ -1,0 +1,2420 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Tea Blending Optimisation: A Comprehensive Analysis},
+  pdfauthor={Optimisation Analysis},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Tea Blending Optimisation: A Comprehensive Analysis}
+\author{Optimisation Analysis}
+\date{2025-11-12}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\section{1 Introduction}\label{introduction}
+
+This document presents a comprehensive analysis of the tea blending
+optimisation problem using multiple computational approaches. The
+problem requires determining the least-cost combination of raw materials
+to produce final blends that meet specific quality characteristics, as
+formalised by Fomeni (2018).
+
+The primary objectives are:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  To implement and solve a cost-minimisation model using Linear
+  Programming (LP).
+\item
+  To solve the same problem using Simulated Annealing (SA) metaheuristic
+  and compare performance.
+\item
+  To formulate and solve a multi-objective model using Chebyshev Goal
+  Programming.
+\item
+  To explore Genetic Algorithms (GAs) as an alternative solution
+  approach.
+\end{enumerate}
+
+\section{2 Problem Formulation and Data
+Preparation}\label{problem-formulation-and-data-preparation}
+
+\subsection{2.1 Notations and
+Parameters}\label{notations-and-parameters}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Indices}:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \(i\): Index for raw materials
+  \item
+    \(j\): Index for final blends
+  \item
+    \(k\): Index for quality characteristics
+  \end{itemize}
+\item
+  \textbf{Parameters}:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \(P_i\): Unit cost of raw material \(i\) (£/Kg)
+  \item
+    \(D_j\): Weekly demand for final blend \(j\) (Kgs)
+  \item
+    \(a_i\): Weekly availability of raw material \(i\) (Kgs)
+  \item
+    \(g_{ik}\): Grade of characteristic \(k\) in one unit of raw
+    material \(i\)
+  \item
+    \(s_{jk}\): Required target score of characteristic \(k\) in one
+    unit of final blend \(j\)
+  \end{itemize}
+\item
+  \textbf{Decision Variables}:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \(x_{ij}\): Amount (in Kgs) of raw material \(i\) to be used in
+    final blend \(j\)
+  \end{itemize}
+\end{itemize}
+
+\subsection{2.2 Sample Data Generation}\label{sample-data-generation}
+
+Based on the structure described in Fomeni (2018), we generate sample
+data for raw materials and blends.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Set seed for reproducibility}
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{123}\NormalTok{)}
+
+\CommentTok{\# Define number of raw materials, blends, and quality characteristics}
+\NormalTok{n\_materials }\OtherTok{\textless{}{-}} \DecValTok{6}
+\NormalTok{n\_blends }\OtherTok{\textless{}{-}} \DecValTok{4}
+\NormalTok{n\_characteristics }\OtherTok{\textless{}{-}} \DecValTok{3}
+
+\CommentTok{\# Quality characteristic names}
+\NormalTok{char\_names }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"Brightness"}\NormalTok{, }\StringTok{"Colour"}\NormalTok{, }\StringTok{"Thickness"}\NormalTok{)}
+
+\CommentTok{\# Generate raw materials data (Table 2 structure)}
+\NormalTok{raw\_materials }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{Material\_ID =} \FunctionTok{paste0}\NormalTok{(}\StringTok{"RM"}\NormalTok{, }\DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials),}
+  \AttributeTok{Cost =} \FunctionTok{round}\NormalTok{(}\FunctionTok{runif}\NormalTok{(n\_materials, }\FloatTok{2.5}\NormalTok{, }\FloatTok{8.0}\NormalTok{), }\DecValTok{2}\NormalTok{),}
+  \AttributeTok{Availability =} \FunctionTok{round}\NormalTok{(}\FunctionTok{runif}\NormalTok{(n\_materials, }\DecValTok{100}\NormalTok{, }\DecValTok{500}\NormalTok{), }\DecValTok{0}\NormalTok{),}
+  \AttributeTok{stringsAsFactors =} \ConstantTok{FALSE}
+\NormalTok{)}
+
+\CommentTok{\# Generate quality characteristics for raw materials (g\_ik)}
+\NormalTok{quality\_matrix }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}
+  \FunctionTok{round}\NormalTok{(}\FunctionTok{runif}\NormalTok{(n\_materials }\SpecialCharTok{*}\NormalTok{ n\_characteristics, }\DecValTok{1}\NormalTok{, }\DecValTok{10}\NormalTok{), }\DecValTok{2}\NormalTok{),}
+  \AttributeTok{nrow =}\NormalTok{ n\_materials,}
+  \AttributeTok{ncol =}\NormalTok{ n\_characteristics}
+\NormalTok{)}
+\FunctionTok{colnames}\NormalTok{(quality\_matrix) }\OtherTok{\textless{}{-}}\NormalTok{ char\_names}
+\NormalTok{raw\_materials }\OtherTok{\textless{}{-}} \FunctionTok{cbind}\NormalTok{(raw\_materials, quality\_matrix)}
+
+\CommentTok{\# Generate blends data (Table 3 structure)}
+\NormalTok{blends }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{Blend\_ID =} \FunctionTok{paste0}\NormalTok{(}\StringTok{"Blend"}\NormalTok{, }\DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends),}
+  \AttributeTok{Demand =} \FunctionTok{round}\NormalTok{(}\FunctionTok{runif}\NormalTok{(n\_blends, }\DecValTok{50}\NormalTok{, }\DecValTok{200}\NormalTok{), }\DecValTok{0}\NormalTok{),}
+  \AttributeTok{stringsAsFactors =} \ConstantTok{FALSE}
+\NormalTok{)}
+
+\CommentTok{\# Generate target quality scores for blends (s\_jk)}
+\NormalTok{target\_matrix }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}
+  \FunctionTok{round}\NormalTok{(}\FunctionTok{runif}\NormalTok{(n\_blends }\SpecialCharTok{*}\NormalTok{ n\_characteristics, }\DecValTok{3}\NormalTok{, }\DecValTok{8}\NormalTok{), }\DecValTok{2}\NormalTok{),}
+  \AttributeTok{nrow =}\NormalTok{ n\_blends,}
+  \AttributeTok{ncol =}\NormalTok{ n\_characteristics}
+\NormalTok{)}
+\FunctionTok{colnames}\NormalTok{(target\_matrix) }\OtherTok{\textless{}{-}}\NormalTok{ char\_names}
+\NormalTok{blends }\OtherTok{\textless{}{-}} \FunctionTok{cbind}\NormalTok{(blends, target\_matrix)}
+
+\CommentTok{\# Set tolerance parameters (epsilon\_jk)}
+\NormalTok{epsilon }\OtherTok{\textless{}{-}} \FloatTok{0.1}
+
+\CommentTok{\# Display the data}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"=== Raw Materials Data (Table 2) ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## === Raw Materials Data (Table 2) ===
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{print}\NormalTok{(}\FunctionTok{kable}\NormalTok{(raw\_materials, }\AttributeTok{format =} \StringTok{"html"}\NormalTok{, }\AttributeTok{caption =} \StringTok{"Raw Materials: Costs, Availability, and Quality Characteristics"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+      \FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{bootstrap\_options =} \FunctionTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{, }\StringTok{"hover"}\NormalTok{, }\StringTok{"condensed"}\NormalTok{)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## <table class="table table-striped table-hover table-condensed" style="color: black; margin-left: auto; margin-right: auto;">
+## <caption>Raw Materials: Costs, Availability, and Quality Characteristics</caption>
+##  <thead>
+##   <tr>
+##    <th style="text-align:left;"> Material_ID </th>
+##    <th style="text-align:right;"> Cost </th>
+##    <th style="text-align:right;"> Availability </th>
+##    <th style="text-align:right;"> Brightness </th>
+##    <th style="text-align:right;"> Colour </th>
+##    <th style="text-align:right;"> Thickness </th>
+##   </tr>
+##  </thead>
+## <tbody>
+##   <tr>
+##    <td style="text-align:left;"> RM1 </td>
+##    <td style="text-align:right;"> 4.08 </td>
+##    <td style="text-align:right;"> 311 </td>
+##    <td style="text-align:right;"> 7.10 </td>
+##    <td style="text-align:right;"> 3.95 </td>
+##    <td style="text-align:right;"> 6.90 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM2 </td>
+##    <td style="text-align:right;"> 6.84 </td>
+##    <td style="text-align:right;"> 457 </td>
+##    <td style="text-align:right;"> 6.15 </td>
+##    <td style="text-align:right;"> 9.59 </td>
+##    <td style="text-align:right;"> 7.38 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM3 </td>
+##    <td style="text-align:right;"> 4.75 </td>
+##    <td style="text-align:right;"> 321 </td>
+##    <td style="text-align:right;"> 1.93 </td>
+##    <td style="text-align:right;"> 9.01 </td>
+##    <td style="text-align:right;"> 5.90 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM4 </td>
+##    <td style="text-align:right;"> 7.36 </td>
+##    <td style="text-align:right;"> 283 </td>
+##    <td style="text-align:right;"> 9.10 </td>
+##    <td style="text-align:right;"> 7.24 </td>
+##    <td style="text-align:right;"> 6.35 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM5 </td>
+##    <td style="text-align:right;"> 7.67 </td>
+##    <td style="text-align:right;"> 483 </td>
+##    <td style="text-align:right;"> 3.21 </td>
+##    <td style="text-align:right;"> 6.76 </td>
+##    <td style="text-align:right;"> 3.60 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM6 </td>
+##    <td style="text-align:right;"> 2.75 </td>
+##    <td style="text-align:right;"> 281 </td>
+##    <td style="text-align:right;"> 1.38 </td>
+##    <td style="text-align:right;"> 9.95 </td>
+##    <td style="text-align:right;"> 2.32 </td>
+##   </tr>
+## </tbody>
+## </table>
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{=== Blends Data (Table 3) ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## === Blends Data (Table 3) ===
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{print}\NormalTok{(}\FunctionTok{kable}\NormalTok{(blends, }\AttributeTok{format =} \StringTok{"html"}\NormalTok{, }\AttributeTok{caption =} \StringTok{"Blends: Demand and Target Quality Scores"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+      \FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{bootstrap\_options =} \FunctionTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{, }\StringTok{"hover"}\NormalTok{, }\StringTok{"condensed"}\NormalTok{)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## <table class="table table-striped table-hover table-condensed" style="color: black; margin-left: auto; margin-right: auto;">
+## <caption>Blends: Demand and Target Quality Scores</caption>
+##  <thead>
+##   <tr>
+##    <th style="text-align:left;"> Blend_ID </th>
+##    <th style="text-align:right;"> Demand </th>
+##    <th style="text-align:right;"> Brightness </th>
+##    <th style="text-align:right;"> Colour </th>
+##    <th style="text-align:right;"> Thickness </th>
+##   </tr>
+##  </thead>
+## <tbody>
+##   <tr>
+##    <td style="text-align:left;"> Blend1 </td>
+##    <td style="text-align:right;"> 194 </td>
+##    <td style="text-align:right;"> 3.12 </td>
+##    <td style="text-align:right;"> 4.59 </td>
+##    <td style="text-align:right;"> 5.07 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> Blend2 </td>
+##    <td style="text-align:right;"> 185 </td>
+##    <td style="text-align:right;"> 5.39 </td>
+##    <td style="text-align:right;"> 4.16 </td>
+##    <td style="text-align:right;"> 4.84 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> Blend3 </td>
+##    <td style="text-align:right;"> 154 </td>
+##    <td style="text-align:right;"> 6.79 </td>
+##    <td style="text-align:right;"> 3.71 </td>
+##    <td style="text-align:right;"> 3.76 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> Blend4 </td>
+##    <td style="text-align:right;"> 169 </td>
+##    <td style="text-align:right;"> 4.08 </td>
+##    <td style="text-align:right;"> 5.07 </td>
+##    <td style="text-align:right;"> 3.69 </td>
+##   </tr>
+## </tbody>
+## </table>
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Store data in convenient format for later use}
+\NormalTok{P }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Cost}
+\FunctionTok{names}\NormalTok{(P) }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Material\_ID}
+
+\NormalTok{a }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Availability}
+\FunctionTok{names}\NormalTok{(a) }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Material\_ID}
+
+\NormalTok{D }\OtherTok{\textless{}{-}}\NormalTok{ blends}\SpecialCharTok{$}\NormalTok{Demand}
+\FunctionTok{names}\NormalTok{(D) }\OtherTok{\textless{}{-}}\NormalTok{ blends}\SpecialCharTok{$}\NormalTok{Blend\_ID}
+
+\NormalTok{g }\OtherTok{\textless{}{-}} \FunctionTok{as.matrix}\NormalTok{(raw\_materials[, char\_names])}
+\FunctionTok{rownames}\NormalTok{(g) }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Material\_ID}
+
+\NormalTok{s }\OtherTok{\textless{}{-}} \FunctionTok{as.matrix}\NormalTok{(blends[, char\_names])}
+\FunctionTok{rownames}\NormalTok{(s) }\OtherTok{\textless{}{-}}\NormalTok{ blends}\SpecialCharTok{$}\NormalTok{Blend\_ID}
+\end{Highlighting}
+\end{Shaded}
+
+\section{3 Approach 1: Cost Minimisation using Linear
+Programming}\label{approach-1-cost-minimisation-using-linear-programming}
+
+This section implements the cost-minimisation model using Linear
+Programming with parametric relaxation of the characteristic-matching
+constraints.
+
+\subsection{3.1 Model Formulation}\label{model-formulation}
+
+\textbf{Objective Function}: Minimise total cost
+\[\min \sum_{i} \sum_{j} P_i x_{ij}\]
+
+\textbf{Subject to Constraints}:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Raw Material Availability: \(\sum_{j} x_{ij} \le a_i \quad \forall i\)
+\item
+  Blend Demand: \(\sum_{i} x_{ij} \ge D_j \quad \forall j\)
+\item
+  Characteristic Score Relaxation:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \(\sum_{i} (g_{ik} - (s_{jk} + \epsilon_{jk})) x_{ij} \le 0 \quad \forall j, k\)
+  \item
+    \(\sum_{i} (g_{ik} - (s_{jk} - \epsilon_{jk})) x_{ij} \ge 0 \quad \forall j, k\)
+  \end{itemize}
+\item
+  Non-negativity: \(x_{ij} \ge 0 \quad \forall i, j\)
+\end{enumerate}
+
+\subsection{3.2 Implementation}\label{implementation}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Create the LP model using ompr}
+\NormalTok{lp\_model }\OtherTok{\textless{}{-}} \FunctionTok{MIPModel}\NormalTok{() }\SpecialCharTok{\%\textgreater{}\%}
+  \CommentTok{\# Decision variables: x\_ij (amount of material i in blend j)}
+  \FunctionTok{add\_variable}\NormalTok{(x[i, j], }\AttributeTok{i =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials, }\AttributeTok{j =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends, }\AttributeTok{type =} \StringTok{"continuous"}\NormalTok{, }\AttributeTok{lb =} \DecValTok{0}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+  
+  \CommentTok{\# Objective: minimise total cost}
+  \FunctionTok{set\_objective}\NormalTok{(}\FunctionTok{sum\_expr}\NormalTok{(P[i] }\SpecialCharTok{*}\NormalTok{ x[i, j], }\AttributeTok{i =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials, }\AttributeTok{j =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends), }\AttributeTok{sense =} \StringTok{"min"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+  
+  \CommentTok{\# Constraint 1: Raw material availability}
+  \FunctionTok{add\_constraint}\NormalTok{(}\FunctionTok{sum\_expr}\NormalTok{(x[i, j], }\AttributeTok{j =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends) }\SpecialCharTok{\textless{}=}\NormalTok{ a[i], }\AttributeTok{i =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials) }\SpecialCharTok{\%\textgreater{}\%}
+  
+  \CommentTok{\# Constraint 2: Blend demand}
+  \FunctionTok{add\_constraint}\NormalTok{(}\FunctionTok{sum\_expr}\NormalTok{(x[i, j], }\AttributeTok{i =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials) }\SpecialCharTok{\textgreater{}=}\NormalTok{ D[j], }\AttributeTok{j =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends) }\SpecialCharTok{\%\textgreater{}\%}
+  
+  \CommentTok{\# Constraint 3: Characteristic score relaxation (upper bound)}
+  \FunctionTok{add\_constraint}\NormalTok{(}\FunctionTok{sum\_expr}\NormalTok{((g[i, k] }\SpecialCharTok{{-}}\NormalTok{ (s[j, k] }\SpecialCharTok{+}\NormalTok{ epsilon)) }\SpecialCharTok{*}\NormalTok{ x[i, j], }\AttributeTok{i =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials) }\SpecialCharTok{\textless{}=} \DecValTok{0}\NormalTok{, }
+                 \AttributeTok{j =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends, }\AttributeTok{k =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_characteristics) }\SpecialCharTok{\%\textgreater{}\%}
+  
+  \CommentTok{\# Constraint 4: Characteristic score relaxation (lower bound)}
+  \FunctionTok{add\_constraint}\NormalTok{(}\FunctionTok{sum\_expr}\NormalTok{((g[i, k] }\SpecialCharTok{{-}}\NormalTok{ (s[j, k] }\SpecialCharTok{{-}}\NormalTok{ epsilon)) }\SpecialCharTok{*}\NormalTok{ x[i, j], }\AttributeTok{i =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials) }\SpecialCharTok{\textgreater{}=} \DecValTok{0}\NormalTok{, }
+                 \AttributeTok{j =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends, }\AttributeTok{k =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_characteristics)}
+
+\CommentTok{\# Solve the model}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Solving LP model...}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Solving LP model...
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lp\_start\_time }\OtherTok{\textless{}{-}} \FunctionTok{Sys.time}\NormalTok{()}
+\NormalTok{lp\_result }\OtherTok{\textless{}{-}} \FunctionTok{solve\_model}\NormalTok{(lp\_model, }\FunctionTok{with\_ROI}\NormalTok{(}\AttributeTok{solver =} \StringTok{"glpk"}\NormalTok{, }\AttributeTok{verbose =} \ConstantTok{FALSE}\NormalTok{))}
+\NormalTok{lp\_end\_time }\OtherTok{\textless{}{-}} \FunctionTok{Sys.time}\NormalTok{()}
+\NormalTok{lp\_solve\_time }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(lp\_end\_time }\SpecialCharTok{{-}}\NormalTok{ lp\_start\_time, }\AttributeTok{units =} \StringTok{"secs"}\NormalTok{)}
+
+\CommentTok{\# Extract results}
+\NormalTok{lp\_objective }\OtherTok{\textless{}{-}} \FunctionTok{objective\_value}\NormalTok{(lp\_result)}
+\NormalTok{lp\_solution }\OtherTok{\textless{}{-}} \FunctionTok{get\_solution}\NormalTok{(lp\_result, x[i, j])}
+
+\CommentTok{\# Create solution matrix}
+\NormalTok{lp\_x\_matrix }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\DecValTok{0}\NormalTok{, }\AttributeTok{nrow =}\NormalTok{ n\_materials, }\AttributeTok{ncol =}\NormalTok{ n\_blends)}
+\ControlFlowTok{for}\NormalTok{ (idx }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\FunctionTok{nrow}\NormalTok{(lp\_solution)) \{}
+\NormalTok{  i\_val }\OtherTok{\textless{}{-}}\NormalTok{ lp\_solution}\SpecialCharTok{$}\NormalTok{i[idx]}
+\NormalTok{  j\_val }\OtherTok{\textless{}{-}}\NormalTok{ lp\_solution}\SpecialCharTok{$}\NormalTok{j[idx]}
+\NormalTok{  lp\_x\_matrix[i\_val, j\_val] }\OtherTok{\textless{}{-}}\NormalTok{ lp\_solution}\SpecialCharTok{$}\NormalTok{value[idx]}
+\NormalTok{\}}
+\FunctionTok{rownames}\NormalTok{(lp\_x\_matrix) }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Material\_ID}
+\FunctionTok{colnames}\NormalTok{(lp\_x\_matrix) }\OtherTok{\textless{}{-}}\NormalTok{ blends}\SpecialCharTok{$}\NormalTok{Blend\_ID}
+
+\CommentTok{\# Display results}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{=== LP Solution Results ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## === LP Solution Results ===
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Optimal Total Cost: £\%.2f}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, lp\_objective))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Optimal Total Cost: £0.00
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Solve Time: \%.4f seconds}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, lp\_solve\_time))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Solve Time: 0.0446 seconds
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{=== Optimal Recipe Matrix (x\_ij in Kgs) ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## === Optimal Recipe Matrix (x_ij in Kgs) ===
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{print}\NormalTok{(}\FunctionTok{kable}\NormalTok{(lp\_x\_matrix, }\AttributeTok{format =} \StringTok{"html"}\NormalTok{, }\AttributeTok{caption =} \StringTok{"LP Solution: Amount of Each Material in Each Blend"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+      \FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{bootstrap\_options =} \FunctionTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{, }\StringTok{"hover"}\NormalTok{, }\StringTok{"condensed"}\NormalTok{)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## <table class="table table-striped table-hover table-condensed" style="color: black; margin-left: auto; margin-right: auto;">
+## <caption>LP Solution: Amount of Each Material in Each Blend</caption>
+##  <thead>
+##   <tr>
+##    <th style="text-align:left;">   </th>
+##    <th style="text-align:right;"> Blend1 </th>
+##    <th style="text-align:right;"> Blend2 </th>
+##    <th style="text-align:right;"> Blend3 </th>
+##    <th style="text-align:right;"> Blend4 </th>
+##   </tr>
+##  </thead>
+## <tbody>
+##   <tr>
+##    <td style="text-align:left;"> RM1 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM2 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM3 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM4 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM5 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM6 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##   </tr>
+## </tbody>
+## </table>
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Calculate quality deviations for LP solution}
+\NormalTok{lp\_quality\_deviations }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\DecValTok{0}\NormalTok{, }\AttributeTok{nrow =}\NormalTok{ n\_blends, }\AttributeTok{ncol =}\NormalTok{ n\_characteristics)}
+\ControlFlowTok{for}\NormalTok{ (j }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends) \{}
+\NormalTok{  total\_blend }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(lp\_x\_matrix[, j])}
+  \ControlFlowTok{if}\NormalTok{ (total\_blend }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{) \{}
+    \ControlFlowTok{for}\NormalTok{ (k }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_characteristics) \{}
+\NormalTok{      actual\_score }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(g[, k] }\SpecialCharTok{*}\NormalTok{ lp\_x\_matrix[, j]) }\SpecialCharTok{/}\NormalTok{ total\_blend}
+\NormalTok{      lp\_quality\_deviations[j, k] }\OtherTok{\textless{}{-}} \FunctionTok{abs}\NormalTok{(actual\_score }\SpecialCharTok{{-}}\NormalTok{ s[j, k])}
+\NormalTok{    \}}
+\NormalTok{  \}}
+\NormalTok{\}}
+\FunctionTok{rownames}\NormalTok{(lp\_quality\_deviations) }\OtherTok{\textless{}{-}}\NormalTok{ blends}\SpecialCharTok{$}\NormalTok{Blend\_ID}
+\FunctionTok{colnames}\NormalTok{(lp\_quality\_deviations) }\OtherTok{\textless{}{-}}\NormalTok{ char\_names}
+
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{=== Quality Deviations from Targets ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## === Quality Deviations from Targets ===
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{print}\NormalTok{(}\FunctionTok{kable}\NormalTok{(lp\_quality\_deviations, }\AttributeTok{format =} \StringTok{"html"}\NormalTok{, }
+            \AttributeTok{caption =} \StringTok{"Absolute deviations from target quality scores"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+      \FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{bootstrap\_options =} \FunctionTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{, }\StringTok{"hover"}\NormalTok{, }\StringTok{"condensed"}\NormalTok{)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## <table class="table table-striped table-hover table-condensed" style="color: black; margin-left: auto; margin-right: auto;">
+## <caption>Absolute deviations from target quality scores</caption>
+##  <thead>
+##   <tr>
+##    <th style="text-align:left;">   </th>
+##    <th style="text-align:right;"> Brightness </th>
+##    <th style="text-align:right;"> Colour </th>
+##    <th style="text-align:right;"> Thickness </th>
+##   </tr>
+##  </thead>
+## <tbody>
+##   <tr>
+##    <td style="text-align:left;"> Blend1 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> Blend2 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> Blend3 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> Blend4 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##   </tr>
+## </tbody>
+## </table>
+\end{verbatim}
+
+\subsection{3.3 Visualisation}\label{visualisation}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Visualise the solution}
+\NormalTok{lp\_solution\_long }\OtherTok{\textless{}{-}}\NormalTok{ lp\_solution }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{Material =}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Material\_ID[i],}
+         \AttributeTok{Blend =}\NormalTok{ blends}\SpecialCharTok{$}\NormalTok{Blend\_ID[j]) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{select}\NormalTok{(Material, Blend, value)}
+
+\NormalTok{p1 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(lp\_solution\_long, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ Blend, }\AttributeTok{y =}\NormalTok{ value, }\AttributeTok{fill =}\NormalTok{ Material)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_bar}\NormalTok{(}\AttributeTok{stat =} \StringTok{"identity"}\NormalTok{, }\AttributeTok{position =} \StringTok{"stack"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \StringTok{"LP Solution: Material Usage by Blend"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Blend"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Amount (Kgs)"}\NormalTok{, }\AttributeTok{fill =} \StringTok{"Material"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_minimal}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"right"}\NormalTok{)}
+
+\FunctionTok{print}\NormalTok{(p1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{tea_blending_optimization_files/figure-latex/lp-visualisation-1} \end{center}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Heatmap of solution matrix}
+\NormalTok{lp\_matrix\_df }\OtherTok{\textless{}{-}} \FunctionTok{as.data.frame}\NormalTok{(lp\_x\_matrix)}
+\NormalTok{lp\_matrix\_df}\SpecialCharTok{$}\NormalTok{Material }\OtherTok{\textless{}{-}} \FunctionTok{rownames}\NormalTok{(lp\_matrix\_df)}
+\NormalTok{lp\_matrix\_long }\OtherTok{\textless{}{-}} \FunctionTok{pivot\_longer}\NormalTok{(lp\_matrix\_df, }\AttributeTok{cols =} \SpecialCharTok{{-}}\NormalTok{Material, }\AttributeTok{names\_to =} \StringTok{"Blend"}\NormalTok{, }\AttributeTok{values\_to =} \StringTok{"Amount"}\NormalTok{)}
+
+\NormalTok{p2 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(lp\_matrix\_long, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ Blend, }\AttributeTok{y =}\NormalTok{ Material, }\AttributeTok{fill =}\NormalTok{ Amount)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_tile}\NormalTok{(}\AttributeTok{color =} \StringTok{"white"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{scale\_fill\_gradient}\NormalTok{(}\AttributeTok{low =} \StringTok{"white"}\NormalTok{, }\AttributeTok{high =} \StringTok{"steelblue"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \StringTok{"LP Solution Heatmap: Material Usage Matrix"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Blend"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Material"}\NormalTok{, }\AttributeTok{fill =} \StringTok{"Amount (Kgs)"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_minimal}\NormalTok{()}
+
+\FunctionTok{print}\NormalTok{(p2)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{tea_blending_optimization_files/figure-latex/lp-visualisation-2} \end{center}
+
+\section{4 Approach 2: Cost Minimisation using Simulated
+Annealing}\label{approach-2-cost-minimisation-using-simulated-annealing}
+
+Simulated Annealing is a metaheuristic that explores the solution space
+probabilistically, accepting worse solutions with decreasing probability
+as the algorithm ``cools down.''
+
+\subsection{4.1 Implementation}\label{implementation-1}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Simulated Annealing implementation}
+\NormalTok{simulated\_annealing }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(}\AttributeTok{initial\_temp =} \DecValTok{1000}\NormalTok{, }\AttributeTok{cooling\_rate =} \FloatTok{0.95}\NormalTok{, }
+                                \AttributeTok{max\_iterations =} \DecValTok{1000}\NormalTok{, }\AttributeTok{min\_temp =} \FloatTok{0.01}\NormalTok{) \{}
+  
+  \CommentTok{\# Initialise solution (feasible starting point)}
+  \CommentTok{\# Start with proportional allocation based on demand}
+\NormalTok{  current\_solution }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\DecValTok{0}\NormalTok{, }\AttributeTok{nrow =}\NormalTok{ n\_materials, }\AttributeTok{ncol =}\NormalTok{ n\_blends)}
+  \ControlFlowTok{for}\NormalTok{ (j }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends) \{}
+    \CommentTok{\# Allocate materials proportionally to meet demand}
+\NormalTok{    prop }\OtherTok{\textless{}{-}} \FunctionTok{runif}\NormalTok{(n\_materials)}
+\NormalTok{    prop }\OtherTok{\textless{}{-}}\NormalTok{ prop }\SpecialCharTok{/} \FunctionTok{sum}\NormalTok{(prop)}
+\NormalTok{    current\_solution[, j] }\OtherTok{\textless{}{-}}\NormalTok{ D[j] }\SpecialCharTok{*}\NormalTok{ prop}
+\NormalTok{  \}}
+  
+  \CommentTok{\# Repair to ensure feasibility}
+\NormalTok{  repair\_solution }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(sol) \{}
+    \CommentTok{\# Fix availability constraints}
+    \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials) \{}
+\NormalTok{      total\_used }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(sol[i, ])}
+      \ControlFlowTok{if}\NormalTok{ (total\_used }\SpecialCharTok{\textgreater{}}\NormalTok{ a[i]) \{}
+\NormalTok{        sol[i, ] }\OtherTok{\textless{}{-}}\NormalTok{ sol[i, ] }\SpecialCharTok{*}\NormalTok{ (a[i] }\SpecialCharTok{/}\NormalTok{ total\_used)}
+\NormalTok{      \}}
+\NormalTok{    \}}
+    
+    \CommentTok{\# Fix demand constraints}
+    \ControlFlowTok{for}\NormalTok{ (j }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends) \{}
+\NormalTok{      total\_produced }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(sol[, j])}
+      \ControlFlowTok{if}\NormalTok{ (total\_produced }\SpecialCharTok{\textless{}}\NormalTok{ D[j]) \{}
+        \CommentTok{\# Increase proportionally}
+        \ControlFlowTok{if}\NormalTok{ (total\_produced }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{) \{}
+\NormalTok{          sol[, j] }\OtherTok{\textless{}{-}}\NormalTok{ sol[, j] }\SpecialCharTok{*}\NormalTok{ (D[j] }\SpecialCharTok{/}\NormalTok{ total\_produced)}
+\NormalTok{        \} }\ControlFlowTok{else}\NormalTok{ \{}
+          \CommentTok{\# Equal allocation}
+\NormalTok{          sol[, j] }\OtherTok{\textless{}{-}}\NormalTok{ D[j] }\SpecialCharTok{/}\NormalTok{ n\_materials}
+\NormalTok{        \}}
+\NormalTok{      \}}
+\NormalTok{    \}}
+    
+    \CommentTok{\# Ensure non{-}negativity}
+\NormalTok{    sol[sol }\SpecialCharTok{\textless{}} \DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}} \DecValTok{0}
+    
+    \FunctionTok{return}\NormalTok{(sol)}
+\NormalTok{  \}}
+  
+  \CommentTok{\# Calculate cost}
+\NormalTok{  calculate\_cost }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(sol) \{}
+    \FunctionTok{sum}\NormalTok{(P }\SpecialCharTok{*} \FunctionTok{rowSums}\NormalTok{(sol))}
+\NormalTok{  \}}
+  
+  \CommentTok{\# Check quality constraints violation}
+\NormalTok{  check\_quality\_constraints }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(sol) \{}
+\NormalTok{    violations }\OtherTok{\textless{}{-}} \DecValTok{0}
+    \ControlFlowTok{for}\NormalTok{ (j }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends) \{}
+\NormalTok{      total\_blend }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(sol[, j])}
+      \ControlFlowTok{if}\NormalTok{ (total\_blend }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{) \{}
+        \ControlFlowTok{for}\NormalTok{ (k }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_characteristics) \{}
+\NormalTok{          actual\_score }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(g[, k] }\SpecialCharTok{*}\NormalTok{ sol[, j]) }\SpecialCharTok{/}\NormalTok{ total\_blend}
+\NormalTok{          upper\_bound }\OtherTok{\textless{}{-}}\NormalTok{ s[j, k] }\SpecialCharTok{+}\NormalTok{ epsilon}
+\NormalTok{          lower\_bound }\OtherTok{\textless{}{-}}\NormalTok{ s[j, k] }\SpecialCharTok{{-}}\NormalTok{ epsilon}
+          \ControlFlowTok{if}\NormalTok{ (actual\_score }\SpecialCharTok{\textgreater{}}\NormalTok{ upper\_bound }\SpecialCharTok{||}\NormalTok{ actual\_score }\SpecialCharTok{\textless{}}\NormalTok{ lower\_bound) \{}
+\NormalTok{            violations }\OtherTok{\textless{}{-}}\NormalTok{ violations }\SpecialCharTok{+} \FunctionTok{abs}\NormalTok{(actual\_score }\SpecialCharTok{{-}}\NormalTok{ s[j, k])}
+\NormalTok{          \}}
+\NormalTok{        \}}
+\NormalTok{      \}}
+\NormalTok{    \}}
+    \FunctionTok{return}\NormalTok{(violations)}
+\NormalTok{  \}}
+  
+  \CommentTok{\# Objective function with penalty for constraint violations}
+\NormalTok{  objective }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(sol) \{}
+\NormalTok{    cost }\OtherTok{\textless{}{-}} \FunctionTok{calculate\_cost}\NormalTok{(sol)}
+\NormalTok{    penalty }\OtherTok{\textless{}{-}} \DecValTok{1000} \SpecialCharTok{*} \FunctionTok{check\_quality\_constraints}\NormalTok{(sol)}
+    \FunctionTok{return}\NormalTok{(cost }\SpecialCharTok{+}\NormalTok{ penalty)}
+\NormalTok{  \}}
+  
+  \CommentTok{\# Generate neighbor solution}
+\NormalTok{  generate\_neighbor }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(sol) \{}
+\NormalTok{    neighbor }\OtherTok{\textless{}{-}}\NormalTok{ sol}
+    
+    \CommentTok{\# Random perturbation: modify a random element}
+\NormalTok{    i }\OtherTok{\textless{}{-}} \FunctionTok{sample}\NormalTok{(}\DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials, }\DecValTok{1}\NormalTok{)}
+\NormalTok{    j }\OtherTok{\textless{}{-}} \FunctionTok{sample}\NormalTok{(}\DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends, }\DecValTok{1}\NormalTok{)}
+    
+    \CommentTok{\# Perturb by ±10\% of current value or small amount}
+\NormalTok{    perturbation }\OtherTok{\textless{}{-}} \FunctionTok{runif}\NormalTok{(}\DecValTok{1}\NormalTok{, }\SpecialCharTok{{-}}\FloatTok{0.1}\NormalTok{, }\FloatTok{0.1}\NormalTok{) }\SpecialCharTok{*} \FunctionTok{max}\NormalTok{(sol[i, j], }\DecValTok{10}\NormalTok{)}
+\NormalTok{    neighbor[i, j] }\OtherTok{\textless{}{-}} \FunctionTok{max}\NormalTok{(}\DecValTok{0}\NormalTok{, sol[i, j] }\SpecialCharTok{+}\NormalTok{ perturbation)}
+    
+    \CommentTok{\# Repair to maintain feasibility}
+\NormalTok{    neighbor }\OtherTok{\textless{}{-}} \FunctionTok{repair\_solution}\NormalTok{(neighbor)}
+    
+    \FunctionTok{return}\NormalTok{(neighbor)}
+\NormalTok{  \}}
+  
+  \CommentTok{\# Initialise}
+\NormalTok{  current\_obj }\OtherTok{\textless{}{-}} \FunctionTok{objective}\NormalTok{(current\_solution)}
+\NormalTok{  best\_solution }\OtherTok{\textless{}{-}}\NormalTok{ current\_solution}
+\NormalTok{  best\_obj }\OtherTok{\textless{}{-}}\NormalTok{ current\_obj}
+\NormalTok{  temp }\OtherTok{\textless{}{-}}\NormalTok{ initial\_temp}
+  
+  \CommentTok{\# Track progress}
+\NormalTok{  history }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\AttributeTok{iteration =} \FunctionTok{integer}\NormalTok{(), }
+                       \AttributeTok{temperature =} \FunctionTok{numeric}\NormalTok{(), }
+                       \AttributeTok{current\_obj =} \FunctionTok{numeric}\NormalTok{(),}
+                       \AttributeTok{best\_obj =} \FunctionTok{numeric}\NormalTok{())}
+  
+  \CommentTok{\# Main SA loop}
+  \ControlFlowTok{for}\NormalTok{ (iter }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{max\_iterations) \{}
+    \CommentTok{\# Generate neighbor}
+\NormalTok{    neighbor\_solution }\OtherTok{\textless{}{-}} \FunctionTok{generate\_neighbor}\NormalTok{(current\_solution)}
+\NormalTok{    neighbor\_obj }\OtherTok{\textless{}{-}} \FunctionTok{objective}\NormalTok{(neighbor\_solution)}
+    
+    \CommentTok{\# Acceptance criterion (Metropolis)}
+\NormalTok{    delta }\OtherTok{\textless{}{-}}\NormalTok{ neighbor\_obj }\SpecialCharTok{{-}}\NormalTok{ current\_obj}
+    \ControlFlowTok{if}\NormalTok{ (delta }\SpecialCharTok{\textless{}} \DecValTok{0} \SpecialCharTok{||} \FunctionTok{runif}\NormalTok{(}\DecValTok{1}\NormalTok{) }\SpecialCharTok{\textless{}} \FunctionTok{exp}\NormalTok{(}\SpecialCharTok{{-}}\NormalTok{delta }\SpecialCharTok{/}\NormalTok{ temp)) \{}
+\NormalTok{      current\_solution }\OtherTok{\textless{}{-}}\NormalTok{ neighbor\_solution}
+\NormalTok{      current\_obj }\OtherTok{\textless{}{-}}\NormalTok{ neighbor\_obj}
+      
+      \CommentTok{\# Update best if better}
+      \ControlFlowTok{if}\NormalTok{ (current\_obj }\SpecialCharTok{\textless{}}\NormalTok{ best\_obj) \{}
+\NormalTok{        best\_solution }\OtherTok{\textless{}{-}}\NormalTok{ current\_solution}
+\NormalTok{        best\_obj }\OtherTok{\textless{}{-}}\NormalTok{ current\_obj}
+\NormalTok{      \}}
+\NormalTok{    \}}
+    
+    \CommentTok{\# Cool down}
+\NormalTok{    temp }\OtherTok{\textless{}{-}}\NormalTok{ temp }\SpecialCharTok{*}\NormalTok{ cooling\_rate}
+    \ControlFlowTok{if}\NormalTok{ (temp }\SpecialCharTok{\textless{}}\NormalTok{ min\_temp) }\ControlFlowTok{break}
+    
+    \CommentTok{\# Record history}
+    \ControlFlowTok{if}\NormalTok{ (iter }\SpecialCharTok{\%\%} \DecValTok{10} \SpecialCharTok{==} \DecValTok{0} \SpecialCharTok{||}\NormalTok{ iter }\SpecialCharTok{==} \DecValTok{1}\NormalTok{) \{}
+\NormalTok{      history }\OtherTok{\textless{}{-}} \FunctionTok{rbind}\NormalTok{(history, }\FunctionTok{data.frame}\NormalTok{(}
+        \AttributeTok{iteration =}\NormalTok{ iter,}
+        \AttributeTok{temperature =}\NormalTok{ temp,}
+        \AttributeTok{current\_obj =}\NormalTok{ current\_obj,}
+        \AttributeTok{best\_obj =}\NormalTok{ best\_obj}
+\NormalTok{      ))}
+\NormalTok{    \}}
+\NormalTok{  \}}
+  
+  \FunctionTok{return}\NormalTok{(}\FunctionTok{list}\NormalTok{(}\AttributeTok{solution =}\NormalTok{ best\_solution, }
+              \AttributeTok{objective =} \FunctionTok{calculate\_cost}\NormalTok{(best\_solution),}
+              \AttributeTok{history =}\NormalTok{ history))}
+\NormalTok{\}}
+
+\CommentTok{\# Run Simulated Annealing}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Running Simulated Annealing...}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Running Simulated Annealing...
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{sa\_start\_time }\OtherTok{\textless{}{-}} \FunctionTok{Sys.time}\NormalTok{()}
+\NormalTok{sa\_result }\OtherTok{\textless{}{-}} \FunctionTok{simulated\_annealing}\NormalTok{(}\AttributeTok{initial\_temp =} \DecValTok{1000}\NormalTok{, }\AttributeTok{cooling\_rate =} \FloatTok{0.995}\NormalTok{, }
+                                  \AttributeTok{max\_iterations =} \DecValTok{2000}\NormalTok{, }\AttributeTok{min\_temp =} \FloatTok{0.01}\NormalTok{)}
+\NormalTok{sa\_end\_time }\OtherTok{\textless{}{-}} \FunctionTok{Sys.time}\NormalTok{()}
+\NormalTok{sa\_solve\_time }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(sa\_end\_time }\SpecialCharTok{{-}}\NormalTok{ sa\_start\_time, }\AttributeTok{units =} \StringTok{"secs"}\NormalTok{)}
+
+\CommentTok{\# Extract results}
+\NormalTok{sa\_x\_matrix }\OtherTok{\textless{}{-}}\NormalTok{ sa\_result}\SpecialCharTok{$}\NormalTok{solution}
+\FunctionTok{rownames}\NormalTok{(sa\_x\_matrix) }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Material\_ID}
+\FunctionTok{colnames}\NormalTok{(sa\_x\_matrix) }\OtherTok{\textless{}{-}}\NormalTok{ blends}\SpecialCharTok{$}\NormalTok{Blend\_ID}
+\NormalTok{sa\_objective }\OtherTok{\textless{}{-}}\NormalTok{ sa\_result}\SpecialCharTok{$}\NormalTok{objective}
+
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{=== SA Solution Results ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## === SA Solution Results ===
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Best Total Cost: £\%.2f}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, sa\_objective))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Best Total Cost: £3616.63
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Solve Time: \%.4f seconds}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, sa\_solve\_time))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Solve Time: 0.2230 seconds
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Improvement over LP: \%.2f\%\%}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, }
+\NormalTok{            (lp\_objective }\SpecialCharTok{{-}}\NormalTok{ sa\_objective) }\SpecialCharTok{/}\NormalTok{ lp\_objective }\SpecialCharTok{*} \DecValTok{100}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Improvement over LP: -Inf%
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{=== SA Recipe Matrix (x\_ij in Kgs) ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## === SA Recipe Matrix (x_ij in Kgs) ===
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{print}\NormalTok{(}\FunctionTok{kable}\NormalTok{(sa\_x\_matrix, }\AttributeTok{format =} \StringTok{"html"}\NormalTok{, }
+            \AttributeTok{caption =} \StringTok{"SA Solution: Amount of Each Material in Each Blend"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+      \FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{bootstrap\_options =} \FunctionTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{, }\StringTok{"hover"}\NormalTok{, }\StringTok{"condensed"}\NormalTok{)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## <table class="table table-striped table-hover table-condensed" style="color: black; margin-left: auto; margin-right: auto;">
+## <caption>SA Solution: Amount of Each Material in Each Blend</caption>
+##  <thead>
+##   <tr>
+##    <th style="text-align:left;">   </th>
+##    <th style="text-align:right;"> Blend1 </th>
+##    <th style="text-align:right;"> Blend2 </th>
+##    <th style="text-align:right;"> Blend3 </th>
+##    <th style="text-align:right;"> Blend4 </th>
+##   </tr>
+##  </thead>
+## <tbody>
+##   <tr>
+##    <td style="text-align:left;"> RM1 </td>
+##    <td style="text-align:right;"> 41.39922 </td>
+##    <td style="text-align:right;"> 109.51260 </td>
+##    <td style="text-align:right;"> 113.275009 </td>
+##    <td style="text-align:right;"> 47.714455 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM2 </td>
+##    <td style="text-align:right;"> 14.73158 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 6.137934 </td>
+##    <td style="text-align:right;"> 4.843545 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM3 </td>
+##    <td style="text-align:right;"> 48.78794 </td>
+##    <td style="text-align:right;"> 19.54200 </td>
+##    <td style="text-align:right;"> 9.721529 </td>
+##    <td style="text-align:right;"> 28.389697 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM4 </td>
+##    <td style="text-align:right;"> 31.11088 </td>
+##    <td style="text-align:right;"> 11.80846 </td>
+##    <td style="text-align:right;"> 18.989946 </td>
+##    <td style="text-align:right;"> 7.271336 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM5 </td>
+##    <td style="text-align:right;"> 19.42933 </td>
+##    <td style="text-align:right;"> 11.58746 </td>
+##    <td style="text-align:right;"> 9.024618 </td>
+##    <td style="text-align:right;"> 65.357024 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM6 </td>
+##    <td style="text-align:right;"> 66.77769 </td>
+##    <td style="text-align:right;"> 32.54948 </td>
+##    <td style="text-align:right;"> 1.893600 </td>
+##    <td style="text-align:right;"> 24.243874 </td>
+##   </tr>
+## </tbody>
+## </table>
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Calculate quality deviations for SA solution}
+\NormalTok{sa\_quality\_deviations }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\DecValTok{0}\NormalTok{, }\AttributeTok{nrow =}\NormalTok{ n\_blends, }\AttributeTok{ncol =}\NormalTok{ n\_characteristics)}
+\ControlFlowTok{for}\NormalTok{ (j }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends) \{}
+\NormalTok{  total\_blend }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(sa\_x\_matrix[, j])}
+  \ControlFlowTok{if}\NormalTok{ (total\_blend }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{) \{}
+    \ControlFlowTok{for}\NormalTok{ (k }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_characteristics) \{}
+\NormalTok{      actual\_score }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(g[, k] }\SpecialCharTok{*}\NormalTok{ sa\_x\_matrix[, j]) }\SpecialCharTok{/}\NormalTok{ total\_blend}
+\NormalTok{      sa\_quality\_deviations[j, k] }\OtherTok{\textless{}{-}} \FunctionTok{abs}\NormalTok{(actual\_score }\SpecialCharTok{{-}}\NormalTok{ s[j, k])}
+\NormalTok{    \}}
+\NormalTok{  \}}
+\NormalTok{\}}
+\FunctionTok{rownames}\NormalTok{(sa\_quality\_deviations) }\OtherTok{\textless{}{-}}\NormalTok{ blends}\SpecialCharTok{$}\NormalTok{Blend\_ID}
+\FunctionTok{colnames}\NormalTok{(sa\_quality\_deviations) }\OtherTok{\textless{}{-}}\NormalTok{ char\_names}
+
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{=== Quality Deviations from Targets ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## === Quality Deviations from Targets ===
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{print}\NormalTok{(}\FunctionTok{kable}\NormalTok{(sa\_quality\_deviations, }\AttributeTok{format =} \StringTok{"html"}\NormalTok{, }
+            \AttributeTok{caption =} \StringTok{"Absolute deviations from target quality scores"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+      \FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{bootstrap\_options =} \FunctionTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{, }\StringTok{"hover"}\NormalTok{, }\StringTok{"condensed"}\NormalTok{)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## <table class="table table-striped table-hover table-condensed" style="color: black; margin-left: auto; margin-right: auto;">
+## <caption>Absolute deviations from target quality scores</caption>
+##  <thead>
+##   <tr>
+##    <th style="text-align:left;">   </th>
+##    <th style="text-align:right;"> Brightness </th>
+##    <th style="text-align:right;"> Colour </th>
+##    <th style="text-align:right;"> Thickness </th>
+##   </tr>
+##  </thead>
+## <tbody>
+##   <tr>
+##    <td style="text-align:left;"> Blend1 </td>
+##    <td style="text-align:right;"> 1.0031940 </td>
+##    <td style="text-align:right;"> 3.353808 </td>
+##    <td style="text-align:right;"> 0.0994136 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> Blend2 </td>
+##    <td style="text-align:right;"> 0.0414946 </td>
+##    <td style="text-align:right;"> 1.766162 </td>
+##    <td style="text-align:right;"> 0.9067465 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> Blend3 </td>
+##    <td style="text-align:right;"> 0.0927135 </td>
+##    <td style="text-align:right;"> 1.390676 </td>
+##    <td style="text-align:right;"> 2.7899447 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> Blend4 </td>
+##    <td style="text-align:right;"> 0.0408783 </td>
+##    <td style="text-align:right;"> 1.826850 </td>
+##    <td style="text-align:right;"> 1.2035930 </td>
+##   </tr>
+## </tbody>
+## </table>
+\end{verbatim}
+
+\subsection{4.2 Visualisation}\label{visualisation-1}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Convergence plot}
+\NormalTok{p3 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(sa\_result}\SpecialCharTok{$}\NormalTok{history, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ iteration)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{y =}\NormalTok{ current\_obj, }\AttributeTok{color =} \StringTok{"Current"}\NormalTok{), }\AttributeTok{alpha =} \FloatTok{0.5}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{y =}\NormalTok{ best\_obj, }\AttributeTok{color =} \StringTok{"Best"}\NormalTok{), }\AttributeTok{size =} \DecValTok{1}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \StringTok{"Simulated Annealing: Convergence Plot"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Iteration"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Objective Value (Cost + Penalties)"}\NormalTok{, }
+       \AttributeTok{color =} \StringTok{"Solution"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_minimal}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"right"}\NormalTok{)}
+
+\FunctionTok{print}\NormalTok{(p3)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{tea_blending_optimization_files/figure-latex/sa-visualisation-1} \end{center}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Temperature decay}
+\NormalTok{p4 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(sa\_result}\SpecialCharTok{$}\NormalTok{history, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ iteration, }\AttributeTok{y =}\NormalTok{ temperature)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{(}\AttributeTok{color =} \StringTok{"red"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{scale\_y\_log10}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \StringTok{"Simulated Annealing: Temperature Schedule"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Iteration"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Temperature (log scale)"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_minimal}\NormalTok{()}
+
+\FunctionTok{print}\NormalTok{(p4)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{tea_blending_optimization_files/figure-latex/sa-visualisation-2} \end{center}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Compare LP and SA solutions}
+\NormalTok{comparison\_data }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{Approach =} \FunctionTok{c}\NormalTok{(}\StringTok{"Linear Programming"}\NormalTok{, }\StringTok{"Simulated Annealing"}\NormalTok{),}
+  \AttributeTok{Cost =} \FunctionTok{c}\NormalTok{(lp\_objective, sa\_objective),}
+  \AttributeTok{Time =} \FunctionTok{c}\NormalTok{(lp\_solve\_time, sa\_solve\_time)}
+\NormalTok{)}
+
+\NormalTok{p5 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(comparison\_data, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ Approach, }\AttributeTok{y =}\NormalTok{ Cost, }\AttributeTok{fill =}\NormalTok{ Approach)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_bar}\NormalTok{(}\AttributeTok{stat =} \StringTok{"identity"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \StringTok{"Cost Comparison: LP vs SA"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Approach"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Total Cost (£)"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_minimal}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"none"}\NormalTok{)}
+
+\FunctionTok{print}\NormalTok{(p5)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{tea_blending_optimization_files/figure-latex/sa-visualisation-3} \end{center}
+
+\section{5 Approach 3: Multi-objective Optimisation using Chebyshev Goal
+Programming}\label{approach-3-multi-objective-optimisation-using-chebyshev-goal-programming}
+
+Chebyshev Goal Programming minimises the worst-case deviation from
+multiple goals, providing a balanced solution that trades off cost for
+quality control.
+
+\subsection{5.1 Model Formulation}\label{model-formulation-1}
+
+\textbf{Objective Function}: Minimise worst-case deviation
+\[\min \max\{w_0 \cdot d_0, w_{jk} \cdot d_{jk}\}\]
+
+Where: - \(d_0\): Deviation from cost goal - \(d_{jk}\): Deviation from
+quality goal for blend \(j\), characteristic \(k\)
+
+\textbf{Constraints}: - All LP constraints - Goal constraints for cost
+and quality
+
+\subsection{5.2 Implementation}\label{implementation-2}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Chebyshev Goal Programming implementation}
+\CommentTok{\# Reformulate as LP: minimise z subject to z \textgreater{}= w\_i * d\_i for all goals}
+
+\CommentTok{\# Set goal targets}
+\NormalTok{cost\_target }\OtherTok{\textless{}{-}}\NormalTok{ lp\_objective }\SpecialCharTok{*} \FloatTok{1.1}  \CommentTok{\# Allow 10\% above LP optimal}
+\NormalTok{quality\_target }\OtherTok{\textless{}{-}} \DecValTok{0}  \CommentTok{\# Target zero deviation}
+
+\CommentTok{\# Set weights}
+\NormalTok{w\_cost }\OtherTok{\textless{}{-}} \FloatTok{1.0}
+\NormalTok{w\_quality }\OtherTok{\textless{}{-}} \FloatTok{2.0}  \CommentTok{\# Higher weight on quality}
+
+\CommentTok{\# Create Chebyshev GP model}
+\NormalTok{chebyshev\_model }\OtherTok{\textless{}{-}} \FunctionTok{MIPModel}\NormalTok{() }\SpecialCharTok{\%\textgreater{}\%}
+  \CommentTok{\# Decision variables}
+  \FunctionTok{add\_variable}\NormalTok{(x[i, j], }\AttributeTok{i =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials, }\AttributeTok{j =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends, }\AttributeTok{type =} \StringTok{"continuous"}\NormalTok{, }\AttributeTok{lb =} \DecValTok{0}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{add\_variable}\NormalTok{(z, }\AttributeTok{type =} \StringTok{"continuous"}\NormalTok{, }\AttributeTok{lb =} \DecValTok{0}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}  \CommentTok{\# Worst{-}case deviation}
+  \FunctionTok{add\_variable}\NormalTok{(d\_cost\_plus, }\AttributeTok{type =} \StringTok{"continuous"}\NormalTok{, }\AttributeTok{lb =} \DecValTok{0}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}  \CommentTok{\# Positive cost deviation}
+  \FunctionTok{add\_variable}\NormalTok{(d\_cost\_minus, }\AttributeTok{type =} \StringTok{"continuous"}\NormalTok{, }\AttributeTok{lb =} \DecValTok{0}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}  \CommentTok{\# Negative cost deviation}
+  \FunctionTok{add\_variable}\NormalTok{(d\_quality[j, k], }\AttributeTok{j =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends, }\AttributeTok{k =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_characteristics, }
+               \AttributeTok{type =} \StringTok{"continuous"}\NormalTok{, }\AttributeTok{lb =} \DecValTok{0}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}  \CommentTok{\# Quality deviations}
+  
+  \CommentTok{\# Objective: minimise worst{-}case deviation}
+  \FunctionTok{set\_objective}\NormalTok{(z, }\AttributeTok{sense =} \StringTok{"min"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+  
+  \CommentTok{\# Constraint: z \textgreater{}= weighted cost deviation}
+  \FunctionTok{add\_constraint}\NormalTok{(z }\SpecialCharTok{\textgreater{}=}\NormalTok{ w\_cost }\SpecialCharTok{*}\NormalTok{ d\_cost\_plus) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{add\_constraint}\NormalTok{(z }\SpecialCharTok{\textgreater{}=}\NormalTok{ w\_cost }\SpecialCharTok{*}\NormalTok{ d\_cost\_minus) }\SpecialCharTok{\%\textgreater{}\%}
+  
+  \CommentTok{\# Constraint: z \textgreater{}= weighted quality deviations}
+  \FunctionTok{add\_constraint}\NormalTok{(z }\SpecialCharTok{\textgreater{}=}\NormalTok{ w\_quality }\SpecialCharTok{*}\NormalTok{ d\_quality[j, k], }
+                 \AttributeTok{j =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends, }\AttributeTok{k =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_characteristics) }\SpecialCharTok{\%\textgreater{}\%}
+  
+  \CommentTok{\# Cost goal constraint}
+  \FunctionTok{add\_constraint}\NormalTok{(}\FunctionTok{sum\_expr}\NormalTok{(P[i] }\SpecialCharTok{*}\NormalTok{ x[i, j], }\AttributeTok{i =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials, }\AttributeTok{j =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends) }\SpecialCharTok{{-}} 
+\NormalTok{                 d\_cost\_plus }\SpecialCharTok{+}\NormalTok{ d\_cost\_minus }\SpecialCharTok{==}\NormalTok{ cost\_target) }\SpecialCharTok{\%\textgreater{}\%}
+  
+  \CommentTok{\# Quality goal constraints (for each blend and characteristic)}
+  \CommentTok{\# Actual quality {-} target quality {-} deviation = 0}
+  \CommentTok{\# We need to linearise: sum(g\_ik * x\_ij) / sum(x\_ij) = s\_jk}
+  \CommentTok{\# This becomes: sum((g\_ik {-} s\_jk) * x\_ij) = 0}
+  \CommentTok{\# With deviation: sum((g\_ik {-} s\_jk) * x\_ij) {-} d\_quality[j,k] \textless{}= 0}
+  \CommentTok{\#                 sum((g\_ik {-} s\_jk) * x\_ij) + d\_quality[j,k] \textgreater{}= 0}
+  \FunctionTok{add\_constraint}\NormalTok{(}\FunctionTok{sum\_expr}\NormalTok{((g[i, k] }\SpecialCharTok{{-}}\NormalTok{ s[j, k]) }\SpecialCharTok{*}\NormalTok{ x[i, j], }\AttributeTok{i =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials) }\SpecialCharTok{{-}} 
+\NormalTok{                 d\_quality[j, k] }\SpecialCharTok{\textless{}=} \DecValTok{0}\NormalTok{, }
+                 \AttributeTok{j =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends, }\AttributeTok{k =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_characteristics) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{add\_constraint}\NormalTok{(}\FunctionTok{sum\_expr}\NormalTok{((g[i, k] }\SpecialCharTok{{-}}\NormalTok{ s[j, k]) }\SpecialCharTok{*}\NormalTok{ x[i, j], }\AttributeTok{i =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials) }\SpecialCharTok{+} 
+\NormalTok{                 d\_quality[j, k] }\SpecialCharTok{\textgreater{}=} \DecValTok{0}\NormalTok{, }
+                 \AttributeTok{j =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends, }\AttributeTok{k =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_characteristics) }\SpecialCharTok{\%\textgreater{}\%}
+  
+  \CommentTok{\# Standard constraints}
+  \FunctionTok{add\_constraint}\NormalTok{(}\FunctionTok{sum\_expr}\NormalTok{(x[i, j], }\AttributeTok{j =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends) }\SpecialCharTok{\textless{}=}\NormalTok{ a[i], }\AttributeTok{i =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{add\_constraint}\NormalTok{(}\FunctionTok{sum\_expr}\NormalTok{(x[i, j], }\AttributeTok{i =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials) }\SpecialCharTok{\textgreater{}=}\NormalTok{ D[j], }\AttributeTok{j =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends)}
+
+\CommentTok{\# Solve the model}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Solving Chebyshev Goal Programming model...}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Solving Chebyshev Goal Programming model...
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{chebyshev\_start\_time }\OtherTok{\textless{}{-}} \FunctionTok{Sys.time}\NormalTok{()}
+\NormalTok{chebyshev\_result }\OtherTok{\textless{}{-}} \FunctionTok{solve\_model}\NormalTok{(chebyshev\_model, }\FunctionTok{with\_ROI}\NormalTok{(}\AttributeTok{solver =} \StringTok{"glpk"}\NormalTok{, }\AttributeTok{verbose =} \ConstantTok{FALSE}\NormalTok{))}
+\NormalTok{chebyshev\_end\_time }\OtherTok{\textless{}{-}} \FunctionTok{Sys.time}\NormalTok{()}
+\NormalTok{chebyshev\_solve\_time }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(chebyshev\_end\_time }\SpecialCharTok{{-}}\NormalTok{ chebyshev\_start\_time, }\AttributeTok{units =} \StringTok{"secs"}\NormalTok{)}
+
+\CommentTok{\# Extract results}
+\NormalTok{chebyshev\_objective }\OtherTok{\textless{}{-}} \FunctionTok{objective\_value}\NormalTok{(chebyshev\_result)}
+\NormalTok{chebyshev\_solution }\OtherTok{\textless{}{-}} \FunctionTok{get\_solution}\NormalTok{(chebyshev\_result, x[i, j])}
+
+\CommentTok{\# Create solution matrix}
+\NormalTok{chebyshev\_x\_matrix }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\DecValTok{0}\NormalTok{, }\AttributeTok{nrow =}\NormalTok{ n\_materials, }\AttributeTok{ncol =}\NormalTok{ n\_blends)}
+\ControlFlowTok{for}\NormalTok{ (idx }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\FunctionTok{nrow}\NormalTok{(chebyshev\_solution)) \{}
+\NormalTok{  i\_val }\OtherTok{\textless{}{-}}\NormalTok{ chebyshev\_solution}\SpecialCharTok{$}\NormalTok{i[idx]}
+\NormalTok{  j\_val }\OtherTok{\textless{}{-}}\NormalTok{ chebyshev\_solution}\SpecialCharTok{$}\NormalTok{j[idx]}
+\NormalTok{  chebyshev\_x\_matrix[i\_val, j\_val] }\OtherTok{\textless{}{-}}\NormalTok{ chebyshev\_solution}\SpecialCharTok{$}\NormalTok{value[idx]}
+\NormalTok{\}}
+\FunctionTok{rownames}\NormalTok{(chebyshev\_x\_matrix) }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Material\_ID}
+\FunctionTok{colnames}\NormalTok{(chebyshev\_x\_matrix) }\OtherTok{\textless{}{-}}\NormalTok{ blends}\SpecialCharTok{$}\NormalTok{Blend\_ID}
+
+\CommentTok{\# Calculate actual cost}
+\NormalTok{chebyshev\_cost }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(P }\SpecialCharTok{*} \FunctionTok{rowSums}\NormalTok{(chebyshev\_x\_matrix))}
+
+\CommentTok{\# Extract quality deviations}
+\NormalTok{chebyshev\_quality\_solution }\OtherTok{\textless{}{-}} \FunctionTok{get\_solution}\NormalTok{(chebyshev\_result, d\_quality[j, k])}
+\NormalTok{chebyshev\_quality\_deviations }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\DecValTok{0}\NormalTok{, }\AttributeTok{nrow =}\NormalTok{ n\_blends, }\AttributeTok{ncol =}\NormalTok{ n\_characteristics)}
+\ControlFlowTok{for}\NormalTok{ (idx }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\FunctionTok{nrow}\NormalTok{(chebyshev\_quality\_solution)) \{}
+\NormalTok{  j\_val }\OtherTok{\textless{}{-}}\NormalTok{ chebyshev\_quality\_solution}\SpecialCharTok{$}\NormalTok{j[idx]}
+\NormalTok{  k\_val }\OtherTok{\textless{}{-}}\NormalTok{ chebyshev\_quality\_solution}\SpecialCharTok{$}\NormalTok{k[idx]}
+\NormalTok{  chebyshev\_quality\_deviations[j\_val, k\_val] }\OtherTok{\textless{}{-}}\NormalTok{ chebyshev\_quality\_solution}\SpecialCharTok{$}\NormalTok{value[idx]}
+\NormalTok{\}}
+\FunctionTok{rownames}\NormalTok{(chebyshev\_quality\_deviations) }\OtherTok{\textless{}{-}}\NormalTok{ blends}\SpecialCharTok{$}\NormalTok{Blend\_ID}
+\FunctionTok{colnames}\NormalTok{(chebyshev\_quality\_deviations) }\OtherTok{\textless{}{-}}\NormalTok{ char\_names}
+
+\CommentTok{\# Display results}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{=== Chebyshev GP Solution Results ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## === Chebyshev GP Solution Results ===
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Worst{-}case Deviation (z): \%.4f}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, chebyshev\_objective))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Worst-case Deviation (z): 2564.1300
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Total Cost: £\%.2f}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, chebyshev\_cost))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Total Cost: £2564.13
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Cost Deviation from Target: £\%.2f}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, }\FunctionTok{abs}\NormalTok{(chebyshev\_cost }\SpecialCharTok{{-}}\NormalTok{ cost\_target)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Cost Deviation from Target: £2564.13
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Solve Time: \%.4f seconds}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, chebyshev\_solve\_time))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Solve Time: 0.0088 seconds
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{=== Chebyshev GP Recipe Matrix (x\_ij in Kgs) ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## === Chebyshev GP Recipe Matrix (x_ij in Kgs) ===
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{print}\NormalTok{(}\FunctionTok{kable}\NormalTok{(chebyshev\_x\_matrix, }\AttributeTok{format =} \StringTok{"html"}\NormalTok{, }
+            \AttributeTok{caption =} \StringTok{"Chebyshev GP Solution: Amount of Each Material in Each Blend"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+      \FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{bootstrap\_options =} \FunctionTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{, }\StringTok{"hover"}\NormalTok{, }\StringTok{"condensed"}\NormalTok{)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## <table class="table table-striped table-hover table-condensed" style="color: black; margin-left: auto; margin-right: auto;">
+## <caption>Chebyshev GP Solution: Amount of Each Material in Each Blend</caption>
+##  <thead>
+##   <tr>
+##    <th style="text-align:left;">   </th>
+##    <th style="text-align:right;"> Blend1 </th>
+##    <th style="text-align:right;"> Blend2 </th>
+##    <th style="text-align:right;"> Blend3 </th>
+##    <th style="text-align:right;"> Blend4 </th>
+##   </tr>
+##  </thead>
+## <tbody>
+##   <tr>
+##    <td style="text-align:left;"> RM1 </td>
+##    <td style="text-align:right;"> 59.01399 </td>
+##    <td style="text-align:right;"> 26.55944 </td>
+##    <td style="text-align:right;"> 145.653846 </td>
+##    <td style="text-align:right;"> 79.77273 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM2 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 0.000000 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM3 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 110.00000 </td>
+##    <td style="text-align:right;"> 0.000000 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM4 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 0.000000 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM5 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 0.000000 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM6 </td>
+##    <td style="text-align:right;"> 134.98601 </td>
+##    <td style="text-align:right;"> 48.44056 </td>
+##    <td style="text-align:right;"> 8.346154 </td>
+##    <td style="text-align:right;"> 89.22727 </td>
+##   </tr>
+## </tbody>
+## </table>
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{=== Quality Deviations from Targets ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## === Quality Deviations from Targets ===
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{print}\NormalTok{(}\FunctionTok{kable}\NormalTok{(chebyshev\_quality\_deviations, }\AttributeTok{format =} \StringTok{"html"}\NormalTok{, }
+            \AttributeTok{caption =} \StringTok{"Quality deviations (minimised in worst{-}case sense)"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+      \FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{bootstrap\_options =} \FunctionTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{, }\StringTok{"hover"}\NormalTok{, }\StringTok{"condensed"}\NormalTok{)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## <table class="table table-striped table-hover table-condensed" style="color: black; margin-left: auto; margin-right: auto;">
+## <caption>Quality deviations (minimised in worst-case sense)</caption>
+##  <thead>
+##   <tr>
+##    <th style="text-align:left;">   </th>
+##    <th style="text-align:right;"> Brightness </th>
+##    <th style="text-align:right;"> Colour </th>
+##    <th style="text-align:right;"> Thickness </th>
+##   </tr>
+##  </thead>
+## <tbody>
+##   <tr>
+##    <td style="text-align:left;"> Blend1 </td>
+##    <td style="text-align:right;"> 0.00 </td>
+##    <td style="text-align:right;"> 685.75608 </td>
+##    <td style="text-align:right;"> 263.21594 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> Blend2 </td>
+##    <td style="text-align:right;"> 529.43 </td>
+##    <td style="text-align:right;"> 808.39336 </td>
+##    <td style="text-align:right;"> 49.24224 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> Blend3 </td>
+##    <td style="text-align:right;"> 0.00 </td>
+##    <td style="text-align:right;"> 87.03692 </td>
+##    <td style="text-align:right;"> 445.33462 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> Blend4 </td>
+##    <td style="text-align:right;"> 0.00 </td>
+##    <td style="text-align:right;"> 346.08364 </td>
+##    <td style="text-align:right;"> 133.82909 </td>
+##   </tr>
+## </tbody>
+## </table>
+\end{verbatim}
+
+\subsection{5.3 Visualisation}\label{visualisation-2}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Trade{-}off analysis}
+\NormalTok{tradeoff\_data }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{Approach =} \FunctionTok{c}\NormalTok{(}\StringTok{"LP (Cost Min)"}\NormalTok{, }\StringTok{"Chebyshev GP"}\NormalTok{),}
+  \AttributeTok{Cost =} \FunctionTok{c}\NormalTok{(lp\_objective, chebyshev\_cost),}
+  \AttributeTok{Avg\_Quality\_Dev =} \FunctionTok{c}\NormalTok{(}\FunctionTok{mean}\NormalTok{(lp\_quality\_deviations), }\FunctionTok{mean}\NormalTok{(chebyshev\_quality\_deviations)),}
+  \AttributeTok{Max\_Quality\_Dev =} \FunctionTok{c}\NormalTok{(}\FunctionTok{max}\NormalTok{(lp\_quality\_deviations), }\FunctionTok{max}\NormalTok{(chebyshev\_quality\_deviations))}
+\NormalTok{)}
+
+\NormalTok{p6 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(tradeoff\_data, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ Cost, }\AttributeTok{y =}\NormalTok{ Avg\_Quality\_Dev, }\AttributeTok{color =}\NormalTok{ Approach, }\AttributeTok{size =}\NormalTok{ Max\_Quality\_Dev)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_point}\NormalTok{(}\AttributeTok{alpha =} \FloatTok{0.7}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \StringTok{"Trade{-}off Analysis: Cost vs Quality"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Total Cost (£)"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Average Quality Deviation"}\NormalTok{,}
+       \AttributeTok{size =} \StringTok{"Max Quality}\SpecialCharTok{\textbackslash{}n}\StringTok{Deviation"}\NormalTok{, }\AttributeTok{color =} \StringTok{"Approach"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_minimal}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"right"}\NormalTok{)}
+
+\FunctionTok{print}\NormalTok{(p6)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{tea_blending_optimization_files/figure-latex/chebyshev-visualisation-1} \end{center}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Goal achievement visualisation}
+\NormalTok{goal\_data }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{Goal =} \FunctionTok{c}\NormalTok{(}\StringTok{"Cost"}\NormalTok{, }\FunctionTok{rep}\NormalTok{(}\StringTok{"Quality"}\NormalTok{, n\_blends }\SpecialCharTok{*}\NormalTok{ n\_characteristics)),}
+  \AttributeTok{Target =} \FunctionTok{c}\NormalTok{(cost\_target, }\FunctionTok{as.vector}\NormalTok{(s)),}
+  \AttributeTok{Actual =} \FunctionTok{c}\NormalTok{(chebyshev\_cost, }
+             \FunctionTok{as.vector}\NormalTok{(}\FunctionTok{sapply}\NormalTok{(}\DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends, }\ControlFlowTok{function}\NormalTok{(j) \{}
+\NormalTok{               total }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(chebyshev\_x\_matrix[, j])}
+               \ControlFlowTok{if}\NormalTok{ (total }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{) \{}
+                 \FunctionTok{sapply}\NormalTok{(}\DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_characteristics, }\ControlFlowTok{function}\NormalTok{(k) \{}
+                   \FunctionTok{sum}\NormalTok{(g[, k] }\SpecialCharTok{*}\NormalTok{ chebyshev\_x\_matrix[, j]) }\SpecialCharTok{/}\NormalTok{ total}
+\NormalTok{                 \})}
+\NormalTok{               \} }\ControlFlowTok{else}\NormalTok{ \{}
+                 \FunctionTok{rep}\NormalTok{(}\DecValTok{0}\NormalTok{, n\_characteristics)}
+\NormalTok{               \}}
+\NormalTok{             \}))),}
+  \AttributeTok{Deviation =} \FunctionTok{c}\NormalTok{(}\FunctionTok{abs}\NormalTok{(chebyshev\_cost }\SpecialCharTok{{-}}\NormalTok{ cost\_target), }\FunctionTok{as.vector}\NormalTok{(chebyshev\_quality\_deviations))}
+\NormalTok{)}
+
+\NormalTok{p7 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(goal\_data[}\DecValTok{1}\SpecialCharTok{:}\DecValTok{10}\NormalTok{, ], }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ Goal, }\AttributeTok{y =}\NormalTok{ Deviation)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_bar}\NormalTok{(}\AttributeTok{stat =} \StringTok{"identity"}\NormalTok{, }\AttributeTok{fill =} \StringTok{"steelblue"}\NormalTok{, }\AttributeTok{alpha =} \FloatTok{0.7}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \StringTok{"Chebyshev GP: Goal Achievement (Sample)"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Goal"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Deviation"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_minimal}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{axis.text.x =} \FunctionTok{element\_text}\NormalTok{(}\AttributeTok{angle =} \DecValTok{45}\NormalTok{, }\AttributeTok{hjust =} \DecValTok{1}\NormalTok{))}
+
+\FunctionTok{print}\NormalTok{(p7)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{tea_blending_optimization_files/figure-latex/chebyshev-visualisation-2} \end{center}
+
+\section{6 Approach 4: Genetic Algorithms
+(Optional)}\label{approach-4-genetic-algorithms-optional}
+
+Genetic Algorithms use evolutionary principles to evolve a population of
+solutions toward better fitness.
+
+\subsection{6.1 Implementation}\label{implementation-3}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Genetic Algorithm implementation}
+\CommentTok{\# Chromosome: flattened x\_ij matrix (n\_materials * n\_blends elements)}
+
+\CommentTok{\# Fitness function: weighted sum of cost and quality deviations}
+\NormalTok{fitness\_function }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(chromosome) \{}
+  \CommentTok{\# Reshape chromosome to matrix}
+\NormalTok{  x\_matrix }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(chromosome, }\AttributeTok{nrow =}\NormalTok{ n\_materials, }\AttributeTok{ncol =}\NormalTok{ n\_blends)}
+  
+  \CommentTok{\# Ensure non{-}negativity}
+\NormalTok{  x\_matrix[x\_matrix }\SpecialCharTok{\textless{}} \DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}} \DecValTok{0}
+  
+  \CommentTok{\# Check and repair constraints}
+  \CommentTok{\# Availability constraints}
+  \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials) \{}
+\NormalTok{    total\_used }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(x\_matrix[i, ])}
+    \ControlFlowTok{if}\NormalTok{ (total\_used }\SpecialCharTok{\textgreater{}}\NormalTok{ a[i]) \{}
+\NormalTok{      x\_matrix[i, ] }\OtherTok{\textless{}{-}}\NormalTok{ x\_matrix[i, ] }\SpecialCharTok{*}\NormalTok{ (a[i] }\SpecialCharTok{/}\NormalTok{ total\_used)}
+\NormalTok{    \}}
+\NormalTok{  \}}
+  
+  \CommentTok{\# Demand constraints}
+  \ControlFlowTok{for}\NormalTok{ (j }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends) \{}
+\NormalTok{    total\_produced }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(x\_matrix[, j])}
+    \ControlFlowTok{if}\NormalTok{ (total\_produced }\SpecialCharTok{\textless{}}\NormalTok{ D[j]) \{}
+      \ControlFlowTok{if}\NormalTok{ (total\_produced }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{) \{}
+\NormalTok{        x\_matrix[, j] }\OtherTok{\textless{}{-}}\NormalTok{ x\_matrix[, j] }\SpecialCharTok{*}\NormalTok{ (D[j] }\SpecialCharTok{/}\NormalTok{ total\_produced)}
+\NormalTok{      \} }\ControlFlowTok{else}\NormalTok{ \{}
+\NormalTok{        x\_matrix[, j] }\OtherTok{\textless{}{-}}\NormalTok{ D[j] }\SpecialCharTok{/}\NormalTok{ n\_materials}
+\NormalTok{      \}}
+\NormalTok{    \}}
+\NormalTok{  \}}
+  
+  \CommentTok{\# Calculate cost}
+\NormalTok{  cost }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(P }\SpecialCharTok{*} \FunctionTok{rowSums}\NormalTok{(x\_matrix))}
+  
+  \CommentTok{\# Calculate quality deviations}
+\NormalTok{  quality\_penalty }\OtherTok{\textless{}{-}} \DecValTok{0}
+  \ControlFlowTok{for}\NormalTok{ (j }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends) \{}
+\NormalTok{    total\_blend }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(x\_matrix[, j])}
+    \ControlFlowTok{if}\NormalTok{ (total\_blend }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{) \{}
+      \ControlFlowTok{for}\NormalTok{ (k }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_characteristics) \{}
+\NormalTok{        actual\_score }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(g[, k] }\SpecialCharTok{*}\NormalTok{ x\_matrix[, j]) }\SpecialCharTok{/}\NormalTok{ total\_blend}
+\NormalTok{        deviation }\OtherTok{\textless{}{-}} \FunctionTok{abs}\NormalTok{(actual\_score }\SpecialCharTok{{-}}\NormalTok{ s[j, k])}
+\NormalTok{        quality\_penalty }\OtherTok{\textless{}{-}}\NormalTok{ quality\_penalty }\SpecialCharTok{+} \DecValTok{10} \SpecialCharTok{*}\NormalTok{ deviation  }\CommentTok{\# Weight quality deviations}
+\NormalTok{      \}}
+\NormalTok{    \}}
+\NormalTok{  \}}
+  
+  \CommentTok{\# Fitness (to minimise, so return negative or use GA\textquotesingle{}s minimisation)}
+  \FunctionTok{return}\NormalTok{(}\SpecialCharTok{{-}}\NormalTok{(cost }\SpecialCharTok{+}\NormalTok{ quality\_penalty))  }\CommentTok{\# GA maximises, so negate for minimisation}
+\NormalTok{\}}
+
+\CommentTok{\# Define bounds for decision variables}
+\CommentTok{\# Upper bound: min(availability, max\_demand) for each material}
+\NormalTok{upper\_bounds }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\FunctionTok{min}\NormalTok{(}\FunctionTok{max}\NormalTok{(a), }\FunctionTok{max}\NormalTok{(D) }\SpecialCharTok{*} \DecValTok{2}\NormalTok{), n\_materials }\SpecialCharTok{*}\NormalTok{ n\_blends)}
+\NormalTok{lower\_bounds }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\DecValTok{0}\NormalTok{, n\_materials }\SpecialCharTok{*}\NormalTok{ n\_blends)}
+
+\CommentTok{\# Run Genetic Algorithm}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Running Genetic Algorithm...}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Running Genetic Algorithm...
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ga\_start\_time }\OtherTok{\textless{}{-}} \FunctionTok{Sys.time}\NormalTok{()}
+
+\NormalTok{ga\_result }\OtherTok{\textless{}{-}} \FunctionTok{ga}\NormalTok{(}
+  \AttributeTok{type =} \StringTok{"real{-}valued"}\NormalTok{,}
+  \AttributeTok{fitness =}\NormalTok{ fitness\_function,}
+  \AttributeTok{lower =}\NormalTok{ lower\_bounds,}
+  \AttributeTok{upper =}\NormalTok{ upper\_bounds,}
+  \AttributeTok{popSize =} \DecValTok{50}\NormalTok{,}
+  \AttributeTok{maxiter =} \DecValTok{100}\NormalTok{,}
+  \AttributeTok{pcrossover =} \FloatTok{0.8}\NormalTok{,}
+  \AttributeTok{pmutation =} \FloatTok{0.1}\NormalTok{,}
+  \AttributeTok{elitism =} \DecValTok{5}\NormalTok{,}
+  \AttributeTok{monitor =} \ConstantTok{FALSE}
+\NormalTok{)}
+
+\NormalTok{ga\_end\_time }\OtherTok{\textless{}{-}} \FunctionTok{Sys.time}\NormalTok{()}
+\NormalTok{ga\_solve\_time }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(ga\_end\_time }\SpecialCharTok{{-}}\NormalTok{ ga\_start\_time, }\AttributeTok{units =} \StringTok{"secs"}\NormalTok{)}
+
+\CommentTok{\# Extract best solution}
+\NormalTok{ga\_chromosome }\OtherTok{\textless{}{-}}\NormalTok{ ga\_result}\SpecialCharTok{@}\NormalTok{solution[}\DecValTok{1}\NormalTok{, ]}
+\NormalTok{ga\_x\_matrix }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(ga\_chromosome, }\AttributeTok{nrow =}\NormalTok{ n\_materials, }\AttributeTok{ncol =}\NormalTok{ n\_blends)}
+\NormalTok{ga\_x\_matrix[ga\_x\_matrix }\SpecialCharTok{\textless{}} \DecValTok{0}\NormalTok{] }\OtherTok{\textless{}{-}} \DecValTok{0}
+
+\CommentTok{\# Repair solution}
+\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials) \{}
+\NormalTok{  total\_used }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(ga\_x\_matrix[i, ])}
+  \ControlFlowTok{if}\NormalTok{ (total\_used }\SpecialCharTok{\textgreater{}}\NormalTok{ a[i]) \{}
+\NormalTok{    ga\_x\_matrix[i, ] }\OtherTok{\textless{}{-}}\NormalTok{ ga\_x\_matrix[i, ] }\SpecialCharTok{*}\NormalTok{ (a[i] }\SpecialCharTok{/}\NormalTok{ total\_used)}
+\NormalTok{  \}}
+\NormalTok{\}}
+
+\ControlFlowTok{for}\NormalTok{ (j }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends) \{}
+\NormalTok{  total\_produced }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(ga\_x\_matrix[, j])}
+  \ControlFlowTok{if}\NormalTok{ (total\_produced }\SpecialCharTok{\textless{}}\NormalTok{ D[j]) \{}
+    \ControlFlowTok{if}\NormalTok{ (total\_produced }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{) \{}
+\NormalTok{      ga\_x\_matrix[, j] }\OtherTok{\textless{}{-}}\NormalTok{ ga\_x\_matrix[, j] }\SpecialCharTok{*}\NormalTok{ (D[j] }\SpecialCharTok{/}\NormalTok{ total\_produced)}
+\NormalTok{    \} }\ControlFlowTok{else}\NormalTok{ \{}
+\NormalTok{      ga\_x\_matrix[, j] }\OtherTok{\textless{}{-}}\NormalTok{ D[j] }\SpecialCharTok{/}\NormalTok{ n\_materials}
+\NormalTok{    \}}
+\NormalTok{  \}}
+\NormalTok{\}}
+
+\FunctionTok{rownames}\NormalTok{(ga\_x\_matrix) }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Material\_ID}
+\FunctionTok{colnames}\NormalTok{(ga\_x\_matrix) }\OtherTok{\textless{}{-}}\NormalTok{ blends}\SpecialCharTok{$}\NormalTok{Blend\_ID}
+
+\CommentTok{\# Calculate actual cost and quality}
+\NormalTok{ga\_cost }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(P }\SpecialCharTok{*} \FunctionTok{rowSums}\NormalTok{(ga\_x\_matrix))}
+
+\NormalTok{ga\_quality\_deviations }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\DecValTok{0}\NormalTok{, }\AttributeTok{nrow =}\NormalTok{ n\_blends, }\AttributeTok{ncol =}\NormalTok{ n\_characteristics)}
+\ControlFlowTok{for}\NormalTok{ (j }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends) \{}
+\NormalTok{  total\_blend }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(ga\_x\_matrix[, j])}
+  \ControlFlowTok{if}\NormalTok{ (total\_blend }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{) \{}
+    \ControlFlowTok{for}\NormalTok{ (k }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_characteristics) \{}
+\NormalTok{      actual\_score }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(g[, k] }\SpecialCharTok{*}\NormalTok{ ga\_x\_matrix[, j]) }\SpecialCharTok{/}\NormalTok{ total\_blend}
+\NormalTok{      ga\_quality\_deviations[j, k] }\OtherTok{\textless{}{-}} \FunctionTok{abs}\NormalTok{(actual\_score }\SpecialCharTok{{-}}\NormalTok{ s[j, k])}
+\NormalTok{    \}}
+\NormalTok{  \}}
+\NormalTok{\}}
+\FunctionTok{rownames}\NormalTok{(ga\_quality\_deviations) }\OtherTok{\textless{}{-}}\NormalTok{ blends}\SpecialCharTok{$}\NormalTok{Blend\_ID}
+\FunctionTok{colnames}\NormalTok{(ga\_quality\_deviations) }\OtherTok{\textless{}{-}}\NormalTok{ char\_names}
+
+\CommentTok{\# Display results}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{=== GA Solution Results ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## === GA Solution Results ===
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Best Total Cost: £\%.2f}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, ga\_cost))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Best Total Cost: £9378.72
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Average Quality Deviation: \%.4f}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, }\FunctionTok{mean}\NormalTok{(ga\_quality\_deviations)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Average Quality Deviation: 1.8632
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Solve Time: \%.4f seconds}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, ga\_solve\_time))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Solve Time: 0.2170 seconds
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{=== GA Recipe Matrix (x\_ij in Kgs) ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## === GA Recipe Matrix (x_ij in Kgs) ===
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{print}\NormalTok{(}\FunctionTok{kable}\NormalTok{(ga\_x\_matrix, }\AttributeTok{format =} \StringTok{"html"}\NormalTok{, }
+            \AttributeTok{caption =} \StringTok{"GA Solution: Amount of Each Material in Each Blend"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+      \FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{bootstrap\_options =} \FunctionTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{, }\StringTok{"hover"}\NormalTok{, }\StringTok{"condensed"}\NormalTok{)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## <table class="table table-striped table-hover table-condensed" style="color: black; margin-left: auto; margin-right: auto;">
+## <caption>GA Solution: Amount of Each Material in Each Blend</caption>
+##  <thead>
+##   <tr>
+##    <th style="text-align:left;">   </th>
+##    <th style="text-align:right;"> Blend1 </th>
+##    <th style="text-align:right;"> Blend2 </th>
+##    <th style="text-align:right;"> Blend3 </th>
+##    <th style="text-align:right;"> Blend4 </th>
+##   </tr>
+##  </thead>
+## <tbody>
+##   <tr>
+##    <td style="text-align:left;"> RM1 </td>
+##    <td style="text-align:right;"> 38.08928 </td>
+##    <td style="text-align:right;"> 179.91178 </td>
+##    <td style="text-align:right;"> 21.079162 </td>
+##    <td style="text-align:right;"> 71.919780 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM2 </td>
+##    <td style="text-align:right;"> 158.94827 </td>
+##    <td style="text-align:right;"> 68.31998 </td>
+##    <td style="text-align:right;"> 177.092092 </td>
+##    <td style="text-align:right;"> 40.592203 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM3 </td>
+##    <td style="text-align:right;"> 140.63134 </td>
+##    <td style="text-align:right;"> 64.38941 </td>
+##    <td style="text-align:right;"> 8.811160 </td>
+##    <td style="text-align:right;"> 107.168091 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM4 </td>
+##    <td style="text-align:right;"> 32.88762 </td>
+##    <td style="text-align:right;"> 53.03504 </td>
+##    <td style="text-align:right;"> 125.519129 </td>
+##    <td style="text-align:right;"> 71.558207 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM5 </td>
+##    <td style="text-align:right;"> 47.73284 </td>
+##    <td style="text-align:right;"> 23.25633 </td>
+##    <td style="text-align:right;"> 9.150029 </td>
+##    <td style="text-align:right;"> 9.297724 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM6 </td>
+##    <td style="text-align:right;"> 72.03484 </td>
+##    <td style="text-align:right;"> 69.58570 </td>
+##    <td style="text-align:right;"> 44.139967 </td>
+##    <td style="text-align:right;"> 95.239491 </td>
+##   </tr>
+## </tbody>
+## </table>
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{=== Quality Deviations from Targets ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## === Quality Deviations from Targets ===
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{print}\NormalTok{(}\FunctionTok{kable}\NormalTok{(ga\_quality\_deviations, }\AttributeTok{format =} \StringTok{"html"}\NormalTok{, }
+            \AttributeTok{caption =} \StringTok{"Absolute deviations from target quality scores"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+      \FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{bootstrap\_options =} \FunctionTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{, }\StringTok{"hover"}\NormalTok{, }\StringTok{"condensed"}\NormalTok{)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## <table class="table table-striped table-hover table-condensed" style="color: black; margin-left: auto; margin-right: auto;">
+## <caption>Absolute deviations from target quality scores</caption>
+##  <thead>
+##   <tr>
+##    <th style="text-align:left;">   </th>
+##    <th style="text-align:right;"> Brightness </th>
+##    <th style="text-align:right;"> Colour </th>
+##    <th style="text-align:right;"> Thickness </th>
+##   </tr>
+##  </thead>
+## <tbody>
+##   <tr>
+##    <td style="text-align:left;"> Blend1 </td>
+##    <td style="text-align:right;"> 1.1043319 </td>
+##    <td style="text-align:right;"> 4.015290 </td>
+##    <td style="text-align:right;"> 0.6677847 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> Blend2 </td>
+##    <td style="text-align:right;"> 0.0083042 </td>
+##    <td style="text-align:right;"> 2.774711 </td>
+##    <td style="text-align:right;"> 1.0649831 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> Blend3 </td>
+##    <td style="text-align:right;"> 0.3401624 </td>
+##    <td style="text-align:right;"> 4.768075 </td>
+##    <td style="text-align:right;"> 2.5562686 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> Blend4 </td>
+##    <td style="text-align:right;"> 0.4163945 </td>
+##    <td style="text-align:right;"> 2.933310 </td>
+##    <td style="text-align:right;"> 1.7093507 </td>
+##   </tr>
+## </tbody>
+## </table>
+\end{verbatim}
+
+\subsection{6.2 Visualisation}\label{visualisation-3}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Evolution plot}
+\CommentTok{\# Extract fitness history from GA object}
+\CommentTok{\# The GA package stores summary statistics in @summary slot}
+\NormalTok{ga\_summary\_matrix }\OtherTok{\textless{}{-}}\NormalTok{ ga\_result}\SpecialCharTok{@}\NormalTok{summary}
+
+\CommentTok{\# Initialise variables}
+\NormalTok{ga\_best\_history }\OtherTok{\textless{}{-}} \ConstantTok{NULL}
+\NormalTok{ga\_mean\_history }\OtherTok{\textless{}{-}} \ConstantTok{NULL}
+
+\CommentTok{\# Try to extract from summary matrix}
+\ControlFlowTok{if}\NormalTok{ (}\FunctionTok{is.matrix}\NormalTok{(ga\_summary\_matrix) }\SpecialCharTok{\&\&} \FunctionTok{ncol}\NormalTok{(ga\_summary\_matrix) }\SpecialCharTok{\textgreater{}} \DecValTok{0} \SpecialCharTok{\&\&} \FunctionTok{nrow}\NormalTok{(ga\_summary\_matrix) }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{) \{}
+  \CommentTok{\# Check what columns are available}
+\NormalTok{  available\_cols }\OtherTok{\textless{}{-}} \FunctionTok{colnames}\NormalTok{(ga\_summary\_matrix)}
+  
+  \CommentTok{\# Try to get best fitness (could be "best", "max", or first column)}
+  \ControlFlowTok{if}\NormalTok{ (}\StringTok{"best"} \SpecialCharTok{\%in\%}\NormalTok{ available\_cols) \{}
+\NormalTok{    ga\_best\_history }\OtherTok{\textless{}{-}}\NormalTok{ ga\_summary\_matrix[, }\StringTok{"best"}\NormalTok{]}
+\NormalTok{  \} }\ControlFlowTok{else} \ControlFlowTok{if}\NormalTok{ (}\StringTok{"max"} \SpecialCharTok{\%in\%}\NormalTok{ available\_cols) \{}
+\NormalTok{    ga\_best\_history }\OtherTok{\textless{}{-}}\NormalTok{ ga\_summary\_matrix[, }\StringTok{"max"}\NormalTok{]}
+\NormalTok{  \} }\ControlFlowTok{else} \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{ncol}\NormalTok{(ga\_summary\_matrix) }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{) \{}
+    \CommentTok{\# Use first column as fallback}
+\NormalTok{    ga\_best\_history }\OtherTok{\textless{}{-}}\NormalTok{ ga\_summary\_matrix[, }\DecValTok{1}\NormalTok{]}
+\NormalTok{  \}}
+  
+  \CommentTok{\# Try to get mean fitness}
+  \ControlFlowTok{if}\NormalTok{ (}\StringTok{"mean"} \SpecialCharTok{\%in\%}\NormalTok{ available\_cols) \{}
+\NormalTok{    ga\_mean\_history }\OtherTok{\textless{}{-}}\NormalTok{ ga\_summary\_matrix[, }\StringTok{"mean"}\NormalTok{]}
+\NormalTok{  \} }\ControlFlowTok{else} \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{ncol}\NormalTok{(ga\_summary\_matrix) }\SpecialCharTok{\textgreater{}=} \DecValTok{2}\NormalTok{) \{}
+    \CommentTok{\# Use second column as fallback for mean}
+\NormalTok{    ga\_mean\_history }\OtherTok{\textless{}{-}}\NormalTok{ ga\_summary\_matrix[, }\DecValTok{2}\NormalTok{]}
+\NormalTok{  \}}
+\NormalTok{\}}
+
+\CommentTok{\# If summary extraction failed, try to calculate from fitness matrix}
+\ControlFlowTok{if}\NormalTok{ (}\FunctionTok{is.null}\NormalTok{(ga\_best\_history) }\SpecialCharTok{||} \FunctionTok{length}\NormalTok{(ga\_best\_history) }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) \{}
+  \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{is.matrix}\NormalTok{(ga\_result}\SpecialCharTok{@}\NormalTok{fitness) }\SpecialCharTok{\&\&} \FunctionTok{ncol}\NormalTok{(ga\_result}\SpecialCharTok{@}\NormalTok{fitness) }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{) \{}
+    \CommentTok{\# Calculate best (max) fitness per generation}
+\NormalTok{    ga\_best\_history }\OtherTok{\textless{}{-}} \FunctionTok{apply}\NormalTok{(ga\_result}\SpecialCharTok{@}\NormalTok{fitness, }\DecValTok{2}\NormalTok{, max, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+    \CommentTok{\# Calculate mean fitness per generation}
+\NormalTok{    ga\_mean\_history }\OtherTok{\textless{}{-}} \FunctionTok{apply}\NormalTok{(ga\_result}\SpecialCharTok{@}\NormalTok{fitness, }\DecValTok{2}\NormalTok{, mean, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{  \} }\ControlFlowTok{else}\NormalTok{ \{}
+    \CommentTok{\# Final fallback: use final fitness value for all generations}
+\NormalTok{    n\_generations }\OtherTok{\textless{}{-}} \FunctionTok{max}\NormalTok{(ga\_result}\SpecialCharTok{@}\NormalTok{iter, }\DecValTok{1}\NormalTok{)}
+\NormalTok{    ga\_best\_history }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(ga\_result}\SpecialCharTok{@}\NormalTok{fitnessValue, n\_generations)}
+\NormalTok{    ga\_mean\_history }\OtherTok{\textless{}{-}}\NormalTok{ ga\_best\_history}
+\NormalTok{  \}}
+\NormalTok{\} }\ControlFlowTok{else} \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{is.null}\NormalTok{(ga\_mean\_history) }\SpecialCharTok{||} \FunctionTok{length}\NormalTok{(ga\_mean\_history) }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) \{}
+  \CommentTok{\# If we have best but not mean, calculate mean from fitness matrix}
+  \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{is.matrix}\NormalTok{(ga\_result}\SpecialCharTok{@}\NormalTok{fitness) }\SpecialCharTok{\&\&} \FunctionTok{ncol}\NormalTok{(ga\_result}\SpecialCharTok{@}\NormalTok{fitness) }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{) \{}
+\NormalTok{    ga\_mean\_history }\OtherTok{\textless{}{-}} \FunctionTok{apply}\NormalTok{(ga\_result}\SpecialCharTok{@}\NormalTok{fitness, }\DecValTok{2}\NormalTok{, mean, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+    \CommentTok{\# Ensure same length}
+    \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{length}\NormalTok{(ga\_mean\_history) }\SpecialCharTok{!=} \FunctionTok{length}\NormalTok{(ga\_best\_history)) \{}
+\NormalTok{      ga\_mean\_history }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\FunctionTok{mean}\NormalTok{(ga\_mean\_history, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{), }\FunctionTok{length}\NormalTok{(ga\_best\_history))}
+\NormalTok{    \}}
+\NormalTok{  \} }\ControlFlowTok{else}\NormalTok{ \{}
+    \CommentTok{\# Use best as approximation for mean}
+\NormalTok{    ga\_mean\_history }\OtherTok{\textless{}{-}}\NormalTok{ ga\_best\_history}
+\NormalTok{  \}}
+\NormalTok{\}}
+
+\CommentTok{\# Ensure both have the same length}
+\NormalTok{min\_length }\OtherTok{\textless{}{-}} \FunctionTok{min}\NormalTok{(}\FunctionTok{length}\NormalTok{(ga\_best\_history), }\FunctionTok{length}\NormalTok{(ga\_mean\_history))}
+\ControlFlowTok{if}\NormalTok{ (min\_length }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{) \{}
+\NormalTok{  ga\_best\_history }\OtherTok{\textless{}{-}}\NormalTok{ ga\_best\_history[}\DecValTok{1}\SpecialCharTok{:}\NormalTok{min\_length]}
+\NormalTok{  ga\_mean\_history }\OtherTok{\textless{}{-}}\NormalTok{ ga\_mean\_history[}\DecValTok{1}\SpecialCharTok{:}\NormalTok{min\_length]}
+\NormalTok{\} }\ControlFlowTok{else}\NormalTok{ \{}
+  \CommentTok{\# Ultimate fallback}
+\NormalTok{  n\_generations }\OtherTok{\textless{}{-}} \FunctionTok{max}\NormalTok{(ga\_result}\SpecialCharTok{@}\NormalTok{iter, }\DecValTok{1}\NormalTok{)}
+\NormalTok{  ga\_best\_history }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(ga\_result}\SpecialCharTok{@}\NormalTok{fitnessValue, n\_generations)}
+\NormalTok{  ga\_mean\_history }\OtherTok{\textless{}{-}}\NormalTok{ ga\_best\_history}
+\NormalTok{\}}
+
+\NormalTok{ga\_history }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{Generation =} \DecValTok{1}\SpecialCharTok{:}\FunctionTok{length}\NormalTok{(ga\_best\_history),}
+  \AttributeTok{Best =} \SpecialCharTok{{-}}\NormalTok{ga\_best\_history,  }\CommentTok{\# Negate back since we negated in fitness}
+  \AttributeTok{Mean =} \SpecialCharTok{{-}}\NormalTok{ga\_mean\_history}
+\NormalTok{)}
+
+\NormalTok{p8 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(ga\_history, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ Generation)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{y =}\NormalTok{ Best, }\AttributeTok{color =} \StringTok{"Best"}\NormalTok{), }\AttributeTok{size =} \DecValTok{1}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{y =}\NormalTok{ Mean, }\AttributeTok{color =} \StringTok{"Mean"}\NormalTok{), }\AttributeTok{alpha =} \FloatTok{0.7}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \StringTok{"Genetic Algorithm: Evolution of Fitness"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Generation"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Fitness (Cost + Quality Penalty)"}\NormalTok{, }
+       \AttributeTok{color =} \StringTok{"Population"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_minimal}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"right"}\NormalTok{)}
+
+\FunctionTok{print}\NormalTok{(p8)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{tea_blending_optimization_files/figure-latex/ga-visualisation-1} \end{center}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Plot GA solution}
+\NormalTok{ga\_solution\_long }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{Material =} \FunctionTok{rep}\NormalTok{(raw\_materials}\SpecialCharTok{$}\NormalTok{Material\_ID, n\_blends),}
+  \AttributeTok{Blend =} \FunctionTok{rep}\NormalTok{(blends}\SpecialCharTok{$}\NormalTok{Blend\_ID, }\AttributeTok{each =}\NormalTok{ n\_materials),}
+  \AttributeTok{Amount =} \FunctionTok{as.vector}\NormalTok{(ga\_x\_matrix)}
+\NormalTok{)}
+
+\NormalTok{p9 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(ga\_solution\_long, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ Blend, }\AttributeTok{y =}\NormalTok{ Amount, }\AttributeTok{fill =}\NormalTok{ Material)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_bar}\NormalTok{(}\AttributeTok{stat =} \StringTok{"identity"}\NormalTok{, }\AttributeTok{position =} \StringTok{"stack"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \StringTok{"GA Solution: Material Usage by Blend"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Blend"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Amount (Kgs)"}\NormalTok{, }\AttributeTok{fill =} \StringTok{"Material"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_minimal}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"right"}\NormalTok{)}
+
+\FunctionTok{print}\NormalTok{(p9)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{tea_blending_optimization_files/figure-latex/ga-visualisation-2} \end{center}
+
+\section{7 Summary of Results and Comparative
+Analysis}\label{summary-of-results-and-comparative-analysis}
+
+This section consolidates results from all approaches for comprehensive
+comparison.
+
+\subsection{7.1 Comparative Metrics}\label{comparative-metrics}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Compile comparison metrics}
+\NormalTok{comparison\_metrics }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{Approach =} \FunctionTok{c}\NormalTok{(}\StringTok{"Linear Programming"}\NormalTok{, }\StringTok{"Simulated Annealing"}\NormalTok{, }
+               \StringTok{"Chebyshev Goal Programming"}\NormalTok{, }\StringTok{"Genetic Algorithm"}\NormalTok{),}
+  \AttributeTok{Total\_Cost =} \FunctionTok{c}\NormalTok{(lp\_objective, sa\_objective, chebyshev\_cost, ga\_cost),}
+  \AttributeTok{Avg\_Quality\_Dev =} \FunctionTok{c}\NormalTok{(}\FunctionTok{mean}\NormalTok{(lp\_quality\_deviations), }
+                      \FunctionTok{mean}\NormalTok{(sa\_quality\_deviations),}
+                      \FunctionTok{mean}\NormalTok{(chebyshev\_quality\_deviations),}
+                      \FunctionTok{mean}\NormalTok{(ga\_quality\_deviations)),}
+  \AttributeTok{Max\_Quality\_Dev =} \FunctionTok{c}\NormalTok{(}\FunctionTok{max}\NormalTok{(lp\_quality\_deviations),}
+                     \FunctionTok{max}\NormalTok{(sa\_quality\_deviations),}
+                     \FunctionTok{max}\NormalTok{(chebyshev\_quality\_deviations),}
+                     \FunctionTok{max}\NormalTok{(ga\_quality\_deviations)),}
+  \AttributeTok{Solve\_Time\_sec =} \FunctionTok{c}\NormalTok{(lp\_solve\_time, sa\_solve\_time, }
+\NormalTok{                     chebyshev\_solve\_time, ga\_solve\_time),}
+  \AttributeTok{Cost\_vs\_LP\_pct =} \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, }
+\NormalTok{                    (sa\_objective }\SpecialCharTok{{-}}\NormalTok{ lp\_objective) }\SpecialCharTok{/}\NormalTok{ lp\_objective }\SpecialCharTok{*} \DecValTok{100}\NormalTok{,}
+\NormalTok{                    (chebyshev\_cost }\SpecialCharTok{{-}}\NormalTok{ lp\_objective) }\SpecialCharTok{/}\NormalTok{ lp\_objective }\SpecialCharTok{*} \DecValTok{100}\NormalTok{,}
+\NormalTok{                    (ga\_cost }\SpecialCharTok{{-}}\NormalTok{ lp\_objective) }\SpecialCharTok{/}\NormalTok{ lp\_objective }\SpecialCharTok{*} \DecValTok{100}\NormalTok{)}
+\NormalTok{)}
+
+\FunctionTok{cat}\NormalTok{(}\StringTok{"=== Comprehensive Comparison of All Approaches ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## === Comprehensive Comparison of All Approaches ===
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{print}\NormalTok{(}\FunctionTok{kable}\NormalTok{(comparison\_metrics, }\AttributeTok{format =} \StringTok{"html"}\NormalTok{, }
+            \AttributeTok{caption =} \StringTok{"Performance Metrics Comparison"}\NormalTok{,}
+            \AttributeTok{digits =} \DecValTok{2}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+      \FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{bootstrap\_options =} \FunctionTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{, }\StringTok{"hover"}\NormalTok{, }\StringTok{"condensed"}\NormalTok{, }\StringTok{"responsive"}\NormalTok{)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## <table class="table table-striped table-hover table-condensed table-responsive" style="color: black; margin-left: auto; margin-right: auto;">
+## <caption>Performance Metrics Comparison</caption>
+##  <thead>
+##   <tr>
+##    <th style="text-align:left;"> Approach </th>
+##    <th style="text-align:right;"> Total_Cost </th>
+##    <th style="text-align:right;"> Avg_Quality_Dev </th>
+##    <th style="text-align:right;"> Max_Quality_Dev </th>
+##    <th style="text-align:right;"> Solve_Time_sec </th>
+##    <th style="text-align:right;"> Cost_vs_LP_pct </th>
+##   </tr>
+##  </thead>
+## <tbody>
+##   <tr>
+##    <td style="text-align:left;"> Linear Programming </td>
+##    <td style="text-align:right;"> 0.00 </td>
+##    <td style="text-align:right;"> 0.00 </td>
+##    <td style="text-align:right;"> 0.00 </td>
+##    <td style="text-align:right;"> 0.04 </td>
+##    <td style="text-align:right;"> 0 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> Simulated Annealing </td>
+##    <td style="text-align:right;"> 3616.63 </td>
+##    <td style="text-align:right;"> 1.21 </td>
+##    <td style="text-align:right;"> 3.35 </td>
+##    <td style="text-align:right;"> 0.22 </td>
+##    <td style="text-align:right;"> Inf </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> Chebyshev Goal Programming </td>
+##    <td style="text-align:right;"> 2564.13 </td>
+##    <td style="text-align:right;"> 279.03 </td>
+##    <td style="text-align:right;"> 808.39 </td>
+##    <td style="text-align:right;"> 0.01 </td>
+##    <td style="text-align:right;"> Inf </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> Genetic Algorithm </td>
+##    <td style="text-align:right;"> 9378.72 </td>
+##    <td style="text-align:right;"> 1.86 </td>
+##    <td style="text-align:right;"> 4.77 </td>
+##    <td style="text-align:right;"> 0.22 </td>
+##    <td style="text-align:right;"> Inf </td>
+##   </tr>
+## </tbody>
+## </table>
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Create visualisations}
+\NormalTok{p10 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(comparison\_metrics, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =} \FunctionTok{reorder}\NormalTok{(Approach, Total\_Cost), }\AttributeTok{y =}\NormalTok{ Total\_Cost, }\AttributeTok{fill =}\NormalTok{ Approach)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_bar}\NormalTok{(}\AttributeTok{stat =} \StringTok{"identity"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \StringTok{"Total Cost Comparison Across All Approaches"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Approach"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Total Cost (£)"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_minimal}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"none"}\NormalTok{, }\AttributeTok{axis.text.x =} \FunctionTok{element\_text}\NormalTok{(}\AttributeTok{angle =} \DecValTok{45}\NormalTok{, }\AttributeTok{hjust =} \DecValTok{1}\NormalTok{))}
+
+\FunctionTok{print}\NormalTok{(p10)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{tea_blending_optimization_files/figure-latex/comparison-1} \end{center}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{p11 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(comparison\_metrics, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ Avg\_Quality\_Dev, }\AttributeTok{y =}\NormalTok{ Total\_Cost, }\AttributeTok{color =}\NormalTok{ Approach, }\AttributeTok{size =}\NormalTok{ Max\_Quality\_Dev)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_point}\NormalTok{(}\AttributeTok{alpha =} \FloatTok{0.7}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \StringTok{"Trade{-}off: Cost vs Quality Deviation"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Average Quality Deviation"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Total Cost (£)"}\NormalTok{,}
+       \AttributeTok{size =} \StringTok{"Max Quality}\SpecialCharTok{\textbackslash{}n}\StringTok{Deviation"}\NormalTok{, }\AttributeTok{color =} \StringTok{"Approach"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_minimal}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"right"}\NormalTok{)}
+
+\FunctionTok{print}\NormalTok{(p11)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{tea_blending_optimization_files/figure-latex/comparison-2} \end{center}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{p12 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(comparison\_metrics, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =} \FunctionTok{reorder}\NormalTok{(Approach, Solve\_Time\_sec), }\AttributeTok{y =}\NormalTok{ Solve\_Time\_sec, }\AttributeTok{fill =}\NormalTok{ Approach)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_bar}\NormalTok{(}\AttributeTok{stat =} \StringTok{"identity"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{scale\_y\_log10}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \StringTok{"Computation Time Comparison (log scale)"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Approach"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Solve Time (seconds, log scale)"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_minimal}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"none"}\NormalTok{, }\AttributeTok{axis.text.x =} \FunctionTok{element\_text}\NormalTok{(}\AttributeTok{angle =} \DecValTok{45}\NormalTok{, }\AttributeTok{hjust =} \DecValTok{1}\NormalTok{))}
+
+\FunctionTok{print}\NormalTok{(p12)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{tea_blending_optimization_files/figure-latex/comparison-3} \end{center}
+
+\subsection{7.2 Key Findings}\label{key-findings}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{=== Key Findings ===}\SpecialCharTok{\textbackslash{}n\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## === Key Findings ===
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"1. COST PERFORMANCE:}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 1. COST PERFORMANCE:
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"   {-} LP provides the optimal cost baseline: £\%.2f}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, lp\_objective))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    - LP provides the optimal cost baseline: £0.00
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"   {-} SA achieves \%.2f\%\% of LP cost}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, (sa\_objective }\SpecialCharTok{/}\NormalTok{ lp\_objective) }\SpecialCharTok{*} \DecValTok{100}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    - SA achieves Inf% of LP cost
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"   {-} Chebyshev GP trades \%.2f\%\% cost increase for better quality control}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, }
+\NormalTok{            comparison\_metrics}\SpecialCharTok{$}\NormalTok{Cost\_vs\_LP\_pct[}\DecValTok{3}\NormalTok{]))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    - Chebyshev GP trades Inf% cost increase for better quality control
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"   {-} GA achieves \%.2f\%\% of LP cost}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, (ga\_cost }\SpecialCharTok{/}\NormalTok{ lp\_objective) }\SpecialCharTok{*} \DecValTok{100}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    - GA achieves Inf% of LP cost
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{2. QUALITY PERFORMANCE:}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## 2. QUALITY PERFORMANCE:
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{best\_quality\_idx }\OtherTok{\textless{}{-}} \FunctionTok{which.min}\NormalTok{(comparison\_metrics}\SpecialCharTok{$}\NormalTok{Avg\_Quality\_Dev)}
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"   {-} Best average quality: \%s (deviation: \%.4f)}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, }
+\NormalTok{            comparison\_metrics}\SpecialCharTok{$}\NormalTok{Approach[best\_quality\_idx],}
+\NormalTok{            comparison\_metrics}\SpecialCharTok{$}\NormalTok{Avg\_Quality\_Dev[best\_quality\_idx]))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    - Best average quality: Linear Programming (deviation: 0.0000)
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{3. COMPUTATIONAL EFFICIENCY:}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## 3. COMPUTATIONAL EFFICIENCY:
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fastest\_idx }\OtherTok{\textless{}{-}} \FunctionTok{which.min}\NormalTok{(comparison\_metrics}\SpecialCharTok{$}\NormalTok{Solve\_Time\_sec)}
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"   {-} Fastest approach: \%s (\%.4f seconds)}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{,}
+\NormalTok{            comparison\_metrics}\SpecialCharTok{$}\NormalTok{Approach[fastest\_idx],}
+\NormalTok{            comparison\_metrics}\SpecialCharTok{$}\NormalTok{Solve\_Time\_sec[fastest\_idx]))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    - Fastest approach: Chebyshev Goal Programming (0.0088 seconds)
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{4. RECOMMENDATION:}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## 4. RECOMMENDATION:
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ControlFlowTok{if}\NormalTok{ (comparison\_metrics}\SpecialCharTok{$}\NormalTok{Avg\_Quality\_Dev[}\DecValTok{3}\NormalTok{] }\SpecialCharTok{\textless{}}\NormalTok{ comparison\_metrics}\SpecialCharTok{$}\NormalTok{Avg\_Quality\_Dev[}\DecValTok{1}\NormalTok{] }\SpecialCharTok{*} \FloatTok{0.8}\NormalTok{) \{}
+  \FunctionTok{cat}\NormalTok{(}\StringTok{"   {-} Chebyshev Goal Programming is recommended for balancing cost and quality.}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+  \FunctionTok{cat}\NormalTok{(}\StringTok{"   {-} It provides superior quality control with acceptable cost increase.}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\NormalTok{\} }\ControlFlowTok{else}\NormalTok{ \{}
+  \FunctionTok{cat}\NormalTok{(}\StringTok{"   {-} Linear Programming provides the best cost{-}performance trade{-}off.}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+  \FunctionTok{cat}\NormalTok{(}\StringTok{"   {-} For near{-}optimal solutions quickly, Simulated Annealing is valuable.}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    - Linear Programming provides the best cost-performance trade-off.
+##    - For near-optimal solutions quickly, Simulated Annealing is valuable.
+\end{verbatim}
+
+\subsection{7.3 Solution Matrices
+Comparison}\label{solution-matrices-comparison}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Create a summary of solution differences}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{=== Solution Matrix Comparison (Sample: Blend 1) ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## === Solution Matrix Comparison (Sample: Blend 1) ===
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{blend1\_comparison }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{Material =}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Material\_ID,}
+  \AttributeTok{LP =}\NormalTok{ lp\_x\_matrix[, }\DecValTok{1}\NormalTok{],}
+  \AttributeTok{SA =}\NormalTok{ sa\_x\_matrix[, }\DecValTok{1}\NormalTok{],}
+  \AttributeTok{Chebyshev\_GP =}\NormalTok{ chebyshev\_x\_matrix[, }\DecValTok{1}\NormalTok{],}
+  \AttributeTok{GA =}\NormalTok{ ga\_x\_matrix[, }\DecValTok{1}\NormalTok{]}
+\NormalTok{)}
+
+\FunctionTok{print}\NormalTok{(}\FunctionTok{kable}\NormalTok{(blend1\_comparison, }\AttributeTok{format =} \StringTok{"html"}\NormalTok{, }
+            \AttributeTok{caption =} \StringTok{"Material allocation for Blend 1 across all approaches"}\NormalTok{,}
+            \AttributeTok{digits =} \DecValTok{2}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+      \FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{bootstrap\_options =} \FunctionTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{, }\StringTok{"hover"}\NormalTok{, }\StringTok{"condensed"}\NormalTok{)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## <table class="table table-striped table-hover table-condensed" style="color: black; margin-left: auto; margin-right: auto;">
+## <caption>Material allocation for Blend 1 across all approaches</caption>
+##  <thead>
+##   <tr>
+##    <th style="text-align:left;">   </th>
+##    <th style="text-align:left;"> Material </th>
+##    <th style="text-align:right;"> LP </th>
+##    <th style="text-align:right;"> SA </th>
+##    <th style="text-align:right;"> Chebyshev_GP </th>
+##    <th style="text-align:right;"> GA </th>
+##   </tr>
+##  </thead>
+## <tbody>
+##   <tr>
+##    <td style="text-align:left;"> RM1 </td>
+##    <td style="text-align:left;"> RM1 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 41.40 </td>
+##    <td style="text-align:right;"> 59.01 </td>
+##    <td style="text-align:right;"> 38.09 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM2 </td>
+##    <td style="text-align:left;"> RM2 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 14.73 </td>
+##    <td style="text-align:right;"> 0.00 </td>
+##    <td style="text-align:right;"> 158.95 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM3 </td>
+##    <td style="text-align:left;"> RM3 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 48.79 </td>
+##    <td style="text-align:right;"> 0.00 </td>
+##    <td style="text-align:right;"> 140.63 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM4 </td>
+##    <td style="text-align:left;"> RM4 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 31.11 </td>
+##    <td style="text-align:right;"> 0.00 </td>
+##    <td style="text-align:right;"> 32.89 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM5 </td>
+##    <td style="text-align:left;"> RM5 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 19.43 </td>
+##    <td style="text-align:right;"> 0.00 </td>
+##    <td style="text-align:right;"> 47.73 </td>
+##   </tr>
+##   <tr>
+##    <td style="text-align:left;"> RM6 </td>
+##    <td style="text-align:left;"> RM6 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 66.78 </td>
+##    <td style="text-align:right;"> 134.99 </td>
+##    <td style="text-align:right;"> 72.03 </td>
+##   </tr>
+## </tbody>
+## </table>
+\end{verbatim}
+
+\section{8 Conclusion}\label{conclusion}
+
+This analysis has successfully implemented and compared four distinct
+optimisation approaches for the tea blending problem:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Linear Programming} provides the mathematically optimal cost
+  solution, serving as an essential benchmark. However, it treats
+  quality deviations as hard constraints within tolerance, not as
+  objectives to minimise.
+\item
+  \textbf{Simulated Annealing} offers a flexible metaheuristic approach
+  that can find near-optimal solutions efficiently, valuable in dynamic
+  operational environments where exact optimality is less critical than
+  solution speed.
+\item
+  \textbf{Chebyshev Goal Programming} provides a superior framework for
+  balancing cost and quality objectives. By formally incorporating
+  decision-maker preferences through goals and weights, it delivers
+  balanced, actionable solutions that directly manage the trade-off
+  between production cost and product quality.
+\item
+  \textbf{Genetic Algorithms} demonstrate another powerful evolutionary
+  approach, capable of exploring complex solution spaces and finding
+  good solutions through population-based search.
+\end{enumerate}
+
+The comparative analysis reveals that while LP provides the lowest cost,
+multi-objective approaches like Chebyshev Goal Programming are better
+aligned with business realities where maintaining brand integrity
+through consistent quality characteristics is as important as minimising
+cost.
+
+\section{9 Appendix: Code Execution
+Notes}\label{appendix-code-execution-notes}
+
+\subsection{9.1 Required Libraries}\label{required-libraries}
+
+All required R packages can be installed using:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{install.packages}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{"dplyr"}\NormalTok{, }\StringTok{"ompr"}\NormalTok{, }\StringTok{"ompr.roi"}\NormalTok{, }\StringTok{"ROI"}\NormalTok{, }\StringTok{"ROI.plugin.glpk"}\NormalTok{, }
+                   \StringTok{"lpSolveAPI"}\NormalTok{, }\StringTok{"ggplot2"}\NormalTok{, }\StringTok{"GA"}\NormalTok{, }\StringTok{"knitr"}\NormalTok{, }\StringTok{"kableExtra"}\NormalTok{, }\StringTok{"tidyr"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{9.2 Reproducibility}\label{reproducibility}
+
+This document uses a fixed random seed (123) for data generation and
+stochastic algorithms to ensure reproducibility. Results may vary
+slightly if the seed is changed or if different solver parameters are
+used.
+
+\subsection{9.3 Parameter Tuning}\label{parameter-tuning}
+
+Key parameters that can be adjusted: - \textbf{ε (epsilon)}: Tolerance
+for quality constraints (default: 0.1) - \textbf{SA parameters}: Initial
+temperature, cooling rate, iterations - \textbf{GA parameters}:
+Population size, generations, mutation/crossover rates - \textbf{Goal
+Programming weights}: Cost vs quality priorities
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\emph{End of Report}
+
+\end{document}
