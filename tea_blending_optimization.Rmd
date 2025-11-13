@@ -3,15 +3,15 @@ title: 'Tea Blending Optimisation: A Comprehensive Analysis'
 author: "Optimisation Analysis"
 date: "`r Sys.Date()`"
 output:
+  pdf_document:
+    toc: true
+    latex_engine: xelatex  # Support Unicode characters
   html_document:
     toc: true
     toc_float: true
     code_folding: show
     theme: flatly
     highlight: tango
-  pdf_document:
-    toc: true
-    latex_engine: xelatex  # Support Unicode characters
 ---
 
 ```{r setup, include=FALSE}
@@ -29,28 +29,23 @@ library(lpSolveAPI)
 library(ggplot2)
 library(GA)
 library(knitr)
-library(kableExtra)
+library(flextable)  # Better table rendering for both HTML and PDF
 library(tidyr)
 
-# Helper function for kable format based on output type
-kable_format <- function() {
-  if (knitr::is_html_output()) {
-    return("html")
-  } else if (knitr::is_latex_output()) {
-    return("latex")
-  } else {
-    return("pipe")
+# Helper function to print tables (works for both HTML and PDF)
+print_table <- function(data, caption = "") {
+  ft <- flextable(data) %>%
+    set_caption(caption) %>%
+    theme_zebra(odd_header = "#CFCFCF", odd_body = "#EFEFEF") %>%
+    autofit()
+  
+  if (knitr::is_latex_output()) {
+    ft <- ft %>%
+      fontsize(size = 9) %>%
+      set_table_properties(layout = "autofit")
   }
-}
-
-# Helper function for conditional kable styling
-kable_style <- function(kable_obj) {
-  if (knitr::is_html_output()) {
-    return(kable_styling(kable_obj, bootstrap_options = c("striped", "hover", "condensed")))
-  } else {
-    # For LaTeX, return as-is or with minimal styling
-    return(kable_obj)
-  }
+  
+  return(ft)
 }
 ```
 
@@ -198,12 +193,10 @@ if (total_availability < total_demand * 1.2) {
 
 # Display the data
 cat("=== Raw Materials Data (Table 2) ===\n")
-print(kable(raw_materials, format = kable_format(), caption = "Raw Materials: Costs, Availability, and Quality Characteristics") %>%
-      kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
+print_table(raw_materials, caption = "Raw Materials: Costs, Availability, and Quality Characteristics")
 
 cat("\n=== Blends Data (Table 3) ===\n")
-print(kable(blends, format = kable_format(), caption = "Blends: Demand and Target Quality Scores") %>%
-      kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
+print_table(blends, caption = "Blends: Demand and Target Quality Scores")
 
 # Store data in convenient format for later use
 # For ompr, we need numeric-indexed vectors (not named vectors)
@@ -487,9 +480,7 @@ if (epsilon_used != epsilon) {
 }
 
 cat("\n=== Optimal Recipe Matrix (x_ij in Kgs) ===\n")
-print(kable(lp_x_matrix, format = kable_format(), 
-            caption = "LP Solution: Amount of Each Material in Each Blend") %>%
-      kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
+print_table(as.data.frame(lp_x_matrix), caption = "LP Solution: Amount of Each Material in Each Blend")
 
 # Calculate quality deviations for LP solution
 lp_quality_deviations <- matrix(0, nrow = n_blends, ncol = n_characteristics)
@@ -506,9 +497,7 @@ rownames(lp_quality_deviations) <- blends$Blend_ID
 colnames(lp_quality_deviations) <- char_names
 
 cat("\n=== Quality Deviations from Targets ===\n")
-print(kable(lp_quality_deviations, format = kable_format(), 
-            caption = "Absolute deviations from target quality scores") %>%
-      kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
+print_table(as.data.frame(lp_quality_deviations), caption = "Absolute deviations from target quality scores")
 ```
 
 ## 3.3 Visualisation
@@ -718,9 +707,7 @@ cat(sprintf("Improvement over LP: %.2f%%\n",
             (lp_objective - sa_objective) / lp_objective * 100))
 
 cat("\n=== SA Recipe Matrix (x_ij in Kgs) ===\n")
-print(kable(sa_x_matrix, format = kable_format(), 
-            caption = "SA Solution: Amount of Each Material in Each Blend") %>%
-      kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
+print_table(as.data.frame(sa_x_matrix), caption = "SA Solution: Amount of Each Material in Each Blend")
 
 # Calculate quality deviations for SA solution
 sa_quality_deviations <- matrix(0, nrow = n_blends, ncol = n_characteristics)
@@ -737,9 +724,7 @@ rownames(sa_quality_deviations) <- blends$Blend_ID
 colnames(sa_quality_deviations) <- char_names
 
 cat("\n=== Quality Deviations from Targets ===\n")
-print(kable(sa_quality_deviations, format = kable_format(), 
-            caption = "Absolute deviations from target quality scores") %>%
-      kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
+print_table(as.data.frame(sa_quality_deviations), caption = "Absolute deviations from target quality scores")
 ```
 
 ## 4.2 Visualisation
@@ -900,14 +885,10 @@ cat(sprintf("Cost Deviation from Target: £%.2f\n", abs(chebyshev_cost - cost_ta
 cat(sprintf("Solve Time: %.4f seconds\n", chebyshev_solve_time))
 
 cat("\n=== Chebyshev GP Recipe Matrix (x_ij in Kgs) ===\n")
-print(kable(chebyshev_x_matrix, format = kable_format(), 
-            caption = "Chebyshev GP Solution: Amount of Each Material in Each Blend") %>%
-      kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
+print_table(as.data.frame(chebyshev_x_matrix), caption = "Chebyshev GP Solution: Amount of Each Material in Each Blend")
 
 cat("\n=== Quality Deviations from Targets ===\n")
-print(kable(chebyshev_quality_deviations, format = kable_format(), 
-            caption = "Quality deviations (minimised in worst-case sense)") %>%
-      kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
+print_table(as.data.frame(chebyshev_quality_deviations), caption = "Quality deviations (minimised in worst-case sense)")
 ```
 
 ## 5.3 Visualisation
@@ -1093,14 +1074,10 @@ cat(sprintf("Average Quality Deviation: %.4f\n", mean(ga_quality_deviations)))
 cat(sprintf("Solve Time: %.4f seconds\n", ga_solve_time))
 
 cat("\n=== GA Recipe Matrix (x_ij in Kgs) ===\n")
-print(kable(ga_x_matrix, format = kable_format(), 
-            caption = "GA Solution: Amount of Each Material in Each Blend") %>%
-      kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
+print_table(as.data.frame(ga_x_matrix), caption = "GA Solution: Amount of Each Material in Each Blend")
 
 cat("\n=== Quality Deviations from Targets ===\n")
-print(kable(ga_quality_deviations, format = kable_format(), 
-            caption = "Absolute deviations from target quality scores") %>%
-      kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
+print_table(as.data.frame(ga_quality_deviations), caption = "Absolute deviations from target quality scores")
 ```
 
 ## 6.2 Visualisation
@@ -1241,10 +1218,7 @@ comparison_metrics <- data.frame(
 )
 
 cat("=== Comprehensive Comparison of All Approaches ===\n")
-print(kable(comparison_metrics, format = kable_format(), 
-            caption = "Performance Metrics Comparison",
-            digits = 2) %>%
-      kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")))
+print_table(comparison_metrics, caption = "Performance Metrics Comparison")
 
 # Create visualisations
 p10 <- ggplot(comparison_metrics, aes(x = reorder(Approach, Total_Cost), y = Total_Cost, fill = Approach)) +
@@ -1324,10 +1298,7 @@ blend1_comparison <- data.frame(
   GA = ga_x_matrix[, 1]
 )
 
-print(kable(blend1_comparison, format = kable_format(), 
-            caption = "Material allocation for Blend 1 across all approaches",
-            digits = 2) %>%
-      kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
+print_table(blend1_comparison, caption = "Material allocation for Blend 1 across all approaches")
 ```
 
 # 8 Conclusion
@@ -1350,8 +1321,8 @@ The comparative analysis reveals that while LP provides the lowest cost, multi-o
 
 All required R packages can be installed using:
 ```r
-install.packages(c("dplyr", "ompr", "ompr.roi", "ROI", "ROI.plugin.glpk", 
-                   "lpSolveAPI", "ggplot2", "GA", "knitr", "kableExtra", "tidyr"))
+install.packages(c("dplyr", "Rglpk", "ompr", "ompr.roi", "ROI", "ROI.plugin.glpk", 
+                   "lpSolveAPI", "ggplot2", "GA", "knitr", "flextable", "tidyr"))
 ```
 
 ## 9.2 Reproducibility
