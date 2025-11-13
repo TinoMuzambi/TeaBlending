@@ -53,8 +53,11 @@ print_table <- function(data, caption = "") {
 ```
 
 # 1 Introduction
+Blending problems are a classic challenge in operations research, arising in diverse fields such as food processing, metallurgy, and energy. In the tea industry, blending is crucial to achieve consistent product quality, balance raw material costs, and adapt to fluctuating supplies. Every cup of tea on the supermarket shelf is the result of a carefully orchestrated process: different grades and types of tea leaves from various origins are combined to meet precise targets for taste, color, aroma, and other quality parameters, all while minimising production costs and ensuring supply constraints are not violated.
 
-This document presents a comprehensive analysis of the tea blending optimisation problem using multiple computational approaches. The problem requires determining the least-cost combination of raw materials to produce final blends that meet specific quality characteristics, as formalised by Fomeni [@fomeni].
+In the context of tea manufacturing, the blending optimisation problem involves selecting the optimal composition of raw teas (inputs) to satisfy desired blend qualities for multiple final blends. This not only impacts the sensory profile and brand identity of each product, but also has substantial operational and economic implications. By applying advanced computational techniques, such as mathematical programming and metaheuristics, producers can automate and enhance the blending decision-making process, yielding better margins, consistent quality, and greater responsiveness to market demands.
+
+Below, we formally define the tea blending optimisation problem and systematically explore several approaches for solving it. The problem requires determining the least-cost combination of raw materials to produce final blends that meet specific quality characteristics, as formalised by Fomeni [@fomeni].
 
 The primary objectives are:
 
@@ -84,11 +87,11 @@ The primary objectives are:
 
 ## 2.2 Sample Data Generation
 
-Based on the structure described in Fomeni (2018), we generate sample data for raw materials and blends.
+Based on the structure described in Fomeni [@fomeni], we generate sample data for raw materials and blends.
 
 ```{r data-generation}
 # Set seed for reproducibility
-set.seed(123)
+set.seed(2025)
 
 # Define number of raw materials, blends, and quality characteristics
 n_materials <- 6
@@ -166,9 +169,7 @@ rownames(s_named) <- blends$Blend_ID
 
 # 3 Approach 1: Cost Minimisation using Linear Programming
 
-This section implements the cost-minimisation model using Linear Programming with parametric relaxation of the characteristic-matching constraints.
-
-**Assignment Expectations**: The technical report requires implementing a cost-minimisation LP model that finds the optimal combination of raw materials to produce blends meeting demand and quality constraints. This implementation uses Rglpk (direct GLPK interface) as specified in the assignment requirements, which provides a straightforward matrix-based formulation that is well-suited for this problem type.
+This section implements the cost-minimisation model using Linear Programming with parametric relaxation of the characteristic-matching constraints. This involves implementing a cost-minimisation LP model that finds the optimal combination of raw materials to produce blends meeting demand and quality constraints. This implementation uses Rglpk which provides a straightforward matrix-based formulation that is well-suited for this problem type.
 
 ## 3.1 Model Formulation
 
@@ -187,7 +188,7 @@ $$\min \sum_{i} \sum_{j} P_i x_{ij}$$
 ## 3.2 Implementation
 
 ```{r lp-implementation}
-# Implementation using Rglpk directly (as per assignment requirement)
+# Implementation using Rglpk
 
 # Number of decision variables: n_materials * n_blends (x[i,j] for all i,j)
 n_vars <- n_materials * n_blends
