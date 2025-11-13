@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.4.7)  12 NOV 2025 18:45
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.4.7)  13 NOV 2025 20:00
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -678,7 +678,11 @@ File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10> not available
 (Font)              Font shape `T1/lmtt/b/n' tried instead on input line 216.
-
+LaTeX Font Info:    Trying to load font information for TS1+lmtt on input line 
+244.
+(/usr/local/texlive/2025/texmf-dist/tex/latex/lm/ts1lmtt.fd
+File: ts1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+)
 
 [1
 
@@ -686,17 +690,23 @@ LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10> not available
 al/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}{/usr/local/texlive/202
 5/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc}{/usr/local/texlive/2025/texmf-dist/
 fonts/enc/dvips/lm/lm-mathit.enc}]
-Overfull \hbox (196.99304pt too wide) in paragraph at lines 342--342
-[]\T1/lmtt/m/n/10 ## <table class="table table-striped table-hover table-conden
-sed" style="color: black; margin-left: auto; margin-right: auto;">[] 
+Underfull \vbox (badness 10000) detected at line 291
+ []
+
+
+Underfull \vbox (badness 10000) detected at line 291
  []
 
 
 
 [2]
+Overfull \vbox (1.28291pt too high) detected at line 352
+ []
+
+
 
 [3]
-Overfull \hbox (196.99304pt too wide) in paragraph at lines 405--405
+Overfull \hbox (196.99304pt too wide) in paragraph at lines 429--429
 []\T1/lmtt/m/n/10 ## <table class="table table-striped table-hover table-conden
 sed" style="color: black; margin-left: auto; margin-right: auto;">[] 
  []
@@ -704,304 +714,327 @@ sed" style="color: black; margin-left: auto; margin-right: auto;">[]
 
 
 [4]
+Overfull \hbox (196.99304pt too wide) in paragraph at lines 492--492
+[]\T1/lmtt/m/n/10 ## <table class="table table-striped table-hover table-conden
+sed" style="color: black; margin-left: auto; margin-right: auto;">[] 
+ []
 
-[5{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}{/usr/local/
+
+
+[5]
+
+[6{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}{/usr/local/
 texlive/2025/texmf-dist/fonts/enc/dvips/lm/lm-mathex.enc}{/usr/local/texlive/20
 25/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}]
-Overfull \hbox (196.99304pt too wide) in paragraph at lines 623--623
-[]\T1/lmtt/m/n/10 ## <table class="table table-striped table-hover table-conden
-sed" style="color: black; margin-left: auto; margin-right: auto;">[] 
- []
-
-
-
-[6]
-Underfull \vbox (badness 10000) detected at line 643
- []
-
-
 
 [7]
-Overfull \hbox (196.99304pt too wide) in paragraph at lines 696--696
-[]\T1/lmtt/m/n/10 ## <table class="table table-striped table-hover table-conden
-sed" style="color: black; margin-left: auto; margin-right: auto;">[] 
+Underfull \vbox (badness 10000) detected at line 715
+ []
+
+
+Underfull \vbox (badness 10000) detected at line 715
  []
 
 
 
 [8]
-<tea_blending_optimization_files/figure-latex/lp-visualisation-1.pdf, id=68, 70
-6.64pt x 421.575pt>
-File: tea_blending_optimization_files/figure-latex/lp-visualisation-1.pdf Graph
-ic file (type pdf)
-<use tea_blending_optimization_files/figure-latex/lp-visualisation-1.pdf>
-Package pdftex.def Info: tea_blending_optimization_files/figure-latex/lp-visual
-isation-1.pdf  used on input line 719.
-(pdftex.def)             Requested size: 706.63828pt x 421.57396pt.
-
-Overfull \hbox (236.88326pt too wide) in paragraph at lines 719--719
- [] 
- []
-
-
 
 [9]
-<tea_blending_optimization_files/figure-latex/lp-visualisation-2.pdf, id=74, 70
-6.64pt x 421.575pt>
-File: tea_blending_optimization_files/figure-latex/lp-visualisation-2.pdf Graph
-ic file (type pdf)
-<use tea_blending_optimization_files/figure-latex/lp-visualisation-2.pdf>
-Package pdftex.def Info: tea_blending_optimization_files/figure-latex/lp-visual
-isation-2.pdf  used on input line 739.
-(pdftex.def)             Requested size: 706.63828pt x 421.57396pt.
+Underfull \vbox (badness 10000) detected at line 845
+ []
 
-Overfull \hbox (236.88326pt too wide) in paragraph at lines 739--739
- [] 
+
+Underfull \vbox (badness 10000) detected at line 845
  []
 
 
 
-[10 <./tea_blending_optimization_files/figure-latex/lp-visualisation-1.pdf>]
-LaTeX Font Info:    Trying to load font information for TS1+lmtt on input line 
-835.
-(/usr/local/texlive/2025/texmf-dist/tex/latex/lm/ts1lmtt.fd
-File: ts1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-)
+[10]
 
-[11 <./tea_blending_optimization_files/figure-latex/lp-visualisation-2.pdf>]
-Underfull \vbox (badness 10000) detected at line 899
- []
-
-
-Underfull \vbox (badness 10000) detected at line 899
+[11]
+Overfull \hbox (196.99304pt too wide) in paragraph at lines 984--984
+[]\T1/lmtt/m/n/10 ## <table class="table table-striped table-hover table-conden
+sed" style="color: black; margin-left: auto; margin-right: auto;">[] 
  []
 
 
 
 [12]
-Underfull \vbox (badness 10000) detected at line 899
- []
-
-
-Underfull \vbox (badness 10000) detected at line 899
+Overfull \hbox (196.99304pt too wide) in paragraph at lines 1057--1057
+[]\T1/lmtt/m/n/10 ## <table class="table table-striped table-hover table-conden
+sed" style="color: black; margin-left: auto; margin-right: auto;">[] 
  []
 
 
 
 [13]
-
-[14]
-Overfull \hbox (196.99304pt too wide) in paragraph at lines 1035--1035
-[]\T1/lmtt/m/n/10 ## <table class="table table-striped table-hover table-conden
-sed" style="color: black; margin-left: auto; margin-right: auto;">[] 
- []
-
-
-
-[15]
-Overfull \hbox (196.99304pt too wide) in paragraph at lines 1108--1108
-[]\T1/lmtt/m/n/10 ## <table class="table table-striped table-hover table-conden
-sed" style="color: black; margin-left: auto; margin-right: auto;">[] 
- []
-
-
-
-[16]
-<tea_blending_optimization_files/figure-latex/sa-visualisation-1.pdf, id=122, 7
-06.64pt x 421.575pt>
-File: tea_blending_optimization_files/figure-latex/sa-visualisation-1.pdf Graph
+<tea_blending_optimization_files/figure-latex/lp-visualisation-1.pdf, id=90, 70
+6.64pt x 421.575pt>
+File: tea_blending_optimization_files/figure-latex/lp-visualisation-1.pdf Graph
 ic file (type pdf)
-<use tea_blending_optimization_files/figure-latex/sa-visualisation-1.pdf>
-Package pdftex.def Info: tea_blending_optimization_files/figure-latex/sa-visual
-isation-1.pdf  used on input line 1128.
+<use tea_blending_optimization_files/figure-latex/lp-visualisation-1.pdf>
+Package pdftex.def Info: tea_blending_optimization_files/figure-latex/lp-visual
+isation-1.pdf  used on input line 1082.
 (pdftex.def)             Requested size: 706.63828pt x 421.57396pt.
 
-Overfull \hbox (236.88326pt too wide) in paragraph at lines 1128--1128
+Overfull \hbox (236.88326pt too wide) in paragraph at lines 1082--1082
  [] 
+ []
+
+
+
+[14]
+<tea_blending_optimization_files/figure-latex/lp-visualisation-2.pdf, id=96, 70
+6.64pt x 421.575pt>
+File: tea_blending_optimization_files/figure-latex/lp-visualisation-2.pdf Graph
+ic file (type pdf)
+<use tea_blending_optimization_files/figure-latex/lp-visualisation-2.pdf>
+Package pdftex.def Info: tea_blending_optimization_files/figure-latex/lp-visual
+isation-2.pdf  used on input line 1102.
+(pdftex.def)             Requested size: 706.63828pt x 421.57396pt.
+
+Overfull \hbox (236.88326pt too wide) in paragraph at lines 1102--1102
+ [] 
+ []
+
+
+
+[15 <./tea_blending_optimization_files/figure-latex/lp-visualisation-1.pdf>]
+
+[16 <./tea_blending_optimization_files/figure-latex/lp-visualisation-2.pdf>]
+Underfull \vbox (badness 10000) detected at line 1262
+ []
+
+
+Underfull \vbox (badness 10000) detected at line 1262
  []
 
 
 
 [17]
-<tea_blending_optimization_files/figure-latex/sa-visualisation-2.pdf, id=128, 7
-12.6625pt x 421.575pt>
-File: tea_blending_optimization_files/figure-latex/sa-visualisation-2.pdf Graph
-ic file (type pdf)
-<use tea_blending_optimization_files/figure-latex/sa-visualisation-2.pdf>
-Package pdftex.def Info: tea_blending_optimization_files/figure-latex/sa-visual
-isation-2.pdf  used on input line 1144.
-(pdftex.def)             Requested size: 712.66077pt x 421.57396pt.
+Underfull \vbox (badness 10000) detected at line 1262
+ []
 
-Overfull \hbox (242.90575pt too wide) in paragraph at lines 1144--1144
- [] 
+
+Underfull \vbox (badness 10000) detected at line 1262
  []
 
 
 
-[18 <./tea_blending_optimization_files/figure-latex/sa-visualisation-1.pdf>]
-<tea_blending_optimization_files/figure-latex/sa-visualisation-3.pdf, id=143, 7
-12.6625pt x 423.5825pt>
-File: tea_blending_optimization_files/figure-latex/sa-visualisation-3.pdf Graph
-ic file (type pdf)
-<use tea_blending_optimization_files/figure-latex/sa-visualisation-3.pdf>
-Package pdftex.def Info: tea_blending_optimization_files/figure-latex/sa-visual
-isation-3.pdf  used on input line 1166.
-(pdftex.def)             Requested size: 712.66077pt x 423.58147pt.
+[18]
 
-Overfull \hbox (242.90575pt too wide) in paragraph at lines 1166--1166
- [] 
+[19]
+Overfull \hbox (196.99304pt too wide) in paragraph at lines 1398--1398
+[]\T1/lmtt/m/n/10 ## <table class="table table-striped table-hover table-conden
+sed" style="color: black; margin-left: auto; margin-right: auto;">[] 
  []
 
 
 
-[19 <./tea_blending_optimization_files/figure-latex/sa-visualisation-2.pdf>]
-
-[20 <./tea_blending_optimization_files/figure-latex/sa-visualisation-3.pdf>]
-Underfull \vbox (badness 10000) detected at line 1246
+[20]
+Overfull \hbox (196.99304pt too wide) in paragraph at lines 1471--1471
+[]\T1/lmtt/m/n/10 ## <table class="table table-striped table-hover table-conden
+sed" style="color: black; margin-left: auto; margin-right: auto;">[] 
  []
 
 
 
 [21]
+<tea_blending_optimization_files/figure-latex/sa-visualisation-1.pdf, id=143, 7
+06.64pt x 421.575pt>
+File: tea_blending_optimization_files/figure-latex/sa-visualisation-1.pdf Graph
+ic file (type pdf)
+<use tea_blending_optimization_files/figure-latex/sa-visualisation-1.pdf>
+Package pdftex.def Info: tea_blending_optimization_files/figure-latex/sa-visual
+isation-1.pdf  used on input line 1491.
+(pdftex.def)             Requested size: 706.63828pt x 421.57396pt.
+
+Overfull \hbox (236.88326pt too wide) in paragraph at lines 1491--1491
+ [] 
+ []
+
+
 
 [22]
-Overfull \hbox (196.99304pt too wide) in paragraph at lines 1413--1413
-[]\T1/lmtt/m/n/10 ## <table class="table table-striped table-hover table-conden
-sed" style="color: black; margin-left: auto; margin-right: auto;">[] 
- []
-
-
-
-[23]
-Overfull \hbox (196.99304pt too wide) in paragraph at lines 1472--1472
-[]\T1/lmtt/m/n/10 ## <table class="table table-striped table-hover table-conden
-sed" style="color: black; margin-left: auto; margin-right: auto;">[] 
- []
-
-
-
-[24]
-<tea_blending_optimization_files/figure-latex/chebyshev-visualisation-1.pdf, id
-=188, 706.64pt x 423.5825pt>
-File: tea_blending_optimization_files/figure-latex/chebyshev-visualisation-1.pd
-f Graphic file (type pdf)
-<use tea_blending_optimization_files/figure-latex/chebyshev-visualisation-1.pdf
->
-Package pdftex.def Info: tea_blending_optimization_files/figure-latex/chebyshev
--visualisation-1.pdf  used on input line 1498.
-(pdftex.def)             Requested size: 706.63828pt x 423.58147pt.
-
-Overfull \hbox (236.88326pt too wide) in paragraph at lines 1498--1498
- [] 
- []
-
-
-
-[25]
-Underfull \vbox (badness 10000) detected at line 1529
- []
-
-
-
-[26 <./tea_blending_optimization_files/figure-latex/chebyshev-visualisation-1.p
-df>]
-<tea_blending_optimization_files/figure-latex/chebyshev-visualisation-2.pdf, id
-=209, 712.6625pt x 421.575pt>
-File: tea_blending_optimization_files/figure-latex/chebyshev-visualisation-2.pd
-f Graphic file (type pdf)
-<use tea_blending_optimization_files/figure-latex/chebyshev-visualisation-2.pdf
->
-Package pdftex.def Info: tea_blending_optimization_files/figure-latex/chebyshev
--visualisation-2.pdf  used on input line 1531.
+<tea_blending_optimization_files/figure-latex/sa-visualisation-2.pdf, id=149, 7
+12.6625pt x 421.575pt>
+File: tea_blending_optimization_files/figure-latex/sa-visualisation-2.pdf Graph
+ic file (type pdf)
+<use tea_blending_optimization_files/figure-latex/sa-visualisation-2.pdf>
+Package pdftex.def Info: tea_blending_optimization_files/figure-latex/sa-visual
+isation-2.pdf  used on input line 1507.
 (pdftex.def)             Requested size: 712.66077pt x 421.57396pt.
 
-Overfull \hbox (242.90575pt too wide) in paragraph at lines 1531--1531
+Overfull \hbox (242.90575pt too wide) in paragraph at lines 1507--1507
  [] 
  []
 
 
 
-[27 <./tea_blending_optimization_files/figure-latex/chebyshev-visualisation-2.p
-df>]
-Underfull \vbox (badness 10000) detected at line 1603
+[23 <./tea_blending_optimization_files/figure-latex/sa-visualisation-1.pdf>]
+<tea_blending_optimization_files/figure-latex/sa-visualisation-3.pdf, id=165, 7
+12.6625pt x 423.5825pt>
+File: tea_blending_optimization_files/figure-latex/sa-visualisation-3.pdf Graph
+ic file (type pdf)
+<use tea_blending_optimization_files/figure-latex/sa-visualisation-3.pdf>
+Package pdftex.def Info: tea_blending_optimization_files/figure-latex/sa-visual
+isation-3.pdf  used on input line 1529.
+(pdftex.def)             Requested size: 712.66077pt x 423.58147pt.
+
+Overfull \hbox (242.90575pt too wide) in paragraph at lines 1529--1529
+ [] 
+ []
+
+
+
+[24 <./tea_blending_optimization_files/figure-latex/sa-visualisation-2.pdf>]
+
+[25 <./tea_blending_optimization_files/figure-latex/sa-visualisation-3.pdf>]
+Underfull \vbox (badness 10000) detected at line 1609
+ []
+
+
+
+[26]
+
+[27]
+Overfull \hbox (196.99304pt too wide) in paragraph at lines 1776--1776
+[]\T1/lmtt/m/n/10 ## <table class="table table-striped table-hover table-conden
+sed" style="color: black; margin-left: auto; margin-right: auto;">[] 
  []
 
 
 
 [28]
-Underfull \vbox (badness 4805) detected at line 1675
+Overfull \hbox (196.99304pt too wide) in paragraph at lines 1835--1835
+[]\T1/lmtt/m/n/10 ## <table class="table table-striped table-hover table-conden
+sed" style="color: black; margin-left: auto; margin-right: auto;">[] 
  []
 
 
 
 [29]
-Overfull \hbox (196.99304pt too wide) in paragraph at lines 1788--1788
-[]\T1/lmtt/m/n/10 ## <table class="table table-striped table-hover table-conden
-sed" style="color: black; margin-left: auto; margin-right: auto;">[] 
+<tea_blending_optimization_files/figure-latex/chebyshev-visualisation-1.pdf, id
+=209, 706.64pt x 423.5825pt>
+File: tea_blending_optimization_files/figure-latex/chebyshev-visualisation-1.pd
+f Graphic file (type pdf)
+<use tea_blending_optimization_files/figure-latex/chebyshev-visualisation-1.pdf
+>
+Package pdftex.def Info: tea_blending_optimization_files/figure-latex/chebyshev
+-visualisation-1.pdf  used on input line 1861.
+(pdftex.def)             Requested size: 706.63828pt x 423.58147pt.
+
+Overfull \hbox (236.88326pt too wide) in paragraph at lines 1861--1861
+ [] 
  []
 
 
 
 [30]
-Overfull \hbox (196.99304pt too wide) in paragraph at lines 1847--1847
+Underfull \vbox (badness 10000) detected at line 1892
+ []
+
+
+
+[31 <./tea_blending_optimization_files/figure-latex/chebyshev-visualisation-1.p
+df>]
+<tea_blending_optimization_files/figure-latex/chebyshev-visualisation-2.pdf, id
+=230, 712.6625pt x 421.575pt>
+File: tea_blending_optimization_files/figure-latex/chebyshev-visualisation-2.pd
+f Graphic file (type pdf)
+<use tea_blending_optimization_files/figure-latex/chebyshev-visualisation-2.pdf
+>
+Package pdftex.def Info: tea_blending_optimization_files/figure-latex/chebyshev
+-visualisation-2.pdf  used on input line 1894.
+(pdftex.def)             Requested size: 712.66077pt x 421.57396pt.
+
+Overfull \hbox (242.90575pt too wide) in paragraph at lines 1894--1894
+ [] 
+ []
+
+
+
+[32 <./tea_blending_optimization_files/figure-latex/chebyshev-visualisation-2.p
+df>]
+Underfull \vbox (badness 10000) detected at line 1966
+ []
+
+
+
+[33]
+Underfull \vbox (badness 4805) detected at line 2038
+ []
+
+
+
+[34]
+Overfull \hbox (196.99304pt too wide) in paragraph at lines 2151--2151
 []\T1/lmtt/m/n/10 ## <table class="table table-striped table-hover table-conden
 sed" style="color: black; margin-left: auto; margin-right: auto;">[] 
  []
 
 
 
-[31]
-Overfull \vbox (1.54495pt too high) detected at line 1942
+[35]
+Overfull \hbox (196.99304pt too wide) in paragraph at lines 2210--2210
+[]\T1/lmtt/m/n/10 ## <table class="table table-striped table-hover table-conden
+sed" style="color: black; margin-left: auto; margin-right: auto;">[] 
  []
 
 
 
-[32]
-Underfull \vbox (badness 10000) detected at line 1942
- []
-
-
-Underfull \vbox (badness 10000) detected at line 1942
+[36]
+Overfull \vbox (1.54495pt too high) detected at line 2305
  []
 
 
 
-[33]
-<tea_blending_optimization_files/figure-latex/ga-visualisation-1.pdf, id=251, 7
+[37]
+Underfull \vbox (badness 10000) detected at line 2305
+ []
+
+
+Underfull \vbox (badness 10000) detected at line 2305
+ []
+
+
+
+[38]
+<tea_blending_optimization_files/figure-latex/ga-visualisation-1.pdf, id=272, 7
 06.64pt x 421.575pt>
 File: tea_blending_optimization_files/figure-latex/ga-visualisation-1.pdf Graph
 ic file (type pdf)
 <use tea_blending_optimization_files/figure-latex/ga-visualisation-1.pdf>
 Package pdftex.def Info: tea_blending_optimization_files/figure-latex/ga-visual
-isation-1.pdf  used on input line 1944.
+isation-1.pdf  used on input line 2307.
 (pdftex.def)             Requested size: 706.63828pt x 421.57396pt.
 
-Overfull \hbox (236.88326pt too wide) in paragraph at lines 1944--1944
+Overfull \hbox (236.88326pt too wide) in paragraph at lines 2307--2307
  [] 
  []
 
 
 
-[34]
-<tea_blending_optimization_files/figure-latex/ga-visualisation-2.pdf, id=256, 7
+[39]
+<tea_blending_optimization_files/figure-latex/ga-visualisation-2.pdf, id=277, 7
 06.64pt x 421.575pt>
 File: tea_blending_optimization_files/figure-latex/ga-visualisation-2.pdf Graph
 ic file (type pdf)
 <use tea_blending_optimization_files/figure-latex/ga-visualisation-2.pdf>
 Package pdftex.def Info: tea_blending_optimization_files/figure-latex/ga-visual
-isation-2.pdf  used on input line 1966.
+isation-2.pdf  used on input line 2329.
 (pdftex.def)             Requested size: 706.63828pt x 421.57396pt.
 
-Overfull \hbox (236.88326pt too wide) in paragraph at lines 1966--1966
+Overfull \hbox (236.88326pt too wide) in paragraph at lines 2329--2329
  [] 
  []
 
 
 
-[35 <./tea_blending_optimization_files/figure-latex/ga-visualisation-1.pdf>]
+[40 <./tea_blending_optimization_files/figure-latex/ga-visualisation-1.pdf>]
 
-[36 <./tea_blending_optimization_files/figure-latex/ga-visualisation-2.pdf>]
-Overfull \hbox (286.24278pt too wide) in paragraph at lines 2064--2064
+[41 <./tea_blending_optimization_files/figure-latex/ga-visualisation-2.pdf>]
+Overfull \hbox (286.24278pt too wide) in paragraph at lines 2427--2427
 []\T1/lmtt/m/n/10 ## <table class="table table-striped table-hover table-conden
 sed table-responsive" style="color: black; margin-left: auto; margin-right: aut
 o;">[] 
@@ -1009,73 +1042,73 @@ o;">[]
 
 
 
-[37]
-<tea_blending_optimization_files/figure-latex/comparison-1.pdf, id=289, 712.662
+[42]
+<tea_blending_optimization_files/figure-latex/comparison-1.pdf, id=310, 712.662
 5pt x 423.5825pt>
 File: tea_blending_optimization_files/figure-latex/comparison-1.pdf Graphic fil
 e (type pdf)
 <use tea_blending_optimization_files/figure-latex/comparison-1.pdf>
 Package pdftex.def Info: tea_blending_optimization_files/figure-latex/compariso
-n-1.pdf  used on input line 2080.
+n-1.pdf  used on input line 2443.
 (pdftex.def)             Requested size: 712.66077pt x 423.58147pt.
 
-Overfull \hbox (242.90575pt too wide) in paragraph at lines 2080--2080
+Overfull \hbox (242.90575pt too wide) in paragraph at lines 2443--2443
  [] 
  []
 
 
 
-[38]
-<tea_blending_optimization_files/figure-latex/comparison-2.pdf, id=295, 706.64p
+[43]
+<tea_blending_optimization_files/figure-latex/comparison-2.pdf, id=316, 706.64p
 t x 423.5825pt>
 File: tea_blending_optimization_files/figure-latex/comparison-2.pdf Graphic fil
 e (type pdf)
 <use tea_blending_optimization_files/figure-latex/comparison-2.pdf>
 Package pdftex.def Info: tea_blending_optimization_files/figure-latex/compariso
-n-2.pdf  used on input line 2096.
+n-2.pdf  used on input line 2459.
 (pdftex.def)             Requested size: 706.63828pt x 423.58147pt.
 
-Overfull \hbox (236.88326pt too wide) in paragraph at lines 2096--2096
+Overfull \hbox (236.88326pt too wide) in paragraph at lines 2459--2459
  [] 
  []
 
 
 
-[39 <./tea_blending_optimization_files/figure-latex/comparison-1.pdf>]
-<tea_blending_optimization_files/figure-latex/comparison-3.pdf, id=307, 712.662
+[44 <./tea_blending_optimization_files/figure-latex/comparison-1.pdf>]
+<tea_blending_optimization_files/figure-latex/comparison-3.pdf, id=328, 712.662
 5pt x 423.5825pt>
 File: tea_blending_optimization_files/figure-latex/comparison-3.pdf Graphic fil
 e (type pdf)
 <use tea_blending_optimization_files/figure-latex/comparison-3.pdf>
 Package pdftex.def Info: tea_blending_optimization_files/figure-latex/compariso
-n-3.pdf  used on input line 2112.
+n-3.pdf  used on input line 2475.
 (pdftex.def)             Requested size: 712.66077pt x 423.58147pt.
 
-Overfull \hbox (242.90575pt too wide) in paragraph at lines 2112--2112
+Overfull \hbox (242.90575pt too wide) in paragraph at lines 2475--2475
  [] 
  []
 
 
 
-[40 <./tea_blending_optimization_files/figure-latex/comparison-2.pdf>]
+[45 <./tea_blending_optimization_files/figure-latex/comparison-2.pdf>]
 
-[41 <./tea_blending_optimization_files/figure-latex/comparison-3.pdf>]
-Overfull \vbox (1.04662pt too high) detected at line 2284
+[46 <./tea_blending_optimization_files/figure-latex/comparison-3.pdf>]
+Overfull \vbox (1.04662pt too high) detected at line 2647
  []
 
 
 
-[42]
-Overfull \hbox (196.99304pt too wide) in paragraph at lines 2350--2350
+[47]
+Overfull \hbox (196.99304pt too wide) in paragraph at lines 2713--2713
 []\T1/lmtt/m/n/10 ## <table class="table table-striped table-hover table-conden
 sed" style="color: black; margin-left: auto; margin-right: auto;">[] 
  []
 
 
 
-[43]
+[48]
 
-[44]
+[49]
 
 ! LaTeX Error: Unicode character ε (U+03B5)
                not set up for use with LaTeX.
@@ -1084,18 +1117,18 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.2410 ...can be adjusted: - \textbf{ε (epsilon)}
+l.2773 ...can be adjusted: - \textbf{ε (epsilon)}
                                                   : Tolerance
 You may provide a definition with
 \DeclareUnicodeCharacter 
 
  
 Here is how much of TeX's memory you used:
- 15936 strings out of 473190
- 256215 string characters out of 5715801
- 705769 words of memory out of 5000000
+ 15943 strings out of 473190
+ 256270 string characters out of 5715801
+ 708769 words of memory out of 5000000
  38748 multiletter control sequences out of 15000+600000
- 609769 words of font info for 118 fonts, out of 8000000 for 9000
+ 609852 words of font info for 119 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 83i,7n,93p,1022b,747s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 83i,7n,93p,1022b,719s stack positions out of 10000i,1000n,20000p,200000b,200000s
 !  ==> Fatal error occurred, no output PDF file produced!

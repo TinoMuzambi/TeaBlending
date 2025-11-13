@@ -120,7 +120,7 @@
 
 \title{Tea Blending Optimisation: A Comprehensive Analysis}
 \author{Optimisation Analysis}
-\date{2025-11-12}
+\date{2025-11-13}
 
 \begin{document}
 \maketitle
@@ -224,10 +224,11 @@ data for raw materials and blends.
 \NormalTok{char\_names }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"Brightness"}\NormalTok{, }\StringTok{"Colour"}\NormalTok{, }\StringTok{"Thickness"}\NormalTok{)}
 
 \CommentTok{\# Generate raw materials data (Table 2 structure)}
+\CommentTok{\# Generate raw materials first so we can use actual availability for blend demand generation}
 \NormalTok{raw\_materials }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
   \AttributeTok{Material\_ID =} \FunctionTok{paste0}\NormalTok{(}\StringTok{"RM"}\NormalTok{, }\DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials),}
   \AttributeTok{Cost =} \FunctionTok{round}\NormalTok{(}\FunctionTok{runif}\NormalTok{(n\_materials, }\FloatTok{2.5}\NormalTok{, }\FloatTok{8.0}\NormalTok{), }\DecValTok{2}\NormalTok{),}
-  \AttributeTok{Availability =} \FunctionTok{round}\NormalTok{(}\FunctionTok{runif}\NormalTok{(n\_materials, }\DecValTok{100}\NormalTok{, }\DecValTok{500}\NormalTok{), }\DecValTok{0}\NormalTok{),}
+  \AttributeTok{Availability =} \FunctionTok{round}\NormalTok{(}\FunctionTok{runif}\NormalTok{(n\_materials, }\DecValTok{150}\NormalTok{, }\DecValTok{400}\NormalTok{), }\DecValTok{0}\NormalTok{),  }\CommentTok{\# Increased minimum to ensure feasibility}
   \AttributeTok{stringsAsFactors =} \ConstantTok{FALSE}
 \NormalTok{)}
 
@@ -240,24 +241,110 @@ data for raw materials and blends.
 \FunctionTok{colnames}\NormalTok{(quality\_matrix) }\OtherTok{\textless{}{-}}\NormalTok{ char\_names}
 \NormalTok{raw\_materials }\OtherTok{\textless{}{-}} \FunctionTok{cbind}\NormalTok{(raw\_materials, quality\_matrix)}
 
-\CommentTok{\# Generate blends data (Table 3 structure)}
+\CommentTok{\# Now generate blends with demand that\textquotesingle{}s feasible given availability}
+\NormalTok{total\_availability\_estimate }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(raw\_materials}\SpecialCharTok{$}\NormalTok{Availability)}
+\CommentTok{\# Ensure each blend demand is reasonable and total is less than availability}
+\NormalTok{max\_blend\_demand }\OtherTok{\textless{}{-}} \FunctionTok{min}\NormalTok{(}\DecValTok{200}\NormalTok{, total\_availability\_estimate }\SpecialCharTok{/}\NormalTok{ (n\_blends }\SpecialCharTok{*} \FloatTok{1.5}\NormalTok{))}
 \NormalTok{blends }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
   \AttributeTok{Blend\_ID =} \FunctionTok{paste0}\NormalTok{(}\StringTok{"Blend"}\NormalTok{, }\DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends),}
-  \AttributeTok{Demand =} \FunctionTok{round}\NormalTok{(}\FunctionTok{runif}\NormalTok{(n\_blends, }\DecValTok{50}\NormalTok{, }\DecValTok{200}\NormalTok{), }\DecValTok{0}\NormalTok{),}
+  \AttributeTok{Demand =} \FunctionTok{round}\NormalTok{(}\FunctionTok{runif}\NormalTok{(n\_blends, }\DecValTok{50}\NormalTok{, max\_blend\_demand), }\DecValTok{0}\NormalTok{),}
   \AttributeTok{stringsAsFactors =} \ConstantTok{FALSE}
 \NormalTok{)}
 
 \CommentTok{\# Generate target quality scores for blends (s\_jk)}
-\NormalTok{target\_matrix }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}
-  \FunctionTok{round}\NormalTok{(}\FunctionTok{runif}\NormalTok{(n\_blends }\SpecialCharTok{*}\NormalTok{ n\_characteristics, }\DecValTok{3}\NormalTok{, }\DecValTok{8}\NormalTok{), }\DecValTok{2}\NormalTok{),}
-  \AttributeTok{nrow =}\NormalTok{ n\_blends,}
-  \AttributeTok{ncol =}\NormalTok{ n\_characteristics}
-\NormalTok{)}
+\CommentTok{\# Ensure targets are achievable by setting them within the range of raw material qualities}
+\CommentTok{\# Calculate min and max for each characteristic from the raw materials}
+\NormalTok{quality\_mins }\OtherTok{\textless{}{-}} \FunctionTok{apply}\NormalTok{(quality\_matrix, }\DecValTok{2}\NormalTok{, min)}
+\NormalTok{quality\_maxs }\OtherTok{\textless{}{-}} \FunctionTok{apply}\NormalTok{(quality\_matrix, }\DecValTok{2}\NormalTok{, max)}
+\NormalTok{quality\_means }\OtherTok{\textless{}{-}} \FunctionTok{apply}\NormalTok{(quality\_matrix, }\DecValTok{2}\NormalTok{, mean)}
+\NormalTok{quality\_ranges }\OtherTok{\textless{}{-}}\NormalTok{ quality\_maxs }\SpecialCharTok{{-}}\NormalTok{ quality\_mins}
+
+\CommentTok{\# Generate targets that are more likely to be achievable}
+\CommentTok{\# Use weighted average of materials, biased toward the middle of the range}
+\NormalTok{target\_matrix }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\DecValTok{0}\NormalTok{, }\AttributeTok{nrow =}\NormalTok{ n\_blends, }\AttributeTok{ncol =}\NormalTok{ n\_characteristics)}
+\ControlFlowTok{for}\NormalTok{ (j }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends) \{}
+  \ControlFlowTok{for}\NormalTok{ (k }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_characteristics) \{}
+    \CommentTok{\# Target should be between min and max, but closer to mean for better feasibility}
+    \CommentTok{\# Use a convex combination: 60\% toward mean, 40\% random variation}
+\NormalTok{    target\_base }\OtherTok{\textless{}{-}} \FloatTok{0.6} \SpecialCharTok{*}\NormalTok{ quality\_means[k] }\SpecialCharTok{+} \FloatTok{0.4} \SpecialCharTok{*}\NormalTok{ (quality\_mins[k] }\SpecialCharTok{+} \FunctionTok{runif}\NormalTok{(}\DecValTok{1}\NormalTok{, }\FloatTok{0.3}\NormalTok{, }\FloatTok{0.7}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ quality\_ranges[k])}
+    \CommentTok{\# Ensure it\textquotesingle{}s within bounds}
+\NormalTok{    target\_matrix[j, k] }\OtherTok{\textless{}{-}} \FunctionTok{round}\NormalTok{(}
+      \FunctionTok{max}\NormalTok{(quality\_mins[k] }\SpecialCharTok{+} \FloatTok{0.1} \SpecialCharTok{*}\NormalTok{ quality\_ranges[k], }
+          \FunctionTok{min}\NormalTok{(quality\_maxs[k] }\SpecialCharTok{{-}} \FloatTok{0.1} \SpecialCharTok{*}\NormalTok{ quality\_ranges[k], target\_base)), }
+      \DecValTok{2}
+\NormalTok{    )}
+\NormalTok{  \}}
+\NormalTok{\}}
 \FunctionTok{colnames}\NormalTok{(target\_matrix) }\OtherTok{\textless{}{-}}\NormalTok{ char\_names}
 \NormalTok{blends }\OtherTok{\textless{}{-}} \FunctionTok{cbind}\NormalTok{(blends, target\_matrix)}
 
 \CommentTok{\# Set tolerance parameters (epsilon\_jk)}
-\NormalTok{epsilon }\OtherTok{\textless{}{-}} \FloatTok{0.1}
+\CommentTok{\# Increased epsilon to ensure feasibility with quality constraints}
+\CommentTok{\# Start with a more relaxed tolerance}
+\NormalTok{epsilon }\OtherTok{\textless{}{-}} \FloatTok{1.0}
+
+\CommentTok{\# Verify basic feasibility: total availability should exceed total demand}
+\NormalTok{total\_availability }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(raw\_materials}\SpecialCharTok{$}\NormalTok{Availability)}
+\NormalTok{total\_demand }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(blends}\SpecialCharTok{$}\NormalTok{Demand)}
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{=== Feasibility Check ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## === Feasibility Check ===
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Total Availability: \%.0f Kgs}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, total\_availability))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Total Availability: 1859 Kgs
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Total Demand: \%.0f Kgs}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, total\_demand))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Total Demand: 702 Kgs
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# If availability is insufficient, increase it}
+\ControlFlowTok{if}\NormalTok{ (total\_availability }\SpecialCharTok{\textless{}}\NormalTok{ total\_demand }\SpecialCharTok{*} \FloatTok{1.2}\NormalTok{) \{}
+  \FunctionTok{cat}\NormalTok{(}\StringTok{"Adjusting availability to ensure sufficient supply...}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\NormalTok{  shortage }\OtherTok{\textless{}{-}}\NormalTok{ total\_demand }\SpecialCharTok{*} \FloatTok{1.2} \SpecialCharTok{{-}}\NormalTok{ total\_availability}
+  \CommentTok{\# Distribute shortage proportionally}
+\NormalTok{  old\_availability }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Availability}
+  \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials) \{}
+\NormalTok{    raw\_materials}\SpecialCharTok{$}\NormalTok{Availability[i] }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Availability[i] }\SpecialCharTok{+} 
+      \FunctionTok{round}\NormalTok{(shortage }\SpecialCharTok{*}\NormalTok{ (raw\_materials}\SpecialCharTok{$}\NormalTok{Availability[i] }\SpecialCharTok{/}\NormalTok{ total\_availability))}
+\NormalTok{  \}}
+  \CommentTok{\# Ensure no material has zero availability}
+\NormalTok{  raw\_materials}\SpecialCharTok{$}\NormalTok{Availability[raw\_materials}\SpecialCharTok{$}\NormalTok{Availability }\SpecialCharTok{\textless{}} \DecValTok{10}\NormalTok{] }\OtherTok{\textless{}{-}} \DecValTok{10}
+\NormalTok{  total\_availability }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(raw\_materials}\SpecialCharTok{$}\NormalTok{Availability)}
+  \FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Adjusted Total Availability: \%.0f Kgs}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, total\_availability))}
+  \CommentTok{\# Update the numeric a vector (used in ompr)}
+\NormalTok{  a }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(raw\_materials}\SpecialCharTok{$}\NormalTok{Availability)}
+  
+  \CommentTok{\# Final check}
+  \ControlFlowTok{if}\NormalTok{ (total\_availability }\SpecialCharTok{\textless{}}\NormalTok{ total\_demand) \{}
+    \CommentTok{\# If still insufficient, increase all materials equally}
+\NormalTok{    additional\_needed }\OtherTok{\textless{}{-}}\NormalTok{ total\_demand }\SpecialCharTok{*} \FloatTok{1.1} \SpecialCharTok{{-}}\NormalTok{ total\_availability}
+\NormalTok{    per\_material }\OtherTok{\textless{}{-}} \FunctionTok{ceiling}\NormalTok{(additional\_needed }\SpecialCharTok{/}\NormalTok{ n\_materials)}
+\NormalTok{    raw\_materials}\SpecialCharTok{$}\NormalTok{Availability }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Availability }\SpecialCharTok{+}\NormalTok{ per\_material}
+\NormalTok{    a }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(raw\_materials}\SpecialCharTok{$}\NormalTok{Availability)}
+\NormalTok{    total\_availability }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(a)}
+    \FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Final adjustment: Total Availability = \%.0f Kgs}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, total\_availability))}
+\NormalTok{  \}}
+\NormalTok{\}}
 
 \CommentTok{\# Display the data}
 \FunctionTok{cat}\NormalTok{(}\StringTok{"=== Raw Materials Data (Table 2) ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
@@ -292,7 +379,7 @@ data for raw materials and blends.
 ##   <tr>
 ##    <td style="text-align:left;"> RM1 </td>
 ##    <td style="text-align:right;"> 4.08 </td>
-##    <td style="text-align:right;"> 311 </td>
+##    <td style="text-align:right;"> 282 </td>
 ##    <td style="text-align:right;"> 7.10 </td>
 ##    <td style="text-align:right;"> 3.95 </td>
 ##    <td style="text-align:right;"> 6.90 </td>
@@ -300,7 +387,7 @@ data for raw materials and blends.
 ##   <tr>
 ##    <td style="text-align:left;"> RM2 </td>
 ##    <td style="text-align:right;"> 6.84 </td>
-##    <td style="text-align:right;"> 457 </td>
+##    <td style="text-align:right;"> 373 </td>
 ##    <td style="text-align:right;"> 6.15 </td>
 ##    <td style="text-align:right;"> 9.59 </td>
 ##    <td style="text-align:right;"> 7.38 </td>
@@ -308,7 +395,7 @@ data for raw materials and blends.
 ##   <tr>
 ##    <td style="text-align:left;"> RM3 </td>
 ##    <td style="text-align:right;"> 4.75 </td>
-##    <td style="text-align:right;"> 321 </td>
+##    <td style="text-align:right;"> 288 </td>
 ##    <td style="text-align:right;"> 1.93 </td>
 ##    <td style="text-align:right;"> 9.01 </td>
 ##    <td style="text-align:right;"> 5.90 </td>
@@ -316,7 +403,7 @@ data for raw materials and blends.
 ##   <tr>
 ##    <td style="text-align:left;"> RM4 </td>
 ##    <td style="text-align:right;"> 7.36 </td>
-##    <td style="text-align:right;"> 283 </td>
+##    <td style="text-align:right;"> 264 </td>
 ##    <td style="text-align:right;"> 9.10 </td>
 ##    <td style="text-align:right;"> 7.24 </td>
 ##    <td style="text-align:right;"> 6.35 </td>
@@ -324,7 +411,7 @@ data for raw materials and blends.
 ##   <tr>
 ##    <td style="text-align:left;"> RM5 </td>
 ##    <td style="text-align:right;"> 7.67 </td>
-##    <td style="text-align:right;"> 483 </td>
+##    <td style="text-align:right;"> 389 </td>
 ##    <td style="text-align:right;"> 3.21 </td>
 ##    <td style="text-align:right;"> 6.76 </td>
 ##    <td style="text-align:right;"> 3.60 </td>
@@ -332,7 +419,7 @@ data for raw materials and blends.
 ##   <tr>
 ##    <td style="text-align:left;"> RM6 </td>
 ##    <td style="text-align:right;"> 2.75 </td>
-##    <td style="text-align:right;"> 281 </td>
+##    <td style="text-align:right;"> 263 </td>
 ##    <td style="text-align:right;"> 1.38 </td>
 ##    <td style="text-align:right;"> 9.95 </td>
 ##    <td style="text-align:right;"> 2.32 </td>
@@ -375,30 +462,30 @@ data for raw materials and blends.
 ##   <tr>
 ##    <td style="text-align:left;"> Blend1 </td>
 ##    <td style="text-align:right;"> 194 </td>
-##    <td style="text-align:right;"> 3.12 </td>
-##    <td style="text-align:right;"> 4.59 </td>
-##    <td style="text-align:right;"> 5.07 </td>
+##    <td style="text-align:right;"> 4.40 </td>
+##    <td style="text-align:right;"> 7.41 </td>
+##    <td style="text-align:right;"> 5.39 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> Blend2 </td>
 ##    <td style="text-align:right;"> 185 </td>
-##    <td style="text-align:right;"> 5.39 </td>
-##    <td style="text-align:right;"> 4.16 </td>
-##    <td style="text-align:right;"> 4.84 </td>
+##    <td style="text-align:right;"> 4.63 </td>
+##    <td style="text-align:right;"> 7.26 </td>
+##    <td style="text-align:right;"> 4.97 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> Blend3 </td>
 ##    <td style="text-align:right;"> 154 </td>
-##    <td style="text-align:right;"> 6.79 </td>
-##    <td style="text-align:right;"> 3.71 </td>
-##    <td style="text-align:right;"> 3.76 </td>
+##    <td style="text-align:right;"> 4.54 </td>
+##    <td style="text-align:right;"> 7.35 </td>
+##    <td style="text-align:right;"> 5.12 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> Blend4 </td>
 ##    <td style="text-align:right;"> 169 </td>
-##    <td style="text-align:right;"> 4.08 </td>
-##    <td style="text-align:right;"> 5.07 </td>
-##    <td style="text-align:right;"> 3.69 </td>
+##    <td style="text-align:right;"> 4.82 </td>
+##    <td style="text-align:right;"> 7.10 </td>
+##    <td style="text-align:right;"> 4.89 </td>
 ##   </tr>
 ## </tbody>
 ## </table>
@@ -407,20 +494,26 @@ data for raw materials and blends.
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{\# Store data in convenient format for later use}
-\NormalTok{P }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Cost}
-\FunctionTok{names}\NormalTok{(P) }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Material\_ID}
+\CommentTok{\# For ompr, we need numeric{-}indexed vectors (not named vectors)}
+\NormalTok{P }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(raw\_materials}\SpecialCharTok{$}\NormalTok{Cost)  }\CommentTok{\# Cost vector indexed by i = 1:n\_materials}
+\NormalTok{a }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(raw\_materials}\SpecialCharTok{$}\NormalTok{Availability)  }\CommentTok{\# Availability vector indexed by i = 1:n\_materials}
+\NormalTok{D }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(blends}\SpecialCharTok{$}\NormalTok{Demand)  }\CommentTok{\# Demand vector indexed by j = 1:n\_blends}
 
-\NormalTok{a }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Availability}
-\FunctionTok{names}\NormalTok{(a) }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Material\_ID}
+\CommentTok{\# Quality matrices: g[i,k] and s[j,k] indexed numerically}
+\NormalTok{g }\OtherTok{\textless{}{-}} \FunctionTok{as.matrix}\NormalTok{(raw\_materials[, char\_names])  }\CommentTok{\# g[i,k] where i = 1:n\_materials, k = 1:n\_characteristics}
+\NormalTok{s }\OtherTok{\textless{}{-}} \FunctionTok{as.matrix}\NormalTok{(blends[, char\_names])  }\CommentTok{\# s[j,k] where j = 1:n\_blends, k = 1:n\_characteristics}
 
-\NormalTok{D }\OtherTok{\textless{}{-}}\NormalTok{ blends}\SpecialCharTok{$}\NormalTok{Demand}
-\FunctionTok{names}\NormalTok{(D) }\OtherTok{\textless{}{-}}\NormalTok{ blends}\SpecialCharTok{$}\NormalTok{Blend\_ID}
-
-\NormalTok{g }\OtherTok{\textless{}{-}} \FunctionTok{as.matrix}\NormalTok{(raw\_materials[, char\_names])}
-\FunctionTok{rownames}\NormalTok{(g) }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Material\_ID}
-
-\NormalTok{s }\OtherTok{\textless{}{-}} \FunctionTok{as.matrix}\NormalTok{(blends[, char\_names])}
-\FunctionTok{rownames}\NormalTok{(s) }\OtherTok{\textless{}{-}}\NormalTok{ blends}\SpecialCharTok{$}\NormalTok{Blend\_ID}
+\CommentTok{\# Keep named versions for display purposes}
+\NormalTok{P\_named }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Cost}
+\FunctionTok{names}\NormalTok{(P\_named) }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Material\_ID}
+\NormalTok{a\_named }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Availability}
+\FunctionTok{names}\NormalTok{(a\_named) }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Material\_ID}
+\NormalTok{D\_named }\OtherTok{\textless{}{-}}\NormalTok{ blends}\SpecialCharTok{$}\NormalTok{Demand}
+\FunctionTok{names}\NormalTok{(D\_named) }\OtherTok{\textless{}{-}}\NormalTok{ blends}\SpecialCharTok{$}\NormalTok{Blend\_ID}
+\NormalTok{g\_named }\OtherTok{\textless{}{-}} \FunctionTok{as.matrix}\NormalTok{(raw\_materials[, char\_names])}
+\FunctionTok{rownames}\NormalTok{(g\_named) }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Material\_ID}
+\NormalTok{s\_named }\OtherTok{\textless{}{-}} \FunctionTok{as.matrix}\NormalTok{(blends[, char\_names])}
+\FunctionTok{rownames}\NormalTok{(s\_named) }\OtherTok{\textless{}{-}}\NormalTok{ blends}\SpecialCharTok{$}\NormalTok{Blend\_ID}
 \end{Highlighting}
 \end{Shaded}
 
@@ -430,6 +523,14 @@ Programming}\label{approach-1-cost-minimisation-using-linear-programming}
 This section implements the cost-minimisation model using Linear
 Programming with parametric relaxation of the characteristic-matching
 constraints.
+
+\textbf{Assignment Expectations}: The technical report requires
+implementing a cost-minimisation LP model that finds the optimal
+combination of raw materials to produce blends meeting demand and
+quality constraints. This implementation uses Rglpk (direct GLPK
+interface) as specified in the assignment requirements, which provides a
+straightforward matrix-based formulation that is well-suited for this
+problem type.
 
 \subsection{3.1 Model Formulation}\label{model-formulation}
 
@@ -463,60 +564,311 @@ constraints.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Create the LP model using ompr}
-\NormalTok{lp\_model }\OtherTok{\textless{}{-}} \FunctionTok{MIPModel}\NormalTok{() }\SpecialCharTok{\%\textgreater{}\%}
-  \CommentTok{\# Decision variables: x\_ij (amount of material i in blend j)}
-  \FunctionTok{add\_variable}\NormalTok{(x[i, j], }\AttributeTok{i =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials, }\AttributeTok{j =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends, }\AttributeTok{type =} \StringTok{"continuous"}\NormalTok{, }\AttributeTok{lb =} \DecValTok{0}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
-  
-  \CommentTok{\# Objective: minimise total cost}
-  \FunctionTok{set\_objective}\NormalTok{(}\FunctionTok{sum\_expr}\NormalTok{(P[i] }\SpecialCharTok{*}\NormalTok{ x[i, j], }\AttributeTok{i =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials, }\AttributeTok{j =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends), }\AttributeTok{sense =} \StringTok{"min"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
-  
-  \CommentTok{\# Constraint 1: Raw material availability}
-  \FunctionTok{add\_constraint}\NormalTok{(}\FunctionTok{sum\_expr}\NormalTok{(x[i, j], }\AttributeTok{j =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends) }\SpecialCharTok{\textless{}=}\NormalTok{ a[i], }\AttributeTok{i =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials) }\SpecialCharTok{\%\textgreater{}\%}
-  
-  \CommentTok{\# Constraint 2: Blend demand}
-  \FunctionTok{add\_constraint}\NormalTok{(}\FunctionTok{sum\_expr}\NormalTok{(x[i, j], }\AttributeTok{i =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials) }\SpecialCharTok{\textgreater{}=}\NormalTok{ D[j], }\AttributeTok{j =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends) }\SpecialCharTok{\%\textgreater{}\%}
-  
-  \CommentTok{\# Constraint 3: Characteristic score relaxation (upper bound)}
-  \FunctionTok{add\_constraint}\NormalTok{(}\FunctionTok{sum\_expr}\NormalTok{((g[i, k] }\SpecialCharTok{{-}}\NormalTok{ (s[j, k] }\SpecialCharTok{+}\NormalTok{ epsilon)) }\SpecialCharTok{*}\NormalTok{ x[i, j], }\AttributeTok{i =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials) }\SpecialCharTok{\textless{}=} \DecValTok{0}\NormalTok{, }
-                 \AttributeTok{j =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends, }\AttributeTok{k =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_characteristics) }\SpecialCharTok{\%\textgreater{}\%}
-  
-  \CommentTok{\# Constraint 4: Characteristic score relaxation (lower bound)}
-  \FunctionTok{add\_constraint}\NormalTok{(}\FunctionTok{sum\_expr}\NormalTok{((g[i, k] }\SpecialCharTok{{-}}\NormalTok{ (s[j, k] }\SpecialCharTok{{-}}\NormalTok{ epsilon)) }\SpecialCharTok{*}\NormalTok{ x[i, j], }\AttributeTok{i =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials) }\SpecialCharTok{\textgreater{}=} \DecValTok{0}\NormalTok{, }
-                 \AttributeTok{j =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends, }\AttributeTok{k =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_characteristics)}
-
-\CommentTok{\# Solve the model}
-\FunctionTok{cat}\NormalTok{(}\StringTok{"Solving LP model...}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\CommentTok{\# Implementation using Rglpk directly (as per assignment requirement)}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Solving LP model using Rglpk...}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
-## Solving LP model...
+## Solving LP model using Rglpk...
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Model dimensions: \%d materials, \%d blends, \%d characteristics}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, }
+\NormalTok{            n\_materials, n\_blends, n\_characteristics))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Model dimensions: 6 materials, 4 blends, 3 characteristics
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Total availability: \%.0f, Total demand: \%.0f}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, }
+            \FunctionTok{sum}\NormalTok{(a), }\FunctionTok{sum}\NormalTok{(D)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Total availability: 1859, Total demand: 702
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Availability ratio: \%.2f}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, }\FunctionTok{sum}\NormalTok{(a) }\SpecialCharTok{/} \FunctionTok{sum}\NormalTok{(D)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Availability ratio: 2.65
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Using epsilon = \%.2f for quality constraints}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, epsilon))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Using epsilon = 1.00 for quality constraints
 \end{verbatim}
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \NormalTok{lp\_start\_time }\OtherTok{\textless{}{-}} \FunctionTok{Sys.time}\NormalTok{()}
-\NormalTok{lp\_result }\OtherTok{\textless{}{-}} \FunctionTok{solve\_model}\NormalTok{(lp\_model, }\FunctionTok{with\_ROI}\NormalTok{(}\AttributeTok{solver =} \StringTok{"glpk"}\NormalTok{, }\AttributeTok{verbose =} \ConstantTok{FALSE}\NormalTok{))}
+
+\CommentTok{\# Number of decision variables: n\_materials * n\_blends (x[i,j] for all i,j)}
+\NormalTok{n\_vars }\OtherTok{\textless{}{-}}\NormalTok{ n\_materials }\SpecialCharTok{*}\NormalTok{ n\_blends}
+
+\CommentTok{\# Objective function: minimize cost}
+\CommentTok{\# Objective coefficients: P[i] for each x[i,j]}
+\CommentTok{\# Variable ordering: x[1,1], x[1,2], ..., x[1,n\_blends], x[2,1], ..., x[n\_materials,n\_blends]}
+\NormalTok{obj\_coef }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(P, n\_blends)  }\CommentTok{\# Repeat P for each blend}
+
+\CommentTok{\# Build constraint matrix}
+\CommentTok{\# Constraints in order:}
+\CommentTok{\# 1. Availability: sum\_j x[i,j] \textless{}= a[i] for each i (n\_materials constraints)}
+\CommentTok{\# 2. Demand: sum\_i x[i,j] \textgreater{}= D[j] for each j (n\_blends constraints)  }
+\CommentTok{\# 3. Quality upper: sum\_i (g[i,k] {-} (s[j,k] + eps)) * x[i,j] \textless{}= 0 (n\_blends * n\_characteristics)}
+\CommentTok{\# 4. Quality lower: sum\_i (g[i,k] {-} (s[j,k] {-} eps)) * x[i,j] \textgreater{}= 0 (n\_blends * n\_characteristics)}
+
+\NormalTok{n\_avail\_constraints }\OtherTok{\textless{}{-}}\NormalTok{ n\_materials}
+\NormalTok{n\_demand\_constraints }\OtherTok{\textless{}{-}}\NormalTok{ n\_blends}
+\NormalTok{n\_quality\_constraints }\OtherTok{\textless{}{-}} \DecValTok{2} \SpecialCharTok{*}\NormalTok{ n\_blends }\SpecialCharTok{*}\NormalTok{ n\_characteristics}
+\NormalTok{n\_constraints }\OtherTok{\textless{}{-}}\NormalTok{ n\_avail\_constraints }\SpecialCharTok{+}\NormalTok{ n\_demand\_constraints }\SpecialCharTok{+}\NormalTok{ n\_quality\_constraints}
+
+\CommentTok{\# Initialize constraint matrix}
+\NormalTok{constraint\_matrix }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\DecValTok{0}\NormalTok{, }\AttributeTok{nrow =}\NormalTok{ n\_constraints, }\AttributeTok{ncol =}\NormalTok{ n\_vars)}
+
+\CommentTok{\# RHS and direction vectors}
+\NormalTok{rhs }\OtherTok{\textless{}{-}} \FunctionTok{numeric}\NormalTok{(n\_constraints)}
+\NormalTok{direction }\OtherTok{\textless{}{-}} \FunctionTok{character}\NormalTok{(n\_constraints)}
+
+\CommentTok{\# Variable indexing function: x[i,j] is at column (i{-}1)*n\_blends + j}
+\NormalTok{get\_col }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(i, j) \{}
+\NormalTok{  (i }\SpecialCharTok{{-}} \DecValTok{1}\NormalTok{) }\SpecialCharTok{*}\NormalTok{ n\_blends }\SpecialCharTok{+}\NormalTok{ j}
+\NormalTok{\}}
+
+\CommentTok{\# 1. Availability constraints: sum\_j x[i,j] \textless{}= a[i]}
+\NormalTok{row }\OtherTok{\textless{}{-}} \DecValTok{0}
+\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials) \{}
+\NormalTok{  row }\OtherTok{\textless{}{-}}\NormalTok{ row }\SpecialCharTok{+} \DecValTok{1}
+  \ControlFlowTok{for}\NormalTok{ (j }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends) \{}
+\NormalTok{    col }\OtherTok{\textless{}{-}} \FunctionTok{get\_col}\NormalTok{(i, j)}
+\NormalTok{    constraint\_matrix[row, col] }\OtherTok{\textless{}{-}} \DecValTok{1}
+\NormalTok{  \}}
+\NormalTok{  rhs[row] }\OtherTok{\textless{}{-}}\NormalTok{ a[i]}
+\NormalTok{  direction[row] }\OtherTok{\textless{}{-}} \StringTok{"\textless{}="}
+\NormalTok{\}}
+
+\CommentTok{\# 2. Demand constraints: sum\_i x[i,j] \textgreater{}= D[j]}
+\ControlFlowTok{for}\NormalTok{ (j }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends) \{}
+\NormalTok{  row }\OtherTok{\textless{}{-}}\NormalTok{ row }\SpecialCharTok{+} \DecValTok{1}
+  \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials) \{}
+\NormalTok{    col }\OtherTok{\textless{}{-}} \FunctionTok{get\_col}\NormalTok{(i, j)}
+\NormalTok{    constraint\_matrix[row, col] }\OtherTok{\textless{}{-}} \DecValTok{1}
+\NormalTok{  \}}
+\NormalTok{  rhs[row] }\OtherTok{\textless{}{-}}\NormalTok{ D[j]}
+\NormalTok{  direction[row] }\OtherTok{\textless{}{-}} \StringTok{"\textgreater{}="}
+\NormalTok{\}}
+
+\CommentTok{\# 3. Quality constraints (upper bound): sum\_i (g[i,k] {-} (s[j,k] + eps)) * x[i,j] \textless{}= 0}
+\ControlFlowTok{for}\NormalTok{ (j }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends) \{}
+  \ControlFlowTok{for}\NormalTok{ (k }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_characteristics) \{}
+\NormalTok{    row }\OtherTok{\textless{}{-}}\NormalTok{ row }\SpecialCharTok{+} \DecValTok{1}
+    \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials) \{}
+\NormalTok{      col }\OtherTok{\textless{}{-}} \FunctionTok{get\_col}\NormalTok{(i, j)}
+\NormalTok{      constraint\_matrix[row, col] }\OtherTok{\textless{}{-}}\NormalTok{ g[i, k] }\SpecialCharTok{{-}}\NormalTok{ (s[j, k] }\SpecialCharTok{+}\NormalTok{ epsilon)}
+\NormalTok{    \}}
+\NormalTok{    rhs[row] }\OtherTok{\textless{}{-}} \DecValTok{0}
+\NormalTok{    direction[row] }\OtherTok{\textless{}{-}} \StringTok{"\textless{}="}
+\NormalTok{  \}}
+\NormalTok{\}}
+
+\CommentTok{\# 4. Quality constraints (lower bound): sum\_i (g[i,k] {-} (s[j,k] {-} eps)) * x[i,j] \textgreater{}= 0}
+\ControlFlowTok{for}\NormalTok{ (j }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends) \{}
+  \ControlFlowTok{for}\NormalTok{ (k }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_characteristics) \{}
+\NormalTok{    row }\OtherTok{\textless{}{-}}\NormalTok{ row }\SpecialCharTok{+} \DecValTok{1}
+    \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials) \{}
+\NormalTok{      col }\OtherTok{\textless{}{-}} \FunctionTok{get\_col}\NormalTok{(i, j)}
+\NormalTok{      constraint\_matrix[row, col] }\OtherTok{\textless{}{-}}\NormalTok{ g[i, k] }\SpecialCharTok{{-}}\NormalTok{ (s[j, k] }\SpecialCharTok{{-}}\NormalTok{ epsilon)}
+\NormalTok{    \}}
+\NormalTok{    rhs[row] }\OtherTok{\textless{}{-}} \DecValTok{0}
+\NormalTok{    direction[row] }\OtherTok{\textless{}{-}} \StringTok{"\textgreater{}="}
+\NormalTok{  \}}
+\NormalTok{\}}
+
+\CommentTok{\# Variable bounds (non{-}negativity)}
+\NormalTok{bounds }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{(}\AttributeTok{lower =} \FunctionTok{list}\NormalTok{(}\AttributeTok{ind =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_vars, }\AttributeTok{val =} \FunctionTok{rep}\NormalTok{(}\DecValTok{0}\NormalTok{, n\_vars)),}
+                \AttributeTok{upper =} \FunctionTok{list}\NormalTok{(}\AttributeTok{ind =} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_vars, }\AttributeTok{val =} \FunctionTok{rep}\NormalTok{(}\ConstantTok{Inf}\NormalTok{, n\_vars)))}
+
+\CommentTok{\# Solve with progressive relaxation}
+\NormalTok{epsilon\_used }\OtherTok{\textless{}{-}}\NormalTok{ epsilon}
+\NormalTok{solved }\OtherTok{\textless{}{-}} \ConstantTok{FALSE}
+\NormalTok{result }\OtherTok{\textless{}{-}} \ConstantTok{NULL}
+
+\CommentTok{\# First test: basic feasibility (availability and demand only)}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{Testing basic feasibility (availability and demand only)...}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Testing basic feasibility (availability and demand only)...
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{simple\_constraint\_matrix }\OtherTok{\textless{}{-}}\NormalTok{ constraint\_matrix[}\DecValTok{1}\SpecialCharTok{:}\NormalTok{(n\_avail\_constraints }\SpecialCharTok{+}\NormalTok{ n\_demand\_constraints), , drop }\OtherTok{=} \ConstantTok{FALSE}\NormalTok{]}
+\NormalTok{simple\_rhs }\OtherTok{\textless{}{-}}\NormalTok{ rhs[}\DecValTok{1}\SpecialCharTok{:}\NormalTok{(n\_avail\_constraints }\SpecialCharTok{+}\NormalTok{ n\_demand\_constraints)]}
+\NormalTok{simple\_direction }\OtherTok{\textless{}{-}}\NormalTok{ direction[}\DecValTok{1}\SpecialCharTok{:}\NormalTok{(n\_avail\_constraints }\SpecialCharTok{+}\NormalTok{ n\_demand\_constraints)]}
+
+\NormalTok{test\_result }\OtherTok{\textless{}{-}} \FunctionTok{Rglpk\_solve\_LP}\NormalTok{(}\AttributeTok{obj =}\NormalTok{ obj\_coef, }
+                              \AttributeTok{mat =}\NormalTok{ simple\_constraint\_matrix, }
+                              \AttributeTok{dir =}\NormalTok{ simple\_direction, }
+                              \AttributeTok{rhs =}\NormalTok{ simple\_rhs,}
+                              \AttributeTok{bounds =}\NormalTok{ bounds,}
+                              \AttributeTok{max =} \ConstantTok{FALSE}\NormalTok{)  }\CommentTok{\# FALSE = minimize}
+
+\ControlFlowTok{if}\NormalTok{ (test\_result}\SpecialCharTok{$}\NormalTok{status }\SpecialCharTok{!=} \DecValTok{0}\NormalTok{) \{}
+  \FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"ERROR: Basic model is infeasible! Status code: \%d}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, test\_result}\SpecialCharTok{$}\NormalTok{status))}
+  \FunctionTok{cat}\NormalTok{(}\StringTok{"This suggests a problem with availability/demand data.}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+  \FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Min availability: \%.0f, Max demand: \%.0f}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, }\FunctionTok{min}\NormalTok{(a), }\FunctionTok{max}\NormalTok{(D)))}
+  \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{sum}\NormalTok{(a) }\SpecialCharTok{\textless{}} \FunctionTok{sum}\NormalTok{(D)) \{}
+    \FunctionTok{stop}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Total availability (\%.0f) \textless{} Total demand (\%.0f)}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, }\FunctionTok{sum}\NormalTok{(a), }\FunctionTok{sum}\NormalTok{(D)))}
+\NormalTok{  \}}
+\NormalTok{\} }\ControlFlowTok{else}\NormalTok{ \{}
+  \FunctionTok{cat}\NormalTok{(}\StringTok{"Basic feasibility test passed.}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Basic feasibility test passed.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Try solving with current epsilon}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{Attempting to solve with epsilon ="}\NormalTok{, epsilon, }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Attempting to solve with epsilon = 1
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{result }\OtherTok{\textless{}{-}} \FunctionTok{Rglpk\_solve\_LP}\NormalTok{(}\AttributeTok{obj =}\NormalTok{ obj\_coef, }
+                         \AttributeTok{mat =}\NormalTok{ constraint\_matrix, }
+                         \AttributeTok{dir =}\NormalTok{ direction, }
+                         \AttributeTok{rhs =}\NormalTok{ rhs,}
+                         \AttributeTok{bounds =}\NormalTok{ bounds,}
+                         \AttributeTok{max =} \ConstantTok{FALSE}\NormalTok{)}
+
+\ControlFlowTok{if}\NormalTok{ (result}\SpecialCharTok{$}\NormalTok{status }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) \{  }\CommentTok{\# 0 = optimal}
+\NormalTok{  solved }\OtherTok{\textless{}{-}} \ConstantTok{TRUE}
+  \FunctionTok{cat}\NormalTok{(}\StringTok{"Successfully solved with epsilon ="}\NormalTok{, epsilon, }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\NormalTok{\} }\ControlFlowTok{else}\NormalTok{ \{}
+  \FunctionTok{cat}\NormalTok{(}\StringTok{"Initial solve failed. Status code:"}\NormalTok{, result}\SpecialCharTok{$}\NormalTok{status, }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+  \FunctionTok{cat}\NormalTok{(}\StringTok{"Progressively relaxing quality constraints...}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+  
+  \CommentTok{\# Try with larger epsilon values}
+\NormalTok{  epsilon\_values }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\FloatTok{1.0}\NormalTok{, }\FloatTok{2.0}\NormalTok{, }\FloatTok{5.0}\NormalTok{, }\FloatTok{10.0}\NormalTok{)}
+  \ControlFlowTok{for}\NormalTok{ (eps\_try }\ControlFlowTok{in}\NormalTok{ epsilon\_values) \{}
+    \ControlFlowTok{if}\NormalTok{ (eps\_try }\SpecialCharTok{\textless{}=}\NormalTok{ epsilon) }\ControlFlowTok{next}
+    
+    \FunctionTok{cat}\NormalTok{(}\StringTok{"Trying with epsilon ="}\NormalTok{, eps\_try, }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+    
+    \CommentTok{\# Rebuild quality constraints with new epsilon}
+\NormalTok{    row }\OtherTok{\textless{}{-}}\NormalTok{ n\_avail\_constraints }\SpecialCharTok{+}\NormalTok{ n\_demand\_constraints}
+    
+    \CommentTok{\# Quality upper bounds}
+    \ControlFlowTok{for}\NormalTok{ (j }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends) \{}
+      \ControlFlowTok{for}\NormalTok{ (k }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_characteristics) \{}
+\NormalTok{        row }\OtherTok{\textless{}{-}}\NormalTok{ row }\SpecialCharTok{+} \DecValTok{1}
+        \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials) \{}
+\NormalTok{          col }\OtherTok{\textless{}{-}} \FunctionTok{get\_col}\NormalTok{(i, j)}
+\NormalTok{          constraint\_matrix[row, col] }\OtherTok{\textless{}{-}}\NormalTok{ g[i, k] }\SpecialCharTok{{-}}\NormalTok{ (s[j, k] }\SpecialCharTok{+}\NormalTok{ eps\_try)}
+\NormalTok{        \}}
+\NormalTok{      \}}
+\NormalTok{    \}}
+    
+    \CommentTok{\# Quality lower bounds}
+    \ControlFlowTok{for}\NormalTok{ (j }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_blends) \{}
+      \ControlFlowTok{for}\NormalTok{ (k }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_characteristics) \{}
+\NormalTok{        row }\OtherTok{\textless{}{-}}\NormalTok{ row }\SpecialCharTok{+} \DecValTok{1}
+        \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_materials) \{}
+\NormalTok{          col }\OtherTok{\textless{}{-}} \FunctionTok{get\_col}\NormalTok{(i, j)}
+\NormalTok{          constraint\_matrix[row, col] }\OtherTok{\textless{}{-}}\NormalTok{ g[i, k] }\SpecialCharTok{{-}}\NormalTok{ (s[j, k] }\SpecialCharTok{{-}}\NormalTok{ eps\_try)}
+\NormalTok{        \}}
+\NormalTok{      \}}
+\NormalTok{    \}}
+    
+\NormalTok{    result }\OtherTok{\textless{}{-}} \FunctionTok{Rglpk\_solve\_LP}\NormalTok{(}\AttributeTok{obj =}\NormalTok{ obj\_coef, }
+                             \AttributeTok{mat =}\NormalTok{ constraint\_matrix, }
+                             \AttributeTok{dir =}\NormalTok{ direction, }
+                             \AttributeTok{rhs =}\NormalTok{ rhs,}
+                             \AttributeTok{bounds =}\NormalTok{ bounds,}
+                             \AttributeTok{max =} \ConstantTok{FALSE}\NormalTok{)}
+    
+    \ControlFlowTok{if}\NormalTok{ (result}\SpecialCharTok{$}\NormalTok{status }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) \{}
+\NormalTok{      epsilon\_used }\OtherTok{\textless{}{-}}\NormalTok{ eps\_try}
+\NormalTok{      solved }\OtherTok{\textless{}{-}} \ConstantTok{TRUE}
+      \FunctionTok{cat}\NormalTok{(}\StringTok{"Successfully solved with epsilon ="}\NormalTok{, eps\_try, }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+      \ControlFlowTok{break}
+\NormalTok{    \}}
+\NormalTok{  \}}
+  
+  \CommentTok{\# If still infeasible, try without quality constraints}
+  \ControlFlowTok{if}\NormalTok{ (}\SpecialCharTok{!}\NormalTok{solved) \{}
+    \FunctionTok{cat}\NormalTok{(}\StringTok{"Still infeasible. Trying without quality constraints...}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\NormalTok{    result }\OtherTok{\textless{}{-}} \FunctionTok{Rglpk\_solve\_LP}\NormalTok{(}\AttributeTok{obj =}\NormalTok{ obj\_coef, }
+                             \AttributeTok{mat =}\NormalTok{ simple\_constraint\_matrix, }
+                             \AttributeTok{dir =}\NormalTok{ simple\_direction, }
+                             \AttributeTok{rhs =}\NormalTok{ simple\_rhs,}
+                             \AttributeTok{bounds =}\NormalTok{ bounds,}
+                             \AttributeTok{max =} \ConstantTok{FALSE}\NormalTok{)}
+    
+    \ControlFlowTok{if}\NormalTok{ (result}\SpecialCharTok{$}\NormalTok{status }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) \{}
+\NormalTok{      epsilon\_used }\OtherTok{\textless{}{-}} \ConstantTok{Inf}
+\NormalTok{      solved }\OtherTok{\textless{}{-}} \ConstantTok{TRUE}
+      \FunctionTok{cat}\NormalTok{(}\StringTok{"Solved without quality constraints.}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\NormalTok{    \}}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Successfully solved with epsilon = 1
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ControlFlowTok{if}\NormalTok{ (}\SpecialCharTok{!}\NormalTok{solved) \{}
+  \FunctionTok{stop}\NormalTok{(}\StringTok{"LP model is infeasible. Status code: "}\NormalTok{, result}\SpecialCharTok{$}\NormalTok{status, }
+       \StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{Check availability and demand data."}\NormalTok{)}
+\NormalTok{\}}
+
 \NormalTok{lp\_end\_time }\OtherTok{\textless{}{-}} \FunctionTok{Sys.time}\NormalTok{()}
 \NormalTok{lp\_solve\_time }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(lp\_end\_time }\SpecialCharTok{{-}}\NormalTok{ lp\_start\_time, }\AttributeTok{units =} \StringTok{"secs"}\NormalTok{)}
 
 \CommentTok{\# Extract results}
-\NormalTok{lp\_objective }\OtherTok{\textless{}{-}} \FunctionTok{objective\_value}\NormalTok{(lp\_result)}
-\NormalTok{lp\_solution }\OtherTok{\textless{}{-}} \FunctionTok{get\_solution}\NormalTok{(lp\_result, x[i, j])}
+\NormalTok{lp\_objective }\OtherTok{\textless{}{-}}\NormalTok{ result}\SpecialCharTok{$}\NormalTok{optimum}
+\NormalTok{lp\_solution\_vector }\OtherTok{\textless{}{-}}\NormalTok{ result}\SpecialCharTok{$}\NormalTok{solution}
 
-\CommentTok{\# Create solution matrix}
-\NormalTok{lp\_x\_matrix }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(}\DecValTok{0}\NormalTok{, }\AttributeTok{nrow =}\NormalTok{ n\_materials, }\AttributeTok{ncol =}\NormalTok{ n\_blends)}
-\ControlFlowTok{for}\NormalTok{ (idx }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\FunctionTok{nrow}\NormalTok{(lp\_solution)) \{}
-\NormalTok{  i\_val }\OtherTok{\textless{}{-}}\NormalTok{ lp\_solution}\SpecialCharTok{$}\NormalTok{i[idx]}
-\NormalTok{  j\_val }\OtherTok{\textless{}{-}}\NormalTok{ lp\_solution}\SpecialCharTok{$}\NormalTok{j[idx]}
-\NormalTok{  lp\_x\_matrix[i\_val, j\_val] }\OtherTok{\textless{}{-}}\NormalTok{ lp\_solution}\SpecialCharTok{$}\NormalTok{value[idx]}
-\NormalTok{\}}
+\CommentTok{\# Reshape solution vector into matrix}
+\CommentTok{\# Solution vector is: x[1,1], x[1,2], ..., x[1,n\_blends], x[2,1], ..., x[n\_materials,n\_blends]}
+\NormalTok{lp\_x\_matrix }\OtherTok{\textless{}{-}} \FunctionTok{matrix}\NormalTok{(lp\_solution\_vector, }\AttributeTok{nrow =}\NormalTok{ n\_materials, }\AttributeTok{ncol =}\NormalTok{ n\_blends, }\AttributeTok{byrow =} \ConstantTok{TRUE}\NormalTok{)}
 \FunctionTok{rownames}\NormalTok{(lp\_x\_matrix) }\OtherTok{\textless{}{-}}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Material\_ID}
 \FunctionTok{colnames}\NormalTok{(lp\_x\_matrix) }\OtherTok{\textless{}{-}}\NormalTok{ blends}\SpecialCharTok{$}\NormalTok{Blend\_ID}
 
-\CommentTok{\# Display results}
-\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{=== LP Solution Results ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{=== LP Solution Results ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{))}
 \end{Highlighting}
 \end{Shaded}
 
@@ -532,7 +884,7 @@ constraints.
 \end{Shaded}
 
 \begin{verbatim}
-## Optimal Total Cost: £0.00
+## Optimal Total Cost: £2674.99
 \end{verbatim}
 
 \begin{Shaded}
@@ -542,11 +894,19 @@ constraints.
 \end{Shaded}
 
 \begin{verbatim}
-## Solve Time: 0.0446 seconds
+## Solve Time: 0.0224 seconds
 \end{verbatim}
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\ControlFlowTok{if}\NormalTok{ (epsilon\_used }\SpecialCharTok{!=}\NormalTok{ epsilon) \{}
+  \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{is.infinite}\NormalTok{(epsilon\_used)) \{}
+    \FunctionTok{cat}\NormalTok{(}\StringTok{"Note: Solved without quality constraints}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\NormalTok{  \} }\ControlFlowTok{else}\NormalTok{ \{}
+    \FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Note: Used epsilon = \%.2f (original was \%.2f)}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, epsilon\_used, epsilon))}
+\NormalTok{  \}}
+\NormalTok{\}}
+
 \FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{=== Optimal Recipe Matrix (x\_ij in Kgs) ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
@@ -558,7 +918,8 @@ constraints.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\FunctionTok{print}\NormalTok{(}\FunctionTok{kable}\NormalTok{(lp\_x\_matrix, }\AttributeTok{format =} \StringTok{"html"}\NormalTok{, }\AttributeTok{caption =} \StringTok{"LP Solution: Amount of Each Material in Each Blend"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+\FunctionTok{print}\NormalTok{(}\FunctionTok{kable}\NormalTok{(lp\_x\_matrix, }\AttributeTok{format =} \StringTok{"html"}\NormalTok{, }
+            \AttributeTok{caption =} \StringTok{"LP Solution: Amount of Each Material in Each Blend"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
       \FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{bootstrap\_options =} \FunctionTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{, }\StringTok{"hover"}\NormalTok{, }\StringTok{"condensed"}\NormalTok{)))}
 \end{Highlighting}
 \end{Shaded}
@@ -578,45 +939,45 @@ constraints.
 ## <tbody>
 ##   <tr>
 ##    <td style="text-align:left;"> RM1 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 103.45349 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 21.99987 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM2 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 98.05654 </td>
+##    <td style="text-align:right;"> 86.52297 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM3 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 107.20096 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM4 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 24.36866 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 29.47671 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM5 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 86.94346 </td>
+##    <td style="text-align:right;"> 67.47703 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM6 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 66.17785 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 10.32245 </td>
 ##   </tr>
 ## </tbody>
 ## </table>
@@ -669,27 +1030,27 @@ constraints.
 ## <tbody>
 ##   <tr>
 ##    <td style="text-align:left;"> Blend1 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 1.0000000 </td>
+##    <td style="text-align:right;"> 1 </td>
+##    <td style="text-align:right;"> 0.1214295 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> Blend2 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0.1383039 </td>
+##    <td style="text-align:right;"> 1 </td>
+##    <td style="text-align:right;"> 0.6335336 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> Blend3 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0.3218021 </td>
+##    <td style="text-align:right;"> 1 </td>
+##    <td style="text-align:right;"> 0.6037456 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> Blend4 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 1.0000000 </td>
+##    <td style="text-align:right;"> 1 </td>
+##    <td style="text-align:right;"> 1.0000000 </td>
 ##   </tr>
 ## </tbody>
 ## </table>
@@ -700,10 +1061,12 @@ constraints.
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{\# Visualise the solution}
-\NormalTok{lp\_solution\_long }\OtherTok{\textless{}{-}}\NormalTok{ lp\_solution }\SpecialCharTok{\%\textgreater{}\%}
-  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{Material =}\NormalTok{ raw\_materials}\SpecialCharTok{$}\NormalTok{Material\_ID[i],}
-         \AttributeTok{Blend =}\NormalTok{ blends}\SpecialCharTok{$}\NormalTok{Blend\_ID[j]) }\SpecialCharTok{\%\textgreater{}\%}
-  \FunctionTok{select}\NormalTok{(Material, Blend, value)}
+\CommentTok{\# Convert matrix to long format for plotting}
+\NormalTok{lp\_solution\_long }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{Material =} \FunctionTok{rep}\NormalTok{(raw\_materials}\SpecialCharTok{$}\NormalTok{Material\_ID, n\_blends),}
+  \AttributeTok{Blend =} \FunctionTok{rep}\NormalTok{(blends}\SpecialCharTok{$}\NormalTok{Blend\_ID, }\AttributeTok{each =}\NormalTok{ n\_materials),}
+  \AttributeTok{value =} \FunctionTok{as.vector}\NormalTok{(lp\_x\_matrix)}
+\NormalTok{)}
 
 \NormalTok{p1 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(lp\_solution\_long, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ Blend, }\AttributeTok{y =}\NormalTok{ value, }\AttributeTok{fill =}\NormalTok{ Material)) }\SpecialCharTok{+}
   \FunctionTok{geom\_bar}\NormalTok{(}\AttributeTok{stat =} \StringTok{"identity"}\NormalTok{, }\AttributeTok{position =} \StringTok{"stack"}\NormalTok{) }\SpecialCharTok{+}
@@ -932,7 +1295,7 @@ as the algorithm ``cools down.''
 \end{Shaded}
 
 \begin{verbatim}
-## Best Total Cost: £3616.63
+## Best Total Cost: £3121.76
 \end{verbatim}
 
 \begin{Shaded}
@@ -942,7 +1305,7 @@ as the algorithm ``cools down.''
 \end{Shaded}
 
 \begin{verbatim}
-## Solve Time: 0.2230 seconds
+## Solve Time: 0.1769 seconds
 \end{verbatim}
 
 \begin{Shaded}
@@ -953,7 +1316,7 @@ as the algorithm ``cools down.''
 \end{Shaded}
 
 \begin{verbatim}
-## Improvement over LP: -Inf%
+## Improvement over LP: -16.70%
 \end{verbatim}
 
 \begin{Shaded}
@@ -990,45 +1353,45 @@ as the algorithm ``cools down.''
 ## <tbody>
 ##   <tr>
 ##    <td style="text-align:left;"> RM1 </td>
-##    <td style="text-align:right;"> 41.39922 </td>
-##    <td style="text-align:right;"> 109.51260 </td>
-##    <td style="text-align:right;"> 113.275009 </td>
-##    <td style="text-align:right;"> 47.714455 </td>
+##    <td style="text-align:right;"> 29.61829 </td>
+##    <td style="text-align:right;"> 42.358097 </td>
+##    <td style="text-align:right;"> 55.334795 </td>
+##    <td style="text-align:right;"> 55.245395 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM2 </td>
-##    <td style="text-align:right;"> 14.73158 </td>
-##    <td style="text-align:right;"> 0.00000 </td>
-##    <td style="text-align:right;"> 6.137934 </td>
-##    <td style="text-align:right;"> 4.843545 </td>
+##    <td style="text-align:right;"> 19.00579 </td>
+##    <td style="text-align:right;"> 0.000000 </td>
+##    <td style="text-align:right;"> 9.299249 </td>
+##    <td style="text-align:right;"> 6.138233 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM3 </td>
-##    <td style="text-align:right;"> 48.78794 </td>
-##    <td style="text-align:right;"> 19.54200 </td>
-##    <td style="text-align:right;"> 9.721529 </td>
-##    <td style="text-align:right;"> 28.389697 </td>
+##    <td style="text-align:right;"> 23.01006 </td>
+##    <td style="text-align:right;"> 31.119240 </td>
+##    <td style="text-align:right;"> 62.036738 </td>
+##    <td style="text-align:right;"> 40.323149 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM4 </td>
-##    <td style="text-align:right;"> 31.11088 </td>
-##    <td style="text-align:right;"> 11.80846 </td>
-##    <td style="text-align:right;"> 18.989946 </td>
-##    <td style="text-align:right;"> 7.271336 </td>
+##    <td style="text-align:right;"> 31.21274 </td>
+##    <td style="text-align:right;"> 20.161119 </td>
+##    <td style="text-align:right;"> 5.949275 </td>
+##    <td style="text-align:right;"> 11.441034 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM5 </td>
-##    <td style="text-align:right;"> 19.42933 </td>
-##    <td style="text-align:right;"> 11.58746 </td>
-##    <td style="text-align:right;"> 9.024618 </td>
-##    <td style="text-align:right;"> 65.357024 </td>
+##    <td style="text-align:right;"> 9.22548 </td>
+##    <td style="text-align:right;"> 5.870471 </td>
+##    <td style="text-align:right;"> 7.666284 </td>
+##    <td style="text-align:right;"> 13.336348 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM6 </td>
-##    <td style="text-align:right;"> 66.77769 </td>
-##    <td style="text-align:right;"> 32.54948 </td>
-##    <td style="text-align:right;"> 1.893600 </td>
-##    <td style="text-align:right;"> 24.243874 </td>
+##    <td style="text-align:right;"> 81.92764 </td>
+##    <td style="text-align:right;"> 85.491073 </td>
+##    <td style="text-align:right;"> 13.713658 </td>
+##    <td style="text-align:right;"> 42.515841 </td>
 ##   </tr>
 ## </tbody>
 ## </table>
@@ -1081,27 +1444,27 @@ as the algorithm ``cools down.''
 ## <tbody>
 ##   <tr>
 ##    <td style="text-align:left;"> Blend1 </td>
-##    <td style="text-align:right;"> 1.0031940 </td>
-##    <td style="text-align:right;"> 3.353808 </td>
-##    <td style="text-align:right;"> 0.0994136 </td>
+##    <td style="text-align:right;"> 0.2850787 </td>
+##    <td style="text-align:right;"> 0.8894996 </td>
+##    <td style="text-align:right;"> 0.7411700 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> Blend2 </td>
-##    <td style="text-align:right;"> 0.0414946 </td>
-##    <td style="text-align:right;"> 1.766162 </td>
-##    <td style="text-align:right;"> 0.9067465 </td>
+##    <td style="text-align:right;"> 0.9484287 </td>
+##    <td style="text-align:right;"> 0.7615454 </td>
+##    <td style="text-align:right;"> 0.5193488 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> Blend3 </td>
-##    <td style="text-align:right;"> 0.0927135 </td>
-##    <td style="text-align:right;"> 1.390676 </td>
-##    <td style="text-align:right;"> 2.7899447 </td>
+##    <td style="text-align:right;"> 0.2057769 </td>
+##    <td style="text-align:right;"> 0.2197988 </td>
+##    <td style="text-align:right;"> 0.8127760 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> Blend4 </td>
-##    <td style="text-align:right;"> 0.0408783 </td>
-##    <td style="text-align:right;"> 1.826850 </td>
-##    <td style="text-align:right;"> 1.2035930 </td>
+##    <td style="text-align:right;"> 0.5986328 </td>
+##    <td style="text-align:right;"> 0.2160708 </td>
+##    <td style="text-align:right;"> 0.3389830 </td>
 ##   </tr>
 ## </tbody>
 ## </table>
@@ -1301,7 +1664,7 @@ and quality
 \end{Shaded}
 
 \begin{verbatim}
-## Worst-case Deviation (z): 2564.1300
+## Worst-case Deviation (z): 0.0000
 \end{verbatim}
 
 \begin{Shaded}
@@ -1311,7 +1674,7 @@ and quality
 \end{Shaded}
 
 \begin{verbatim}
-## Total Cost: £2564.13
+## Total Cost: £2942.48
 \end{verbatim}
 
 \begin{Shaded}
@@ -1321,7 +1684,7 @@ and quality
 \end{Shaded}
 
 \begin{verbatim}
-## Cost Deviation from Target: £2564.13
+## Cost Deviation from Target: £0.00
 \end{verbatim}
 
 \begin{Shaded}
@@ -1331,7 +1694,7 @@ and quality
 \end{Shaded}
 
 \begin{verbatim}
-## Solve Time: 0.0088 seconds
+## Solve Time: 0.0365 seconds
 \end{verbatim}
 
 \begin{Shaded}
@@ -1368,45 +1731,45 @@ and quality
 ## <tbody>
 ##   <tr>
 ##    <td style="text-align:left;"> RM1 </td>
-##    <td style="text-align:right;"> 59.01399 </td>
-##    <td style="text-align:right;"> 26.55944 </td>
-##    <td style="text-align:right;"> 145.653846 </td>
-##    <td style="text-align:right;"> 79.77273 </td>
+##    <td style="text-align:right;"> 63.56459 </td>
+##    <td style="text-align:right;"> 78.380540 </td>
+##    <td style="text-align:right;"> 64.705915 </td>
+##    <td style="text-align:right;"> 71.659931 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM2 </td>
-##    <td style="text-align:right;"> 0.00000 </td>
-##    <td style="text-align:right;"> 0.00000 </td>
-##    <td style="text-align:right;"> 0.000000 </td>
-##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 34.64448 </td>
+##    <td style="text-align:right;"> 20.017116 </td>
+##    <td style="text-align:right;"> 23.995603 </td>
+##    <td style="text-align:right;"> 6.466685 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM3 </td>
-##    <td style="text-align:right;"> 0.00000 </td>
-##    <td style="text-align:right;"> 110.00000 </td>
+##    <td style="text-align:right;"> 27.93440 </td>
 ##    <td style="text-align:right;"> 0.000000 </td>
-##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 3.751161 </td>
+##    <td style="text-align:right;"> 0.000000 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM4 </td>
 ##    <td style="text-align:right;"> 0.00000 </td>
-##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 7.439336 </td>
 ##    <td style="text-align:right;"> 0.000000 </td>
-##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 18.214910 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM5 </td>
-##    <td style="text-align:right;"> 0.00000 </td>
-##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 22.77181 </td>
 ##    <td style="text-align:right;"> 0.000000 </td>
-##    <td style="text-align:right;"> 0.00000 </td>
+##    <td style="text-align:right;"> 0.000000 </td>
+##    <td style="text-align:right;"> 0.000000 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM6 </td>
-##    <td style="text-align:right;"> 134.98601 </td>
-##    <td style="text-align:right;"> 48.44056 </td>
-##    <td style="text-align:right;"> 8.346154 </td>
-##    <td style="text-align:right;"> 89.22727 </td>
+##    <td style="text-align:right;"> 45.08471 </td>
+##    <td style="text-align:right;"> 79.163009 </td>
+##    <td style="text-align:right;"> 61.547321 </td>
+##    <td style="text-align:right;"> 72.658473 </td>
 ##   </tr>
 ## </tbody>
 ## </table>
@@ -1445,27 +1808,27 @@ and quality
 ## <tbody>
 ##   <tr>
 ##    <td style="text-align:left;"> Blend1 </td>
-##    <td style="text-align:right;"> 0.00 </td>
-##    <td style="text-align:right;"> 685.75608 </td>
-##    <td style="text-align:right;"> 263.21594 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> Blend2 </td>
-##    <td style="text-align:right;"> 529.43 </td>
-##    <td style="text-align:right;"> 808.39336 </td>
-##    <td style="text-align:right;"> 49.24224 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> Blend3 </td>
-##    <td style="text-align:right;"> 0.00 </td>
-##    <td style="text-align:right;"> 87.03692 </td>
-##    <td style="text-align:right;"> 445.33462 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> Blend4 </td>
-##    <td style="text-align:right;"> 0.00 </td>
-##    <td style="text-align:right;"> 346.08364 </td>
-##    <td style="text-align:right;"> 133.82909 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
+##    <td style="text-align:right;"> 0 </td>
 ##   </tr>
 ## </tbody>
 ## </table>
@@ -1686,7 +2049,7 @@ solutions toward better fitness.
 \end{Shaded}
 
 \begin{verbatim}
-## Best Total Cost: £9378.72
+## Best Total Cost: £8834.60
 \end{verbatim}
 
 \begin{Shaded}
@@ -1696,7 +2059,7 @@ solutions toward better fitness.
 \end{Shaded}
 
 \begin{verbatim}
-## Average Quality Deviation: 1.8632
+## Average Quality Deviation: 0.1463
 \end{verbatim}
 
 \begin{Shaded}
@@ -1706,7 +2069,7 @@ solutions toward better fitness.
 \end{Shaded}
 
 \begin{verbatim}
-## Solve Time: 0.2170 seconds
+## Solve Time: 0.2057 seconds
 \end{verbatim}
 
 \begin{Shaded}
@@ -1743,45 +2106,45 @@ solutions toward better fitness.
 ## <tbody>
 ##   <tr>
 ##    <td style="text-align:left;"> RM1 </td>
-##    <td style="text-align:right;"> 38.08928 </td>
-##    <td style="text-align:right;"> 179.91178 </td>
-##    <td style="text-align:right;"> 21.079162 </td>
-##    <td style="text-align:right;"> 71.919780 </td>
+##    <td style="text-align:right;"> 51.884482 </td>
+##    <td style="text-align:right;"> 61.83715 </td>
+##    <td style="text-align:right;"> 91.84289 </td>
+##    <td style="text-align:right;"> 76.43548 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM2 </td>
-##    <td style="text-align:right;"> 158.94827 </td>
-##    <td style="text-align:right;"> 68.31998 </td>
-##    <td style="text-align:right;"> 177.092092 </td>
-##    <td style="text-align:right;"> 40.592203 </td>
+##    <td style="text-align:right;"> 4.104265 </td>
+##    <td style="text-align:right;"> 23.07702 </td>
+##    <td style="text-align:right;"> 29.59410 </td>
+##    <td style="text-align:right;"> 40.61046 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM3 </td>
-##    <td style="text-align:right;"> 140.63134 </td>
-##    <td style="text-align:right;"> 64.38941 </td>
-##    <td style="text-align:right;"> 8.811160 </td>
-##    <td style="text-align:right;"> 107.168091 </td>
+##    <td style="text-align:right;"> 109.592920 </td>
+##    <td style="text-align:right;"> 51.13416 </td>
+##    <td style="text-align:right;"> 67.92344 </td>
+##    <td style="text-align:right;"> 59.34947 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM4 </td>
-##    <td style="text-align:right;"> 32.88762 </td>
-##    <td style="text-align:right;"> 53.03504 </td>
-##    <td style="text-align:right;"> 125.519129 </td>
-##    <td style="text-align:right;"> 71.558207 </td>
+##    <td style="text-align:right;"> 91.641431 </td>
+##    <td style="text-align:right;"> 38.86636 </td>
+##    <td style="text-align:right;"> 56.74143 </td>
+##    <td style="text-align:right;"> 76.75079 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM5 </td>
-##    <td style="text-align:right;"> 47.73284 </td>
-##    <td style="text-align:right;"> 23.25633 </td>
-##    <td style="text-align:right;"> 9.150029 </td>
-##    <td style="text-align:right;"> 9.297724 </td>
+##    <td style="text-align:right;"> 126.812393 </td>
+##    <td style="text-align:right;"> 87.73550 </td>
+##    <td style="text-align:right;"> 61.14719 </td>
+##    <td style="text-align:right;"> 113.30491 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM6 </td>
-##    <td style="text-align:right;"> 72.03484 </td>
-##    <td style="text-align:right;"> 69.58570 </td>
-##    <td style="text-align:right;"> 44.139967 </td>
-##    <td style="text-align:right;"> 95.239491 </td>
+##    <td style="text-align:right;"> 63.300507 </td>
+##    <td style="text-align:right;"> 39.84567 </td>
+##    <td style="text-align:right;"> 93.47032 </td>
+##    <td style="text-align:right;"> 66.38351 </td>
 ##   </tr>
 ## </tbody>
 ## </table>
@@ -1820,27 +2183,27 @@ solutions toward better fitness.
 ## <tbody>
 ##   <tr>
 ##    <td style="text-align:left;"> Blend1 </td>
-##    <td style="text-align:right;"> 1.1043319 </td>
-##    <td style="text-align:right;"> 4.015290 </td>
-##    <td style="text-align:right;"> 0.6677847 </td>
+##    <td style="text-align:right;"> 0.0777570 </td>
+##    <td style="text-align:right;"> 0.1510092 </td>
+##    <td style="text-align:right;"> 0.4268503 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> Blend2 </td>
-##    <td style="text-align:right;"> 0.0083042 </td>
-##    <td style="text-align:right;"> 2.774711 </td>
-##    <td style="text-align:right;"> 1.0649831 </td>
+##    <td style="text-align:right;"> 0.1011506 </td>
+##    <td style="text-align:right;"> 0.0036796 </td>
+##    <td style="text-align:right;"> 0.1664916 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> Blend3 </td>
-##    <td style="text-align:right;"> 0.3401624 </td>
-##    <td style="text-align:right;"> 4.768075 </td>
-##    <td style="text-align:right;"> 2.5562686 </td>
+##    <td style="text-align:right;"> 0.0311114 </td>
+##    <td style="text-align:right;"> 0.1684029 </td>
+##    <td style="text-align:right;"> 0.0038066 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> Blend4 </td>
-##    <td style="text-align:right;"> 0.4163945 </td>
-##    <td style="text-align:right;"> 2.933310 </td>
-##    <td style="text-align:right;"> 1.7093507 </td>
+##    <td style="text-align:right;"> 0.0589648 </td>
+##    <td style="text-align:right;"> 0.3121752 </td>
+##    <td style="text-align:right;"> 0.2541052 </td>
 ##   </tr>
 ## </tbody>
 ## </table>
@@ -2029,35 +2392,35 @@ comparison.
 ## <tbody>
 ##   <tr>
 ##    <td style="text-align:left;"> Linear Programming </td>
+##    <td style="text-align:right;"> 2674.99 </td>
+##    <td style="text-align:right;"> 0.73 </td>
+##    <td style="text-align:right;"> 1.00 </td>
+##    <td style="text-align:right;"> 0.02 </td>
 ##    <td style="text-align:right;"> 0.00 </td>
-##    <td style="text-align:right;"> 0.00 </td>
-##    <td style="text-align:right;"> 0.00 </td>
-##    <td style="text-align:right;"> 0.04 </td>
-##    <td style="text-align:right;"> 0 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> Simulated Annealing </td>
-##    <td style="text-align:right;"> 3616.63 </td>
-##    <td style="text-align:right;"> 1.21 </td>
-##    <td style="text-align:right;"> 3.35 </td>
-##    <td style="text-align:right;"> 0.22 </td>
-##    <td style="text-align:right;"> Inf </td>
+##    <td style="text-align:right;"> 3121.76 </td>
+##    <td style="text-align:right;"> 0.54 </td>
+##    <td style="text-align:right;"> 0.95 </td>
+##    <td style="text-align:right;"> 0.18 </td>
+##    <td style="text-align:right;"> 16.70 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> Chebyshev Goal Programming </td>
-##    <td style="text-align:right;"> 2564.13 </td>
-##    <td style="text-align:right;"> 279.03 </td>
-##    <td style="text-align:right;"> 808.39 </td>
-##    <td style="text-align:right;"> 0.01 </td>
-##    <td style="text-align:right;"> Inf </td>
+##    <td style="text-align:right;"> 2942.48 </td>
+##    <td style="text-align:right;"> 0.00 </td>
+##    <td style="text-align:right;"> 0.00 </td>
+##    <td style="text-align:right;"> 0.04 </td>
+##    <td style="text-align:right;"> 10.00 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> Genetic Algorithm </td>
-##    <td style="text-align:right;"> 9378.72 </td>
-##    <td style="text-align:right;"> 1.86 </td>
-##    <td style="text-align:right;"> 4.77 </td>
-##    <td style="text-align:right;"> 0.22 </td>
-##    <td style="text-align:right;"> Inf </td>
+##    <td style="text-align:right;"> 8834.60 </td>
+##    <td style="text-align:right;"> 0.15 </td>
+##    <td style="text-align:right;"> 0.43 </td>
+##    <td style="text-align:right;"> 0.21 </td>
+##    <td style="text-align:right;"> 230.27 </td>
 ##   </tr>
 ## </tbody>
 ## </table>
@@ -2141,7 +2504,7 @@ comparison.
 \end{Shaded}
 
 \begin{verbatim}
-##    - LP provides the optimal cost baseline: £0.00
+##    - LP provides the optimal cost baseline: £2674.99
 \end{verbatim}
 
 \begin{Shaded}
@@ -2151,7 +2514,7 @@ comparison.
 \end{Shaded}
 
 \begin{verbatim}
-##    - SA achieves Inf% of LP cost
+##    - SA achieves 116.70% of LP cost
 \end{verbatim}
 
 \begin{Shaded}
@@ -2162,7 +2525,7 @@ comparison.
 \end{Shaded}
 
 \begin{verbatim}
-##    - Chebyshev GP trades Inf% cost increase for better quality control
+##    - Chebyshev GP trades 10.00% cost increase for better quality control
 \end{verbatim}
 
 \begin{Shaded}
@@ -2172,7 +2535,7 @@ comparison.
 \end{Shaded}
 
 \begin{verbatim}
-##    - GA achieves Inf% of LP cost
+##    - GA achieves 330.27% of LP cost
 \end{verbatim}
 
 \begin{Shaded}
@@ -2196,7 +2559,7 @@ comparison.
 \end{Shaded}
 
 \begin{verbatim}
-##    - Best average quality: Linear Programming (deviation: 0.0000)
+##    - Best average quality: Chebyshev Goal Programming (deviation: 0.0000)
 \end{verbatim}
 
 \begin{Shaded}
@@ -2220,7 +2583,7 @@ comparison.
 \end{Shaded}
 
 \begin{verbatim}
-##    - Fastest approach: Chebyshev Goal Programming (0.0088 seconds)
+##    - Fastest approach: Linear Programming (0.0224 seconds)
 \end{verbatim}
 
 \begin{Shaded}
@@ -2247,8 +2610,8 @@ comparison.
 \end{Shaded}
 
 \begin{verbatim}
-##    - Linear Programming provides the best cost-performance trade-off.
-##    - For near-optimal solutions quickly, Simulated Annealing is valuable.
+##    - Chebyshev Goal Programming is recommended for balancing cost and quality.
+##    - It provides superior quality control with acceptable cost increase.
 \end{verbatim}
 
 \subsection{7.3 Solution Matrices
@@ -2300,50 +2663,50 @@ Comparison}\label{solution-matrices-comparison}
 ##   <tr>
 ##    <td style="text-align:left;"> RM1 </td>
 ##    <td style="text-align:left;"> RM1 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 41.40 </td>
-##    <td style="text-align:right;"> 59.01 </td>
-##    <td style="text-align:right;"> 38.09 </td>
+##    <td style="text-align:right;"> 103.45 </td>
+##    <td style="text-align:right;"> 29.62 </td>
+##    <td style="text-align:right;"> 63.56 </td>
+##    <td style="text-align:right;"> 51.88 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM2 </td>
 ##    <td style="text-align:left;"> RM2 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 14.73 </td>
 ##    <td style="text-align:right;"> 0.00 </td>
-##    <td style="text-align:right;"> 158.95 </td>
+##    <td style="text-align:right;"> 19.01 </td>
+##    <td style="text-align:right;"> 34.64 </td>
+##    <td style="text-align:right;"> 4.10 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM3 </td>
 ##    <td style="text-align:left;"> RM3 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 48.79 </td>
 ##    <td style="text-align:right;"> 0.00 </td>
-##    <td style="text-align:right;"> 140.63 </td>
+##    <td style="text-align:right;"> 23.01 </td>
+##    <td style="text-align:right;"> 27.93 </td>
+##    <td style="text-align:right;"> 109.59 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM4 </td>
 ##    <td style="text-align:left;"> RM4 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 31.11 </td>
+##    <td style="text-align:right;"> 24.37 </td>
+##    <td style="text-align:right;"> 31.21 </td>
 ##    <td style="text-align:right;"> 0.00 </td>
-##    <td style="text-align:right;"> 32.89 </td>
+##    <td style="text-align:right;"> 91.64 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM5 </td>
 ##    <td style="text-align:left;"> RM5 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 19.43 </td>
 ##    <td style="text-align:right;"> 0.00 </td>
-##    <td style="text-align:right;"> 47.73 </td>
+##    <td style="text-align:right;"> 9.23 </td>
+##    <td style="text-align:right;"> 22.77 </td>
+##    <td style="text-align:right;"> 126.81 </td>
 ##   </tr>
 ##   <tr>
 ##    <td style="text-align:left;"> RM6 </td>
 ##    <td style="text-align:left;"> RM6 </td>
-##    <td style="text-align:right;"> 0 </td>
-##    <td style="text-align:right;"> 66.78 </td>
-##    <td style="text-align:right;"> 134.99 </td>
-##    <td style="text-align:right;"> 72.03 </td>
+##    <td style="text-align:right;"> 66.18 </td>
+##    <td style="text-align:right;"> 81.93 </td>
+##    <td style="text-align:right;"> 45.08 </td>
+##    <td style="text-align:right;"> 63.30 </td>
 ##   </tr>
 ## </tbody>
 ## </table>

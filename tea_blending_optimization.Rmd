@@ -3,14 +3,14 @@ title: 'Tea Blending Optimisation: A Comprehensive Analysis'
 author: "Optimisation Analysis"
 date: "`r Sys.Date()`"
 output:
+  pdf_document:
+    toc: true
   html_document:
     toc: true
     toc_float: true
     code_folding: show
     theme: flatly
     highlight: tango
-  pdf_document:
-    toc: true
 ---
 
 ```{r setup, include=FALSE}
