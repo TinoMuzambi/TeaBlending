@@ -3,14 +3,15 @@ title: 'Tea Blending Optimisation: A Comprehensive Analysis'
 author: "Optimisation Analysis"
 date: "`r Sys.Date()`"
 output:
-  pdf_document:
-    toc: true
   html_document:
     toc: true
     toc_float: true
     code_folding: show
     theme: flatly
     highlight: tango
+  pdf_document:
+    toc: true
+    latex_engine: xelatex  # Support Unicode characters
 ---
 
 ```{r setup, include=FALSE}
@@ -30,6 +31,27 @@ library(GA)
 library(knitr)
 library(kableExtra)
 library(tidyr)
+
+# Helper function for kable format based on output type
+kable_format <- function() {
+  if (knitr::is_html_output()) {
+    return("html")
+  } else if (knitr::is_latex_output()) {
+    return("latex")
+  } else {
+    return("pipe")
+  }
+}
+
+# Helper function for conditional kable styling
+kable_style <- function(kable_obj) {
+  if (knitr::is_html_output()) {
+    return(kable_styling(kable_obj, bootstrap_options = c("striped", "hover", "condensed")))
+  } else {
+    # For LaTeX, return as-is or with minimal styling
+    return(kable_obj)
+  }
+}
 ```
 
 # 1 Introduction
@@ -176,11 +198,11 @@ if (total_availability < total_demand * 1.2) {
 
 # Display the data
 cat("=== Raw Materials Data (Table 2) ===\n")
-print(kable(raw_materials, format = "html", caption = "Raw Materials: Costs, Availability, and Quality Characteristics") %>%
+print(kable(raw_materials, format = kable_format(), caption = "Raw Materials: Costs, Availability, and Quality Characteristics") %>%
       kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
 
 cat("\n=== Blends Data (Table 3) ===\n")
-print(kable(blends, format = "html", caption = "Blends: Demand and Target Quality Scores") %>%
+print(kable(blends, format = kable_format(), caption = "Blends: Demand and Target Quality Scores") %>%
       kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
 
 # Store data in convenient format for later use
@@ -465,7 +487,7 @@ if (epsilon_used != epsilon) {
 }
 
 cat("\n=== Optimal Recipe Matrix (x_ij in Kgs) ===\n")
-print(kable(lp_x_matrix, format = "html", 
+print(kable(lp_x_matrix, format = kable_format(), 
             caption = "LP Solution: Amount of Each Material in Each Blend") %>%
       kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
 
@@ -484,7 +506,7 @@ rownames(lp_quality_deviations) <- blends$Blend_ID
 colnames(lp_quality_deviations) <- char_names
 
 cat("\n=== Quality Deviations from Targets ===\n")
-print(kable(lp_quality_deviations, format = "html", 
+print(kable(lp_quality_deviations, format = kable_format(), 
             caption = "Absolute deviations from target quality scores") %>%
       kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
 ```
@@ -696,7 +718,7 @@ cat(sprintf("Improvement over LP: %.2f%%\n",
             (lp_objective - sa_objective) / lp_objective * 100))
 
 cat("\n=== SA Recipe Matrix (x_ij in Kgs) ===\n")
-print(kable(sa_x_matrix, format = "html", 
+print(kable(sa_x_matrix, format = kable_format(), 
             caption = "SA Solution: Amount of Each Material in Each Blend") %>%
       kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
 
@@ -715,7 +737,7 @@ rownames(sa_quality_deviations) <- blends$Blend_ID
 colnames(sa_quality_deviations) <- char_names
 
 cat("\n=== Quality Deviations from Targets ===\n")
-print(kable(sa_quality_deviations, format = "html", 
+print(kable(sa_quality_deviations, format = kable_format(), 
             caption = "Absolute deviations from target quality scores") %>%
       kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
 ```
@@ -878,12 +900,12 @@ cat(sprintf("Cost Deviation from Target: £%.2f\n", abs(chebyshev_cost - cost_ta
 cat(sprintf("Solve Time: %.4f seconds\n", chebyshev_solve_time))
 
 cat("\n=== Chebyshev GP Recipe Matrix (x_ij in Kgs) ===\n")
-print(kable(chebyshev_x_matrix, format = "html", 
+print(kable(chebyshev_x_matrix, format = kable_format(), 
             caption = "Chebyshev GP Solution: Amount of Each Material in Each Blend") %>%
       kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
 
 cat("\n=== Quality Deviations from Targets ===\n")
-print(kable(chebyshev_quality_deviations, format = "html", 
+print(kable(chebyshev_quality_deviations, format = kable_format(), 
             caption = "Quality deviations (minimised in worst-case sense)") %>%
       kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
 ```
@@ -1071,12 +1093,12 @@ cat(sprintf("Average Quality Deviation: %.4f\n", mean(ga_quality_deviations)))
 cat(sprintf("Solve Time: %.4f seconds\n", ga_solve_time))
 
 cat("\n=== GA Recipe Matrix (x_ij in Kgs) ===\n")
-print(kable(ga_x_matrix, format = "html", 
+print(kable(ga_x_matrix, format = kable_format(), 
             caption = "GA Solution: Amount of Each Material in Each Blend") %>%
       kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
 
 cat("\n=== Quality Deviations from Targets ===\n")
-print(kable(ga_quality_deviations, format = "html", 
+print(kable(ga_quality_deviations, format = kable_format(), 
             caption = "Absolute deviations from target quality scores") %>%
       kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
 ```
@@ -1219,7 +1241,7 @@ comparison_metrics <- data.frame(
 )
 
 cat("=== Comprehensive Comparison of All Approaches ===\n")
-print(kable(comparison_metrics, format = "html", 
+print(kable(comparison_metrics, format = kable_format(), 
             caption = "Performance Metrics Comparison",
             digits = 2) %>%
       kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")))
@@ -1302,7 +1324,7 @@ blend1_comparison <- data.frame(
   GA = ga_x_matrix[, 1]
 )
 
-print(kable(blend1_comparison, format = "html", 
+print(kable(blend1_comparison, format = kable_format(), 
             caption = "Material allocation for Blend 1 across all approaches",
             digits = 2) %>%
       kable_styling(bootstrap_options = c("striped", "hover", "condensed")))
@@ -1339,7 +1361,7 @@ This document uses a fixed random seed (123) for data generation and stochastic 
 ## 9.3 Parameter Tuning
 
 Key parameters that can be adjusted:
-- **ε (epsilon)**: Tolerance for quality constraints (default: 0.1)
+- **$\epsilon$ (epsilon)**: Tolerance for quality constraints (default: 0.1)
 - **SA parameters**: Initial temperature, cooling rate, iterations
 - **GA parameters**: Population size, generations, mutation/crossover rates
 - **Goal Programming weights**: Cost vs quality priorities
