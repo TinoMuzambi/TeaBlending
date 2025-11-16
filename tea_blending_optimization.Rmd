@@ -1016,16 +1016,6 @@ p10 <- ggplot(comparison_metrics, aes(x = reorder(Approach, Total_Cost), y = Tot
   theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1))
 
 print(p10)
-
-p11 <- ggplot(comparison_metrics, aes(x = Avg_Quality_Dev, y = Total_Cost, color = Approach, size = Max_Quality_Dev)) +
-  geom_point(alpha = 0.7) +
-  labs(title = "Trade-off: Cost vs Quality Deviation",
-       x = "Average Quality Deviation", y = "Total Cost (£)",
-       size = "Max Quality\nDeviation", color = "Approach") +
-  theme_minimal() +
-  theme(legend.position = "right")
-
-print(p11)
 ```
 
 ## 8.2 Key Findings
