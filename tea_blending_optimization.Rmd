@@ -6,15 +6,15 @@ date: "`r Sys.Date()`"
 bibliography: references.bib
 csl: apa-numeric-superscript-brackets.csl
 output:
+  pdf_document:
+    toc: true
+    latex_engine: xelatex  # Support Unicode characters
   html_document:
     toc: true
     toc_float: true
     code_folding: show
     theme: flatly
     highlight: tango
-  pdf_document:
-    toc: true
-    latex_engine: xelatex  # Support Unicode characters
 ---
 
 ```{r setup, include=FALSE}
@@ -95,7 +95,7 @@ This section implements the tea blending optimisation problem using the actual d
 
 ## 3.1 Data Loading
 
-```{r fomeni-data}
+```{r fomeni-data, echo=FALSE}
 # Real data from Fomeni (2018) - Table 2: Raw Materials
 # Note: Prices are in £0.01/kg, so we convert to £/kg by dividing by 100
 # Quality characteristics: C1, C2, C3, C4, C5, C6
@@ -218,7 +218,7 @@ rownames(s_named) <- blends_fomeni$Blend_ID
 
 ## 3.2 Data Characteristics
 
-```{r fomeni-data-analysis}
+```{r fomeni-data-analysis, echo=FALSE}
 # Analyse the data characteristics and create summary tables and visualisations
 
 # Create summary statistics table for raw materials
@@ -281,7 +281,7 @@ cat("Blend Demands:\n")
 print_table(demand_stats, caption = "Blend Demand Statistics (kg)")
 ```
 
-```{r fomeni-data-visualisations}
+```{r fomeni-data-visualisations, echo=FALSE}
 # Create visualisations of data characteristics
 
 # 1. Price distribution histogram
@@ -408,7 +408,7 @@ $$\min \sum_{i} \sum_{j} P_i x_{ij}$$
 
 ## 4.2 Implementation
 
-```{r lp-implementation}
+```{r lp-implementation, echo=FALSE}
 # Implementation using Rglpk
 
 # Number of decision variables: n_materials * n_blends (x[i,j] for all i,j)
@@ -566,7 +566,7 @@ print_table(lp_quality_df, caption = "Absolute deviations from target quality sc
 
 ## 4.3 Visualisation
 
-```{r lp-visualisation}
+```{r lp-visualisation, echo=FALSE}
 # Visualise the solution
 # Convert matrix to long format for plotting
 # Create proper ordering for materials (R1, R2, R3, ..., R60 instead of R1, R10, R11, ...)
@@ -613,7 +613,7 @@ Simulated Annealing is a metaheuristic that explores the solution space probabil
 
 ## 5.1 Implementation
 
-```{r sa-implementation}
+```{r sa-implementation, echo=FALSE}
 # Simulated Annealing implementation
 simulated_annealing <- function(initial_temp = 1000, cooling_rate = 0.95, 
                                 max_iterations = 1000, min_temp = 0.01) {
@@ -809,7 +809,7 @@ print_table(sa_quality_df, caption = "Absolute deviations from target quality sc
 
 ## 5.2 Visualisation
 
-```{r sa-visualisation}
+```{r sa-visualisation, echo=FALSE}
 # Convergence plot
 p3 <- ggplot(sa_result$history, aes(x = iteration)) +
   geom_line(aes(y = current_obj, color = "Current"), alpha = 0.5) +
@@ -867,7 +867,7 @@ Where:
 
 ## 6.2 Implementation
 
-```{r chebyshev-implementation}
+```{r chebyshev-implementation, echo=FALSE}
 # Chebyshev Goal Programming implementation
 # Reformulate as LP: minimise z subject to z >= w_i * d_i for all goals
 
@@ -980,7 +980,7 @@ print_table(chebyshev_quality_df, caption = "Quality deviations (minimised in wo
 
 ## 6.3 Visualisation
 
-```{r chebyshev-visualisation}
+```{r chebyshev-visualisation, echo=FALSE}
 # Trade-off analysis
 tradeoff_data <- data.frame(
   Approach = c("LP (Cost Min)", "Chebyshev GP"),
@@ -1033,7 +1033,7 @@ Genetic Algorithms use evolutionary principles to evolve a population of solutio
 
 ## 7.1 Implementation
 
-```{r ga-implementation}
+```{r ga-implementation, echo=FALSE}
 # Genetic Algorithm implementation
 # Chromosome: flattened x_ij matrix (n_materials * n_blends elements)
 
@@ -1175,7 +1175,7 @@ print_table(ga_quality_df, caption = "Absolute deviations from target quality sc
 
 ## 7.2 Visualisation
 
-```{r ga-visualisation}
+```{r ga-visualisation, echo=FALSE}
 # Evolution plot
 # Extract fitness history from GA object
 # The GA package stores summary statistics in @summary slot
@@ -1293,7 +1293,7 @@ This section consolidates results from all approaches for comprehensive comparis
 
 ## 8.1 Comparative Metrics
 
-```{r comparison}
+```{r comparison, echo=FALSE}
 # Compile comparison metrics
 comparison_metrics <- data.frame(
   Approach = c("Linear Programming", "Simulated Annealing", 
@@ -1339,7 +1339,7 @@ print(p11)
 
 ## 8.2 Key Findings
 
-```{r findings}
+```{r findings, echo=FALSE}
 cat("=== Key Findings ===\n\n")
 
 cat("1. Cost Performance:\n")
@@ -1367,7 +1367,7 @@ if (comparison_metrics$Avg_Quality_Dev[3] < comparison_metrics$Avg_Quality_Dev[1
 
 ## 8.3 Solution Matrices Comparison
 
-```{r solution-comparison}
+```{r solution-comparison, echo=FALSE}
 # Create a summary of solution differences
 cat("=== Solution Matrix Comparison (Sample: Blend 1) ===\n")
 # Create proper ordering for materials
