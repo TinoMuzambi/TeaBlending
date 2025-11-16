@@ -531,11 +531,17 @@ cat(sprintf("Optimal Total Cost: £%.2f\n", lp_objective))
 cat(sprintf("Total material used: %.2f Kgs\n", sum(lp_x_matrix)))
 cat(sprintf("Total demand required: %.2f Kgs\n", sum(D)))
 
-cat("=== Optimal Recipe Matrix (x_ij in Kgs) ===\n")
+# Prepare recipe matrix table (full table moved to Appendix)
 lp_x_df <- as.data.frame(lp_x_matrix)
 lp_x_df$Material <- rownames(lp_x_df)
 lp_x_df <- lp_x_df[, c("Material", colnames(lp_x_matrix))]
-print_table(lp_x_df, caption = "LP Solution: Amount of Each Material in Each Blend")
+
+# Show summary statistics instead of full table
+cat("=== LP Solution Summary ===\n")
+cat(sprintf("Total materials used: %d out of %d\n", sum(rowSums(lp_x_matrix) > 0), n_materials))
+cat(sprintf("Materials with non-zero allocation: %s\n", 
+            paste(rownames(lp_x_matrix)[rowSums(lp_x_matrix) > 0], collapse = ", ")))
+cat("Note: The complete recipe matrix (all 60 materials × 10 blends) is provided in Appendix 11.1.\n")
 
 # Calculate quality deviations for LP solution
 lp_quality_deviations <- matrix(0, nrow = n_blends, ncol = n_characteristics)
@@ -768,11 +774,17 @@ cat(sprintf("Best Total Cost: £%.2f\n", sa_objective))
 cat(sprintf("Difference from LP: %.2f%%\n", 
             (sa_objective - lp_objective) / lp_objective * 100))
 
-cat("=== SA Recipe Matrix (x_ij in Kgs) ===\n")
+# Prepare recipe matrix table (full table moved to Appendix)
 sa_x_df <- as.data.frame(sa_x_matrix)
 sa_x_df$Material <- rownames(sa_x_df)
 sa_x_df <- sa_x_df[, c("Material", colnames(sa_x_matrix))]
-print_table(sa_x_df, caption = "SA Solution: Amount of Each Material in Each Blend")
+
+# Show summary statistics instead of full table
+cat("=== SA Solution Summary ===\n")
+cat(sprintf("Total materials used: %d out of %d\n", sum(rowSums(sa_x_matrix) > 0), n_materials))
+cat(sprintf("Materials with non-zero allocation: %s\n", 
+            paste(rownames(sa_x_matrix)[rowSums(sa_x_matrix) > 0], collapse = ", ")))
+cat("Note: The complete recipe matrix (all 60 materials × 10 blends) is provided in Appendix 11.2.\n")
 
 # Calculate quality deviations for SA solution
 sa_quality_deviations <- matrix(0, nrow = n_blends, ncol = n_characteristics)
@@ -947,11 +959,17 @@ cat(sprintf("Worst-case Deviation (z): %.4f\n", chebyshev_objective))
 cat(sprintf("Total Cost: £%.2f\n", chebyshev_cost))
 cat(sprintf("Cost Deviation from Target: £%.2f\n", abs(chebyshev_cost - cost_target)))
 
-cat("=== Chebyshev GP Recipe Matrix (x_ij in Kgs) ===\n")
+# Prepare recipe matrix table (full table moved to Appendix)
 chebyshev_x_df <- as.data.frame(chebyshev_x_matrix)
 chebyshev_x_df$Material <- rownames(chebyshev_x_df)
 chebyshev_x_df <- chebyshev_x_df[, c("Material", colnames(chebyshev_x_matrix))]
-print_table(chebyshev_x_df, caption = "Chebyshev GP Solution: Amount of Each Material in Each Blend")
+
+# Show summary statistics instead of full table
+cat("=== Chebyshev GP Solution Summary ===\n")
+cat(sprintf("Total materials used: %d out of %d\n", sum(rowSums(chebyshev_x_matrix) > 0), n_materials))
+cat(sprintf("Materials with non-zero allocation: %s\n", 
+            paste(rownames(chebyshev_x_matrix)[rowSums(chebyshev_x_matrix) > 0], collapse = ", ")))
+cat("Note: The complete recipe matrix (all 60 materials × 10 blends) is provided in Appendix 11.3.\n")
 
 cat("=== Quality Deviations from Targets ===\n")
 chebyshev_quality_df <- as.data.frame(chebyshev_quality_deviations)
@@ -1136,11 +1154,17 @@ cat("=== GA Solution Results ===\n")
 cat(sprintf("Best Total Cost: £%.2f\n", ga_cost))
 cat(sprintf("Average Quality Deviation: %.4f\n", mean(ga_quality_deviations)))
 
-cat("=== GA Recipe Matrix (x_ij in Kgs) ===\n")
+# Prepare recipe matrix table (full table moved to Appendix)
 ga_x_df <- as.data.frame(ga_x_matrix)
 ga_x_df$Material <- rownames(ga_x_df)
 ga_x_df <- ga_x_df[, c("Material", colnames(ga_x_matrix))]
-print_table(ga_x_df, caption = "GA Solution: Amount of Each Material in Each Blend")
+
+# Show summary statistics instead of full table
+cat("=== GA Solution Summary ===\n")
+cat(sprintf("Total materials used: %d out of %d\n", sum(rowSums(ga_x_matrix) > 0), n_materials))
+cat(sprintf("Materials with non-zero allocation: %s\n", 
+            paste(rownames(ga_x_matrix)[rowSums(ga_x_matrix) > 0], collapse = ", ")))
+cat("Note: The complete recipe matrix (all 60 materials × 10 blends) is provided in Appendix 11.4.\n")
 
 cat("=== Quality Deviations from Targets ===\n")
 ga_quality_df <- as.data.frame(ga_quality_deviations)
@@ -1396,6 +1420,38 @@ Key parameters that can be adjusted:
 - **SA parameters**: Initial temperature, cooling rate, iterations
 - **GA parameters**: Population size, generations, mutation/crossover rates
 - **Goal Programming weights**: Cost vs quality priorities
+
+# 11 Appendix: Complete Recipe Matrices
+
+This appendix contains the complete recipe matrices for all optimisation approaches. Each matrix shows the amount (in kg) of each raw material used in each blend.
+
+## 11.1 Linear Programming Solution
+
+```{r appendix-lp-matrix, echo=FALSE}
+cat("=== LP Solution: Complete Recipe Matrix (x_ij in Kgs) ===\n")
+print_table(lp_x_df, caption = "LP Solution: Amount of Each Material in Each Blend (60 materials × 10 blends)")
+```
+
+## 11.2 Simulated Annealing Solution
+
+```{r appendix-sa-matrix, echo=FALSE}
+cat("=== SA Solution: Complete Recipe Matrix (x_ij in Kgs) ===\n")
+print_table(sa_x_df, caption = "SA Solution: Amount of Each Material in Each Blend (60 materials × 10 blends)")
+```
+
+## 11.3 Chebyshev Goal Programming Solution
+
+```{r appendix-chebyshev-matrix, echo=FALSE}
+cat("=== Chebyshev GP Solution: Complete Recipe Matrix (x_ij in Kgs) ===\n")
+print_table(chebyshev_x_df, caption = "Chebyshev GP Solution: Amount of Each Material in Each Blend (60 materials × 10 blends)")
+```
+
+## 11.4 Genetic Algorithm Solution
+
+```{r appendix-ga-matrix, echo=FALSE}
+cat("=== GA Solution: Complete Recipe Matrix (x_ij in Kgs) ===\n")
+print_table(ga_x_df, caption = "GA Solution: Amount of Each Material in Each Blend (60 materials × 10 blends)")
+```
 
 ---
 
