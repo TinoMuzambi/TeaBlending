@@ -45,7 +45,7 @@ print.table <- function(data, caption = "", font.size = 9) {
     }
   }
   
-  # Determine if table is wide (more than 8 columns)
+  # Determine if table is wide
   is.wide <- ncol(data.rounded) > 8
   
   ft <- flextable(data.rounded) %>%
@@ -145,7 +145,7 @@ This section implements the tea blending optimisation problem using the actual d
 
 ## 3.1 Data Loading
 
-The dataset comprises **`r n.materials.fomeni` raw materials** and **`r n.blends.fomeni` final blends**, each characterised by **`r n.characteristics.fomeni` quality attributes** (C1 through C6).
+The dataset comprises **`r n.materials.fomeni` raw materials** and **`r n.blends.fomeni` final blends**, each characterised by **`r n.characteristics.fomeni` quality attributes**, C1 through C6.
 
 ```{r fomeni-data, echo=FALSE}
 # Real data from Fomeni (2018) - Table 2: Raw Materials
@@ -173,10 +173,9 @@ raw.materials.fomeni$Availability <- raw.materials.fomeni$Availability.kg
 char.names.fomeni <- c("C1", "C2", "C3", "C4", "C5", "C6")
 quality.matrix.fomeni <- as.matrix(raw.materials.fomeni[, char.names.fomeni])
 
-# Define basic counts and vectors early for use in inline R code (before blends.fomeni is created)
 n.materials.fomeni <- nrow(raw.materials.fomeni)
 n.characteristics.fomeni <- length(char.names.fomeni)
-P.fomeni <- raw.materials.fomeni$Cost  # Define early for inline R code
+P.fomeni <- raw.materials.fomeni$Cost 
 
 # Table 3: Blends data
 blends.fomeni <- data.frame(
@@ -193,7 +192,6 @@ blends.fomeni <- data.frame(
 
 blends.fomeni$Demand <- blends.fomeni$Demand.kg
 
-# Define n.blends.fomeni now that blends.fomeni is created
 n.blends.fomeni <- nrow(blends.fomeni)
 
 # Extract target quality matrix
@@ -212,7 +210,6 @@ Raw material prices range from £`r sprintf("%.4f", min(P.fomeni))` to £`r spri
 
 ```{r fomeni-data-cont, echo=FALSE}
 # Prepare data vectors for optimisation models
-# (n.materials.fomeni, n.blends.fomeni, n.characteristics.fomeni, P.fomeni already defined above)
 
 # Availability vector a[i]
 a.fomeni <- raw.materials.fomeni$Availability
@@ -305,7 +302,7 @@ n.demand.constraints <- n.blends
 n.quality.constraints <- 2 * n.blends * n.characteristics
 n.constraints <- n.avail.constraints + n.demand.constraints + n.quality.constraints
 
-# Initialize constraint matrix
+# Initialise constraint matrix
 constraint.matrix <- matrix(0, nrow = n.constraints, ncol = n.vars)
 
 # RHS and direction vectors
@@ -399,7 +396,7 @@ lp.x.matrix <- matrix(lp.solution.vector, nrow = n.materials, ncol = n.blends, b
 rownames(lp.x.matrix) <- raw.materials$Material.ID
 colnames(lp.x.matrix) <- blends$Blend.ID
 
-# Prepare recipe matrix table (full table moved to Appendix)
+# Prepare recipe matrix table
 lp.x.df <- as.data.frame(lp.x.matrix)
 lp.x.df$Material <- rownames(lp.x.df)
 lp.x.df <- lp.x.df[, c("Material", colnames(lp.x.matrix))]
@@ -763,7 +760,7 @@ print.table(chebyshev.quality.df, caption = "Quality deviations (minimised in wo
 
 The Chebyshev Goal Programming model was successfully solved, achieving a **worst-case deviation (z) of `r format(round(chebyshev.objective, 2), nsmall = 2, big.mark = " ")`**. The solution yields a **total cost of £`r format(round(chebyshev.cost, 2), nsmall = 2, big.mark = " ")`**, representing a **`r sprintf("%.2f", (chebyshev.cost - lp.objective) / lp.objective * 100)`% increase** over the Linear Programming optimal cost. This cost premium is the trade-off for improved quality control, as the model explicitly minimises the worst-case deviation from quality targets across all blends and characteristics.
 
-The cost deviation from the target (set at 110% of LP optimal cost) is **£`r format(round(abs(chebyshev.cost - cost.target), 2), nsmall = 2)`**, indicating that the solution successfully balances cost and quality objectives within the specified goal framework. The solution utilises **`r sum(rowSums(chebyshev.x.matrix) > 0)` out of `r n.materials` raw materials**, demonstrating a more selective material portfolio compared to Simulated Annealing but broader than the LP solution. The complete recipe matrix is provided in Appendix 11.4.
+The cost deviation from the target which was set at 110% of LP optimal cost, is **£`r format(round(abs(chebyshev.cost - cost.target), 2), nsmall = 2)`**, indicating that the solution successfully balances cost and quality objectives within the specified goal framework. The solution utilises **`r sum(rowSums(chebyshev.x.matrix) > 0)` out of `r n.materials` raw materials**, demonstrating a more selective material portfolio compared to Simulated Annealing but broader than the LP solution. The complete recipe matrix is provided in Appendix 11.4.
 
 # 7 Approach 4: Genetic Algorithms
 
@@ -917,7 +914,7 @@ if (is.matrix(ga.summary.matrix) && ncol(ga.summary.matrix) > 0 && nrow(ga.summa
   # Check what columns are available
   available.cols <- colnames(ga.summary.matrix)
   
-  # Try to get best fitness (could be "best", "max", or first column)
+  # Try to get best fitness
   if ("best" %in% available.cols) {
     ga.best.history <- ga.summary.matrix[, "best"]
   } else if ("max" %in% available.cols) {
@@ -1095,25 +1092,25 @@ print.table(raw.materials.fomeni[, c("Material.ID", "Cost", "Availability", char
 ## 11.2 Linear Programming Solution
 
 ```{r appendix-lp-matrix, echo=FALSE}
-print.table(lp.x.df, caption = "LP Solution: Amount of Each Material in Each Blend (60 materials × 10 blends)", font.size = 7)
+print.table(lp.x.df, caption = "LP Solution: Amount of Each Material in Each Blend", font.size = 7)
 ```
 
 ## 11.3 Simulated Annealing Solution
 
 ```{r appendix-sa-matrix, echo=FALSE}
-print.table(sa.x.df, caption = "SA Solution: Amount of Each Material in Each Blend (60 materials × 10 blends)", font.size = 7)
+print.table(sa.x.df, caption = "SA Solution: Amount of Each Material in Each Blend", font.size = 7)
 ```
 
 ## 11.4 Chebyshev Goal Programming Solution
 
 ```{r appendix-chebyshev-matrix, echo=FALSE}
-print.table(chebyshev.x.df, caption = "Chebyshev GP Solution: Amount of Each Material in Each Blend (60 materials × 10 blends)", font.size = 7)
+print.table(chebyshev.x.df, caption = "Chebyshev GP Solution: Amount of Each Material in Each Blend", font.size = 7)
 ```
 
 ## 11.5 Genetic Algorithm Solution
 
 ```{r appendix-ga-matrix, echo=FALSE}
-print.table(ga.x.df, caption = "GA Solution: Amount of Each Material in Each Blend (60 materials × 10 blends)", font.size = 7)
+print.table(ga.x.df, caption = "GA Solution: Amount of Each Material in Each Blend", font.size = 7)
 ```
 
 ---
