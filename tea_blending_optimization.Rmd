@@ -1318,20 +1318,20 @@ print(p11)
 ```{r findings}
 cat("=== Key Findings ===\n\n")
 
-cat("1. COST PERFORMANCE:\n")
+cat("1. Cost Performance:\n")
 cat(sprintf("   - LP provides the optimal cost baseline: £%.2f\n", lp_objective))
 cat(sprintf("   - SA achieves %.2f%% of LP cost\n", (sa_objective / lp_objective) * 100))
 cat(sprintf("   - Chebyshev GP trades %.2f%% cost increase for better quality control\n", 
             comparison_metrics$Cost_vs_LP_pct[3]))
 cat(sprintf("   - GA achieves %.2f%% of LP cost\n", (ga_cost / lp_objective) * 100))
 
-cat("2. QUALITY PERFORMANCE:\n")
+cat("2. Quality Performance:\n")
 best_quality_idx <- which.min(comparison_metrics$Avg_Quality_Dev)
 cat(sprintf("   - Best average quality: %s (deviation: %.4f)\n", 
             comparison_metrics$Approach[best_quality_idx],
             comparison_metrics$Avg_Quality_Dev[best_quality_idx]))
 
-cat("3. RECOMMENDATION:\n")
+cat("3. Recommendation:\n")
 if (comparison_metrics$Avg_Quality_Dev[3] < comparison_metrics$Avg_Quality_Dev[1] * 0.8) {
   cat("   - Chebyshev Goal Programming is recommended for balancing cost and quality.\n")
   cat("   - It provides superior quality control with acceptable cost increase.\n")
