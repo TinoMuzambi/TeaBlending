@@ -36,21 +36,62 @@ library(flextable)
 library(tidyr)
 
 # Helper function to print tables 
-print_table <- function(data, caption = "") {
-  ft <- flextable(data) %>%
+print_table <- function(data, caption = "", font_size = 9) {
+  # Round all numeric columns to 2 decimal places
+  data_rounded <- data
+  for (col in names(data_rounded)) {
+    if (is.numeric(data_rounded[[col]])) {
+      data_rounded[[col]] <- round(data_rounded[[col]], 2)
+    }
+  }
+  
+  # Determine if table is wide (more than 8 columns)
+  is_wide <- ncol(data_rounded) > 8
+  
+  ft <- flextable(data_rounded) %>%
     set_caption(caption) %>%
-    theme_zebra(odd_header = "#CFCFCF", odd_body = "#EFEFEF") %>%
-    autofit()
+    theme_zebra(odd_header = "#CFCFCF", odd_body = "#EFEFEF")
+  
+  if (is_wide) {
+    # For wide tables, use smaller font
+    ft <- ft %>%
+      fontsize(size = font_size) %>%
+      autofit()
+  } else {
+    ft <- ft %>%
+      fontsize(size = font_size) %>%
+      autofit()
+  }
   
   if (knitr::is_latex_output()) {
     ft <- ft %>%
-      fontsize(size = 9) %>%
       set_table_properties(layout = "autofit")
+  } else {
+    # For HTML output
+    if (is_wide) {
+      # For wide tables, ensure they fit and can scroll
+      ft <- ft %>%
+        set_table_properties(layout = "autofit", width = 1)
+    } else {
+      ft <- ft %>%
+        set_table_properties(layout = "autofit")
+    }
   }
   
   return(ft)
 }
 ```
+
+<style>
+/* Ensure wide tables scroll horizontally */
+.ft-container {
+  overflow-x: auto;
+  max-width: 100%;
+}
+table {
+  max-width: 100%;
+}
+</style>
 
 # 1 Introduction
 Blending problems are a classic challenge in operations research, arising in diverse fields such as food processing, metallurgy, and energy. In the tea industry, blending is crucial to achieve consistent product quality, balance raw material costs, and adapt to fluctuating supplies. Every cup of tea on the supermarket shelf is the result of a carefully orchestrated process. Different grades and types of tea leaves from various origins are combined to meet precise targets for taste, colour, aroma and other quality parameters, all while minimising production costs and ensuring supply constraints are not violated.
@@ -1048,25 +1089,25 @@ This appendix contains the complete recipe matrices for all optimisation approac
 ## 11.1 Linear Programming Solution
 
 ```{r appendix-lp-matrix, echo=FALSE}
-print_table(lp_x_df, caption = "LP Solution: Amount of Each Material in Each Blend (60 materials × 10 blends)")
+print_table(lp_x_df, caption = "LP Solution: Amount of Each Material in Each Blend (60 materials × 10 blends)", font_size = 7)
 ```
 
 ## 11.2 Simulated Annealing Solution
 
 ```{r appendix-sa-matrix, echo=FALSE}
-print_table(sa_x_df, caption = "SA Solution: Amount of Each Material in Each Blend (60 materials × 10 blends)")
+print_table(sa_x_df, caption = "SA Solution: Amount of Each Material in Each Blend (60 materials × 10 blends)", font_size = 7)
 ```
 
 ## 11.3 Chebyshev Goal Programming Solution
 
 ```{r appendix-chebyshev-matrix, echo=FALSE}
-print_table(chebyshev_x_df, caption = "Chebyshev GP Solution: Amount of Each Material in Each Blend (60 materials × 10 blends)")
+print_table(chebyshev_x_df, caption = "Chebyshev GP Solution: Amount of Each Material in Each Blend (60 materials × 10 blends)", font_size = 7)
 ```
 
 ## 11.4 Genetic Algorithm Solution
 
 ```{r appendix-ga-matrix, echo=FALSE}
-print_table(ga_x_df, caption = "GA Solution: Amount of Each Material in Each Blend (60 materials × 10 blends)")
+print_table(ga_x_df, caption = "GA Solution: Amount of Each Material in Each Blend (60 materials × 10 blends)", font_size = 7)
 ```
 
 ---
