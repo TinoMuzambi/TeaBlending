@@ -95,6 +95,8 @@ This section implements the tea blending optimisation problem using the actual d
 
 ## 3.1 Data Loading
 
+The dataset comprises **60 raw materials** and **10 final blends**, each characterised by **6 quality attributes** (C1 through C6). Raw material prices range from £0.0120 to £0.0470 per kilogram, with a mean price of £0.0217 per kilogram. This price variation reflects the diverse quality grades and origins of the tea materials available.
+
 ```{r fomeni-data, echo=FALSE}
 # Real data from Fomeni (2018) - Table 2: Raw Materials
 # Note: Prices are in £0.01/kg, so we convert to £/kg by dividing by 100
@@ -139,21 +141,11 @@ blends_fomeni$Demand <- blends_fomeni$Demand_kg
 # Extract target quality matrix
 target_matrix_fomeni <- as.matrix(blends_fomeni[, char_names_fomeni])
 
-# Display summary statistics
-cat("=== Data Summary ===\n")
-cat(sprintf("Number of raw materials: %d\n", nrow(raw_materials_fomeni)))
-cat(sprintf("Number of blends: %d\n", nrow(blends_fomeni)))
-cat(sprintf("Number of quality characteristics: %d\n", length(char_names_fomeni)))
-cat(sprintf("Price range: £%.4f - £%.4f per kg\n", 
-            min(raw_materials_fomeni$Cost), max(raw_materials_fomeni$Cost)))
-
 # Display first few rows of raw materials
-cat("=== Raw Materials Data (Fomeni Table 2 - First 10 rows) ===\n")
 print_table(raw_materials_fomeni[1:10, c("Material_ID", "Cost", "Availability", char_names_fomeni)], 
             caption = "Raw Materials: Costs (£/kg), Availability (kg), and Quality Characteristics (First 10)")
 
 # Display all blends
-cat("=== Blends Data (Fomeni Table 3) ===\n")
 print_table(blends_fomeni[, c("Blend_ID", "Demand", char_names_fomeni)], 
             caption = "Blends: Demand (kg) and Target Quality Scores")
 
@@ -181,12 +173,6 @@ epsilon_fomeni <- 0.5  # Start with a reasonable tolerance
 # Feasibility check
 total_availability_fomeni <- sum(a_fomeni)
 total_demand_fomeni <- sum(D_fomeni)
-cat(sprintf("=== Feasibility Check ===\n"))
-cat(sprintf("Total availability: %d kg\n", total_availability_fomeni))
-cat(sprintf("Total demand: %d kg\n", total_demand_fomeni))
-cat(sprintf("Surplus availability: %d kg (%.2f%%)\n", 
-            total_availability_fomeni - total_demand_fomeni,
-            (total_availability_fomeni - total_demand_fomeni) / total_demand_fomeni * 100))
 
 # Create standard variable names for use in optimisation models
 # (These will be used by all subsequent optimisation approaches)
@@ -216,7 +202,11 @@ s_named <- s_fomeni
 rownames(s_named) <- blends_fomeni$Blend_ID
 ```
 
+A feasibility analysis reveals that the total raw material availability is **830,500 kg**, while total demand across all blends is **555,000 kg**. This represents a **49.64% surplus** in availability, indicating that supply constraints are not binding and the problem has sufficient flexibility for optimisation. The surplus availability provides the solver with multiple feasible solution paths, which is advantageous for finding cost-optimal allocations.
+
 ## 3.2 Data Characteristics
+
+The following analysis provides a comprehensive overview of the dataset's key characteristics, enabling a deeper understanding of the problem structure before optimisation.
 
 ```{r fomeni-data-analysis, echo=FALSE}
 # Analyse the data characteristics and create summary tables and visualisations
@@ -267,17 +257,12 @@ demand_stats <- data.frame(
 )
 
 # Display summary tables
-cat("=== Summary Statistics ===\n\n")
-cat("Raw Material Prices (£/kg):\n")
 print_table(price_stats, caption = "Price Distribution Statistics")
 
-cat("Raw Material Availability:\n")
 print_table(availability_stats, caption = "Availability Distribution Statistics (kg)")
 
-cat("Quality Characteristics:\n")
 print_table(quality_summary, caption = "Quality Characteristics Summary Statistics")
 
-cat("Blend Demands:\n")
 print_table(demand_stats, caption = "Blend Demand Statistics (kg)")
 ```
 
@@ -408,6 +393,8 @@ $$\min \sum_{i} \sum_{j} P_i x_{ij}$$
 
 ## 4.2 Implementation
 
+The Linear Programming model was successfully solved using the Rglpk solver, which employs the GNU Linear Programming Kit (GLPK) algorithm. The solver converged to an optimal solution (status code 0), indicating that the problem is feasible and the global optimum has been identified.
+
 ```{r lp-implementation, echo=FALSE}
 # Implementation using Rglpk
 
@@ -525,23 +512,10 @@ lp_x_matrix <- matrix(lp_solution_vector, nrow = n_materials, ncol = n_blends, b
 rownames(lp_x_matrix) <- raw_materials$Material_ID
 colnames(lp_x_matrix) <- blends$Blend_ID
 
-cat(sprintf("=== LP Solution Results ===\n"))
-cat(sprintf("Solver Status: %d (0 = optimal)\n", result$status))
-cat(sprintf("Optimal Total Cost: £%.2f\n", lp_objective))
-cat(sprintf("Total material used: %.2f Kgs\n", sum(lp_x_matrix)))
-cat(sprintf("Total demand required: %.2f Kgs\n", sum(D)))
-
 # Prepare recipe matrix table (full table moved to Appendix)
 lp_x_df <- as.data.frame(lp_x_matrix)
 lp_x_df$Material <- rownames(lp_x_df)
 lp_x_df <- lp_x_df[, c("Material", colnames(lp_x_matrix))]
-
-# Show summary statistics instead of full table
-cat("=== LP Solution Summary ===\n")
-cat(sprintf("Total materials used: %d out of %d\n", sum(rowSums(lp_x_matrix) > 0), n_materials))
-cat(sprintf("Materials with non-zero allocation: %s\n", 
-            paste(rownames(lp_x_matrix)[rowSums(lp_x_matrix) > 0], collapse = ", ")))
-cat("Note: The complete recipe matrix (all 60 materials × 10 blends) is provided in Appendix 11.1.\n")
 
 # Calculate quality deviations for LP solution
 lp_quality_deviations <- matrix(0, nrow = n_blends, ncol = n_characteristics)
@@ -557,12 +531,13 @@ for (j in 1:n_blends) {
 rownames(lp_quality_deviations) <- blends$Blend_ID
 colnames(lp_quality_deviations) <- char_names
 
-cat("=== Quality Deviations from Targets ===\n")
 lp_quality_df <- as.data.frame(lp_quality_deviations)
 lp_quality_df$Blend <- rownames(lp_quality_df)
 lp_quality_df <- lp_quality_df[, c("Blend", colnames(lp_quality_deviations))]
 print_table(lp_quality_df, caption = "Absolute deviations from target quality scores")
 ```
+
+The Linear Programming solution achieves an **optimal total cost of £9,087.69**, utilising exactly **555,000 kg** of raw materials to meet the total demand requirement. The solution employs **52 out of 60 available raw materials**, demonstrating that the optimal strategy does not require the full material portfolio. The materials utilised in the optimal solution include R1, R2, R3, R4, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18, R19, R20, R21, R22, R25, R26, R27, R28, R30, R31, R32, R33, R34, R35, R36, R37, R38, R40, R42, R43, R44, R45, R46, R47, R48, R49, R50, R52, R54, R55, R56, R57, R58, R59, and R60. The complete recipe matrix detailing the allocation of each material to each blend is provided in Appendix 11.1.
 
 ## 4.3 Visualisation
 
@@ -612,6 +587,8 @@ print(p2)
 Simulated Annealing is a metaheuristic that explores the solution space probabilistically, accepting worse solutions with decreasing probability as the algorithm "cools down."
 
 ## 5.1 Implementation
+
+Simulated Annealing provides a probabilistic search mechanism that can escape local optima by accepting worse solutions with decreasing probability as the algorithm progresses. This makes it particularly valuable for problems with complex constraint structures or when exact methods are computationally prohibitive.
 
 ```{r sa-implementation, echo=FALSE}
 # Simulated Annealing implementation
@@ -759,7 +736,6 @@ simulated_annealing <- function(initial_temp = 1000, cooling_rate = 0.95,
 }
 
 # Run Simulated Annealing
-cat("Running Simulated Annealing...\n")
 sa_result <- simulated_annealing(initial_temp = 1000, cooling_rate = 0.995, 
                                   max_iterations = 2000, min_temp = 0.01)
 
@@ -769,22 +745,10 @@ rownames(sa_x_matrix) <- raw_materials$Material_ID
 colnames(sa_x_matrix) <- blends$Blend_ID
 sa_objective <- sa_result$objective
 
-cat("=== SA Solution Results ===\n")
-cat(sprintf("Best Total Cost: £%.2f\n", sa_objective))
-cat(sprintf("Difference from LP: %.2f%%\n", 
-            (sa_objective - lp_objective) / lp_objective * 100))
-
 # Prepare recipe matrix table (full table moved to Appendix)
 sa_x_df <- as.data.frame(sa_x_matrix)
 sa_x_df$Material <- rownames(sa_x_df)
 sa_x_df <- sa_x_df[, c("Material", colnames(sa_x_matrix))]
-
-# Show summary statistics instead of full table
-cat("=== SA Solution Summary ===\n")
-cat(sprintf("Total materials used: %d out of %d\n", sum(rowSums(sa_x_matrix) > 0), n_materials))
-cat(sprintf("Materials with non-zero allocation: %s\n", 
-            paste(rownames(sa_x_matrix)[rowSums(sa_x_matrix) > 0], collapse = ", ")))
-cat("Note: The complete recipe matrix (all 60 materials × 10 blends) is provided in Appendix 11.2.\n")
 
 # Calculate quality deviations for SA solution
 sa_quality_deviations <- matrix(0, nrow = n_blends, ncol = n_characteristics)
@@ -800,12 +764,15 @@ for (j in 1:n_blends) {
 rownames(sa_quality_deviations) <- blends$Blend_ID
 colnames(sa_quality_deviations) <- char_names
 
-cat("=== Quality Deviations from Targets ===\n")
 sa_quality_df <- as.data.frame(sa_quality_deviations)
 sa_quality_df$Blend <- rownames(sa_quality_df)
 sa_quality_df <- sa_quality_df[, c("Blend", colnames(sa_quality_deviations))]
 print_table(sa_quality_df, caption = "Absolute deviations from target quality scores")
 ```
+
+Simulated Annealing was executed with an initial temperature of 1000, a cooling rate of 0.995, and a maximum of 2000 iterations. The algorithm successfully identified a solution with a **total cost of £10,832.36**, representing a **19.20% increase** compared to the Linear Programming optimal solution. This performance gap is expected for metaheuristic approaches, which trade exact optimality for computational flexibility and the ability to handle non-linear or complex constraint structures.
+
+The Simulated Annealing solution utilises **all 60 available raw materials**, in contrast to the LP solution which uses only 52 materials. This broader material utilisation suggests that the SA algorithm explores a more diverse solution space, potentially at the expense of cost efficiency. The complete recipe matrix for the Simulated Annealing solution is provided in Appendix 11.2.
 
 ## 5.2 Visualisation
 
@@ -867,6 +834,8 @@ Where:
 
 ## 6.2 Implementation
 
+The Chebyshev Goal Programming formulation transforms the multi-objective problem into a single-objective minimisation of the worst-case deviation from all goals. This approach ensures balanced achievement across cost and quality objectives, preventing any single goal from being severely compromised.
+
 ```{r chebyshev-implementation, echo=FALSE}
 # Chebyshev Goal Programming implementation
 # Reformulate as LP: minimise z subject to z >= w_i * d_i for all goals
@@ -922,7 +891,6 @@ chebyshev_model <- MIPModel() %>%
   add_constraint(sum_expr(x[i, j], i = 1:n_materials) >= D[j], j = 1:n_blends)
 
 # Solve the model
-cat("Solving Chebyshev Goal Programming model...\n")
 chebyshev_result <- solve_model(chebyshev_model, with_ROI(solver = "glpk", verbose = FALSE))
 
 # Extract results
@@ -953,30 +921,20 @@ for (idx in 1:nrow(chebyshev_quality_solution)) {
 rownames(chebyshev_quality_deviations) <- blends$Blend_ID
 colnames(chebyshev_quality_deviations) <- char_names
 
-# Display results
-cat("=== Chebyshev GP Solution Results ===\n")
-cat(sprintf("Worst-case Deviation (z): %.4f\n", chebyshev_objective))
-cat(sprintf("Total Cost: £%.2f\n", chebyshev_cost))
-cat(sprintf("Cost Deviation from Target: £%.2f\n", abs(chebyshev_cost - cost_target)))
-
 # Prepare recipe matrix table (full table moved to Appendix)
 chebyshev_x_df <- as.data.frame(chebyshev_x_matrix)
 chebyshev_x_df$Material <- rownames(chebyshev_x_df)
 chebyshev_x_df <- chebyshev_x_df[, c("Material", colnames(chebyshev_x_matrix))]
 
-# Show summary statistics instead of full table
-cat("=== Chebyshev GP Solution Summary ===\n")
-cat(sprintf("Total materials used: %d out of %d\n", sum(rowSums(chebyshev_x_matrix) > 0), n_materials))
-cat(sprintf("Materials with non-zero allocation: %s\n", 
-            paste(rownames(chebyshev_x_matrix)[rowSums(chebyshev_x_matrix) > 0], collapse = ", ")))
-cat("Note: The complete recipe matrix (all 60 materials × 10 blends) is provided in Appendix 11.3.\n")
-
-cat("=== Quality Deviations from Targets ===\n")
 chebyshev_quality_df <- as.data.frame(chebyshev_quality_deviations)
 chebyshev_quality_df$Blend <- rownames(chebyshev_quality_df)
 chebyshev_quality_df <- chebyshev_quality_df[, c("Blend", colnames(chebyshev_quality_deviations))]
 print_table(chebyshev_quality_df, caption = "Quality deviations (minimised in worst-case sense)")
 ```
+
+The Chebyshev Goal Programming model was successfully solved, achieving a **worst-case deviation (z) of 39,945.03**. The solution yields a **total cost of £10,375.59**, representing a **14.17% increase** over the Linear Programming optimal cost. This cost premium is the trade-off for improved quality control, as the model explicitly minimises the worst-case deviation from quality targets across all blends and characteristics.
+
+The cost deviation from the target (set at 110% of LP optimal cost) is **£379.13**, indicating that the solution successfully balances cost and quality objectives within the specified goal framework. The solution utilises **48 out of 60 raw materials**, demonstrating a more selective material portfolio compared to Simulated Annealing but broader than the LP solution. The materials used include R2, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R16, R17, R18, R19, R20, R21, R22, R23, R24, R25, R27, R29, R32, R33, R35, R36, R38, R39, R40, R42, R43, R44, R45, R46, R47, R48, R49, R50, R51, R52, R54, R55, R56, R58, R59, and R60. The complete recipe matrix is provided in Appendix 11.3.
 
 ## 6.3 Visualisation
 
@@ -1032,6 +990,8 @@ print(p7)
 Genetic Algorithms use evolutionary principles to evolve a population of solutions toward better fitness.
 
 ## 7.1 Implementation
+
+Genetic Algorithms employ evolutionary principles to evolve a population of candidate solutions through selection, crossover, and mutation operations. This population-based approach enables exploration of diverse regions of the solution space, making it particularly suitable for complex, multi-modal optimisation landscapes.
 
 ```{r ga-implementation, echo=FALSE}
 # Genetic Algorithm implementation
@@ -1092,7 +1052,6 @@ upper_bounds <- rep(min(max(a), max(D) * 2), n_materials * n_blends)
 lower_bounds <- rep(0, n_materials * n_blends)
 
 # Run Genetic Algorithm
-cat("Running Genetic Algorithm...\n")
 ga_result <- ga(
   type = "real-valued",
   fitness = fitness_function,
@@ -1149,29 +1108,20 @@ for (j in 1:n_blends) {
 rownames(ga_quality_deviations) <- blends$Blend_ID
 colnames(ga_quality_deviations) <- char_names
 
-# Display results
-cat("=== GA Solution Results ===\n")
-cat(sprintf("Best Total Cost: £%.2f\n", ga_cost))
-cat(sprintf("Average Quality Deviation: %.4f\n", mean(ga_quality_deviations)))
-
 # Prepare recipe matrix table (full table moved to Appendix)
 ga_x_df <- as.data.frame(ga_x_matrix)
 ga_x_df$Material <- rownames(ga_x_df)
 ga_x_df <- ga_x_df[, c("Material", colnames(ga_x_matrix))]
 
-# Show summary statistics instead of full table
-cat("=== GA Solution Summary ===\n")
-cat(sprintf("Total materials used: %d out of %d\n", sum(rowSums(ga_x_matrix) > 0), n_materials))
-cat(sprintf("Materials with non-zero allocation: %s\n", 
-            paste(rownames(ga_x_matrix)[rowSums(ga_x_matrix) > 0], collapse = ", ")))
-cat("Note: The complete recipe matrix (all 60 materials × 10 blends) is provided in Appendix 11.4.\n")
-
-cat("=== Quality Deviations from Targets ===\n")
 ga_quality_df <- as.data.frame(ga_quality_deviations)
 ga_quality_df$Blend <- rownames(ga_quality_df)
 ga_quality_df <- ga_quality_df[, c("Blend", colnames(ga_quality_deviations))]
 print_table(ga_quality_df, caption = "Absolute deviations from target quality scores")
 ```
+
+The Genetic Algorithm was executed with a population size of 50, 100 generations, a crossover probability of 0.8, and a mutation probability of 0.1. The algorithm identified a solution with a **total cost of £15,397.24**, representing a **69.43% increase** over the Linear Programming optimal cost. The solution achieves an **average quality deviation of 1.51**, which is higher than the other approaches, suggesting that the GA struggled to balance cost and quality objectives effectively within the allocated generations.
+
+The Genetic Algorithm solution utilises **all 60 available raw materials**, similar to Simulated Annealing. This comprehensive material utilisation, combined with the higher cost, indicates that the algorithm may require additional generations or parameter tuning to converge toward more cost-effective solutions. The complete recipe matrix is provided in Appendix 11.4.
 
 ## 7.2 Visualisation
 
@@ -1313,7 +1263,6 @@ comparison_metrics <- data.frame(
                     (ga_cost - lp_objective) / lp_objective * 100)
 )
 
-cat("=== Comprehensive Comparison of All Approaches ===\n")
 print_table(comparison_metrics, caption = "Performance Metrics Comparison")
 
 # Create visualisations
@@ -1339,37 +1288,26 @@ print(p11)
 
 ## 8.2 Key Findings
 
-```{r findings, echo=FALSE}
-cat("=== Key Findings ===\n\n")
+The comparative analysis reveals several important insights regarding the performance of each optimisation approach:
 
-cat("1. Cost Performance:\n")
-cat(sprintf("   - LP provides the optimal cost baseline: £%.2f\n", lp_objective))
-cat(sprintf("   - SA achieves %.2f%% of LP cost\n", (sa_objective / lp_objective) * 100))
-cat(sprintf("   - Chebyshev GP trades %.2f%% cost increase for better quality control\n", 
-            comparison_metrics$Cost_vs_LP_pct[3]))
-cat(sprintf("   - GA achieves %.2f%% of LP cost\n", (ga_cost / lp_objective) * 100))
+**1. Cost Performance:**
 
-cat("2. Quality Performance:\n")
-best_quality_idx <- which.min(comparison_metrics$Avg_Quality_Dev)
-cat(sprintf("   - Best average quality: %s (deviation: %.4f)\n", 
-            comparison_metrics$Approach[best_quality_idx],
-            comparison_metrics$Avg_Quality_Dev[best_quality_idx]))
+Linear Programming establishes the optimal cost baseline at **£9,087.69**, serving as the benchmark against which all other methods are evaluated. Simulated Annealing achieves **119.20%** of the LP cost, representing a reasonable approximation given its metaheuristic nature. Chebyshev Goal Programming trades a **14.17%** cost increase for enhanced quality control, demonstrating the explicit cost-quality trade-off inherent in multi-objective optimisation. The Genetic Algorithm achieves **169.43%** of the LP cost, indicating that additional parameter tuning or extended runtime may be necessary to improve convergence.
 
-cat("3. Recommendation:\n")
-if (comparison_metrics$Avg_Quality_Dev[3] < comparison_metrics$Avg_Quality_Dev[1] * 0.8) {
-  cat("   - Chebyshev Goal Programming is recommended for balancing cost and quality.\n")
-  cat("   - It provides superior quality control with acceptable cost increase.\n")
-} else {
-  cat("   - Linear Programming provides the best cost-performance trade-off.\n")
-  cat("   - For near-optimal solutions quickly, Simulated Annealing is valuable.\n")
-}
-```
+**2. Quality Performance:**
+
+Linear Programming achieves the best average quality deviation at **0.3325**, demonstrating that the optimal cost solution also maintains excellent quality characteristics. This finding suggests that the quality constraints, when properly formulated with appropriate tolerance parameters, do not significantly conflict with cost minimisation objectives.
+
+**3. Recommendation:**
+
+Linear Programming provides the best cost-performance trade-off for this problem instance. The LP solution achieves both optimal cost and superior quality performance, making it the recommended approach for production planning. For scenarios requiring rapid near-optimal solutions or when dealing with non-linear constraints that preclude exact methods, Simulated Annealing offers a valuable alternative. The Chebyshev Goal Programming approach is particularly useful when decision-makers need explicit control over the cost-quality trade-off through goal targets and weights.
 
 ## 8.3 Solution Matrices Comparison
 
+The following table provides a detailed comparison of material allocations for Blend 1 across all four optimisation approaches, illustrating the differences in solution strategies:
+
 ```{r solution-comparison, echo=FALSE}
 # Create a summary of solution differences
-cat("=== Solution Matrix Comparison (Sample: Blend 1) ===\n")
 # Create proper ordering for materials
 material_order <- raw_materials$Material_ID[order(as.numeric(sub("R", "", raw_materials$Material_ID)))]
 blend1_comparison <- data.frame(
@@ -1428,28 +1366,24 @@ This appendix contains the complete recipe matrices for all optimisation approac
 ## 11.1 Linear Programming Solution
 
 ```{r appendix-lp-matrix, echo=FALSE}
-cat("=== LP Solution: Complete Recipe Matrix (x_ij in Kgs) ===\n")
 print_table(lp_x_df, caption = "LP Solution: Amount of Each Material in Each Blend (60 materials × 10 blends)")
 ```
 
 ## 11.2 Simulated Annealing Solution
 
 ```{r appendix-sa-matrix, echo=FALSE}
-cat("=== SA Solution: Complete Recipe Matrix (x_ij in Kgs) ===\n")
 print_table(sa_x_df, caption = "SA Solution: Amount of Each Material in Each Blend (60 materials × 10 blends)")
 ```
 
 ## 11.3 Chebyshev Goal Programming Solution
 
 ```{r appendix-chebyshev-matrix, echo=FALSE}
-cat("=== Chebyshev GP Solution: Complete Recipe Matrix (x_ij in Kgs) ===\n")
 print_table(chebyshev_x_df, caption = "Chebyshev GP Solution: Amount of Each Material in Each Blend (60 materials × 10 blends)")
 ```
 
 ## 11.4 Genetic Algorithm Solution
 
 ```{r appendix-ga-matrix, echo=FALSE}
-cat("=== GA Solution: Complete Recipe Matrix (x_ij in Kgs) ===\n")
 print_table(ga_x_df, caption = "GA Solution: Amount of Each Material in Each Blend (60 materials × 10 blends)")
 ```
 
