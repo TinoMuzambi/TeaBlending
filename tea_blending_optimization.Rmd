@@ -202,176 +202,7 @@ s_named <- s_fomeni
 rownames(s_named) <- blends_fomeni$Blend_ID
 ```
 
-A feasibility analysis reveals that the total raw material availability is **830,500 kg**, while total demand across all blends is **555,000 kg**. This represents a **49.64% surplus** in availability, indicating that supply constraints are not binding and the problem has sufficient flexibility for optimisation. The surplus availability provides the solver with multiple feasible solution paths, which is advantageous for finding cost-optimal allocations.
-
-## 3.2 Data Characteristics
-
-The following analysis provides a comprehensive overview of the dataset's key characteristics, enabling a deeper understanding of the problem structure before optimisation.
-
-```{r fomeni-data-analysis, echo=FALSE}
-# Analyse the data characteristics and create summary tables and visualisations
-
-# Create summary statistics table for raw materials
-price_stats <- data.frame(
-  Statistic = c("Mean", "Median", "Minimum", "Maximum", "Standard Deviation"),
-  Value = c(
-    sprintf("£%.4f", mean(P_fomeni)),
-    sprintf("£%.4f", median(P_fomeni)),
-    sprintf("£%.4f", min(P_fomeni)),
-    sprintf("£%.4f", max(P_fomeni)),
-    sprintf("£%.4f", sd(P_fomeni))
-  )
-)
-
-availability_stats <- data.frame(
-  Statistic = c("Mean", "Median", "Minimum", "Maximum", "Total"),
-  Value_kg = c(
-    sprintf("%.0f", mean(a_fomeni)),
-    sprintf("%.0f", median(a_fomeni)),
-    sprintf("%.0f", min(a_fomeni)),
-    sprintf("%.0f", max(a_fomeni)),
-    sprintf("%.0f", sum(a_fomeni))
-  )
-)
-
-# Quality characteristics summary
-quality_summary <- data.frame(
-  Characteristic = char_names_fomeni,
-  Minimum = apply(g_fomeni, 2, min),
-  Maximum = apply(g_fomeni, 2, max),
-  Mean = apply(g_fomeni, 2, mean),
-  Median = apply(g_fomeni, 2, median),
-  Std_Dev = apply(g_fomeni, 2, sd)
-)
-
-# Blend demand summary
-demand_stats <- data.frame(
-  Statistic = c("Mean", "Median", "Minimum", "Maximum", "Total"),
-  Value_kg = c(
-    sprintf("%.0f", mean(D_fomeni)),
-    sprintf("%.0f", median(D_fomeni)),
-    sprintf("%.0f", min(D_fomeni)),
-    sprintf("%.0f", max(D_fomeni)),
-    sprintf("%.0f", sum(D_fomeni))
-  )
-)
-
-# Display summary tables
-print_table(price_stats, caption = "Price Distribution Statistics")
-
-print_table(availability_stats, caption = "Availability Distribution Statistics (kg)")
-
-print_table(quality_summary, caption = "Quality Characteristics Summary Statistics")
-
-print_table(demand_stats, caption = "Blend Demand Statistics (kg)")
-```
-
-```{r fomeni-data-visualisations, echo=FALSE}
-# Create visualisations of data characteristics
-
-# 1. Price distribution histogram
-p_price <- ggplot(data.frame(Price = P_fomeni), aes(x = Price)) +
-  geom_histogram(bins = 20, fill = "steelblue", alpha = 0.7, colour = "white") +
-  geom_vline(aes(xintercept = mean(Price)), linetype = "dashed", colour = "red", size = 1) +
-  labs(title = "Distribution of Raw Material Prices",
-       x = "Price (£/kg)", y = "Frequency") +
-  theme_minimal()
-
-print(p_price)
-
-# 2. Availability distribution (log scale due to wide range)
-p_avail <- ggplot(data.frame(Availability = a_fomeni), aes(x = Availability)) +
-  geom_histogram(bins = 30, fill = "darkgreen", alpha = 0.7, colour = "white") +
-  scale_x_log10(labels = scales::comma) +
-  geom_vline(aes(xintercept = median(Availability)), linetype = "dashed", colour = "red", size = 1) +
-  labs(title = "Distribution of Raw Material Availability",
-       x = "Availability (kg, log scale)", y = "Frequency") +
-  theme_minimal()
-
-print(p_avail)
-
-# 3. Quality characteristics boxplot
-quality_long <- data.frame(
-  Characteristic = rep(char_names_fomeni, each = n_materials_fomeni),
-  Value = as.vector(g_fomeni)
-)
-
-p_quality <- ggplot(quality_long, aes(x = Characteristic, y = Value, fill = Characteristic)) +
-  geom_boxplot(alpha = 0.7) +
-  geom_jitter(width = 0.2, alpha = 0.3, size = 0.5) +
-  labs(title = "Distribution of Quality Characteristics Across Raw Materials",
-       x = "Quality Characteristic", y = "Score") +
-  theme_minimal() +
-  theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1))
-
-print(p_quality)
-
-# 4. Blend demand bar chart
-blend_demand_df <- data.frame(
-  Blend = blends_fomeni$Blend_ID,
-  Demand = D_fomeni
-)
-
-p_demand <- ggplot(blend_demand_df, aes(x = reorder(Blend, Demand), y = Demand, fill = Demand)) +
-  geom_bar(stat = "identity", alpha = 0.8) +
-  scale_fill_gradient(low = "lightblue", high = "darkblue") +
-  scale_y_continuous(labels = scales::comma) +
-  labs(title = "Demand by Blend",
-       x = "Blend", y = "Demand (kg)") +
-  theme_minimal() +
-  theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1)) +
-  coord_flip()
-
-print(p_demand)
-
-# 5. Price vs Availability scatter plot
-price_avail_df <- data.frame(
-  Price = P_fomeni,
-  Availability = a_fomeni,
-  Material = raw_materials_fomeni$Material_ID
-)
-
-p_price_avail <- ggplot(price_avail_df, aes(x = Availability, y = Price)) +
-  geom_point(alpha = 0.6, size = 2, colour = "steelblue") +
-  scale_x_log10(labels = scales::comma) +
-  scale_y_continuous(labels = scales::dollar_format(prefix = "£")) +
-  labs(title = "Price vs Availability of Raw Materials",
-       x = "Availability (kg, log scale)", y = "Price (£/kg)") +
-  theme_minimal()
-
-print(p_price_avail)
-
-# 6. Quality characteristics heatmap (sample of materials)
-# Show first 20 materials for readability
-sample_materials <- 1:min(20, n_materials_fomeni)
-quality_sample <- g_fomeni[sample_materials, ]
-rownames(quality_sample) <- raw_materials_fomeni$Material_ID[sample_materials]
-
-# Create proper ordering for materials (R1, R2, R3, ..., R20 instead of R1, R10, R11, ...)
-sample_material_order <- raw_materials_fomeni$Material_ID[sample_materials][
-  order(as.numeric(sub("R", "", raw_materials_fomeni$Material_ID[sample_materials])))
-]
-
-# Convert to long format for heatmap
-quality_melt <- data.frame(
-  Material = rep(rownames(quality_sample), ncol(quality_sample)),
-  Characteristic = rep(colnames(quality_sample), each = nrow(quality_sample)),
-  Value = as.vector(quality_sample)
-)
-# Convert Material to factor with proper ordering
-quality_melt$Material <- factor(quality_melt$Material, levels = sample_material_order)
-
-p_heatmap <- ggplot(quality_melt, aes(x = Characteristic, y = Material, fill = Value)) +
-  geom_tile(colour = "white") +
-  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 5) +
-  labs(title = "Quality Characteristics Heatmap (First 20 Materials)",
-       x = "Quality Characteristic", y = "Raw Material", fill = "Score") +
-  theme_minimal() +
-  theme(axis.text.y = element_text(size = 8)) +
-  scale_y_discrete(limits = rev(sample_material_order))  # Reverse so R1 is at top
-
-print(p_heatmap)
-```
+A feasibility analysis reveals that the total raw material availability is **830 500 kg**, while total demand across all blends is **555 000 kg**. This represents a **49.64% surplus** in availability, indicating that supply constraints are not binding and the problem has sufficient flexibility for optimisation. The surplus availability provides the solver with multiple feasible solution paths, which is advantageous for finding cost-optimal allocations.
 
 # 4 Approach 1: Cost Minimisation using Linear Programming
 
@@ -537,50 +368,7 @@ lp_quality_df <- lp_quality_df[, c("Blend", colnames(lp_quality_deviations))]
 print_table(lp_quality_df, caption = "Absolute deviations from target quality scores")
 ```
 
-The Linear Programming solution achieves an **optimal total cost of £9,087.69**, utilising exactly **555,000 kg** of raw materials to meet the total demand requirement. The solution employs **52 out of 60 available raw materials**, demonstrating that the optimal strategy does not require the full material portfolio. The materials utilised in the optimal solution include R1, R2, R3, R4, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18, R19, R20, R21, R22, R25, R26, R27, R28, R30, R31, R32, R33, R34, R35, R36, R37, R38, R40, R42, R43, R44, R45, R46, R47, R48, R49, R50, R52, R54, R55, R56, R57, R58, R59, and R60. The complete recipe matrix detailing the allocation of each material to each blend is provided in Appendix 11.1.
-
-## 4.3 Visualisation
-
-```{r lp-visualisation, echo=FALSE}
-# Visualise the solution
-# Convert matrix to long format for plotting
-# Create proper ordering for materials (R1, R2, R3, ..., R60 instead of R1, R10, R11, ...)
-material_order <- raw_materials$Material_ID[order(as.numeric(sub("R", "", raw_materials$Material_ID)))]
-lp_solution_long <- data.frame(
-  Material = rep(raw_materials$Material_ID, n_blends),
-  Blend = rep(blends$Blend_ID, each = n_materials),
-  value = as.vector(lp_x_matrix)
-)
-# Convert Material to factor with proper ordering
-lp_solution_long$Material <- factor(lp_solution_long$Material, levels = material_order)
-
-p1 <- ggplot(lp_solution_long, aes(x = Blend, y = value, fill = Material)) +
-  geom_bar(stat = "identity", position = "stack") +
-  labs(title = "LP Solution: Material Usage by Blend",
-       x = "Blend", y = "Amount (Kgs)", fill = "Material") +
-  theme_minimal() +
-  theme(legend.position = "right") +
-  scale_fill_discrete(breaks = material_order)  # Ensure legend follows numeric order
-
-print(p1)
-
-# Heatmap of solution matrix
-lp_matrix_df <- as.data.frame(lp_x_matrix)
-lp_matrix_df$Material <- rownames(lp_matrix_df)
-lp_matrix_long <- pivot_longer(lp_matrix_df, cols = -Material, names_to = "Blend", values_to = "Amount")
-# Convert Material to factor with proper ordering
-lp_matrix_long$Material <- factor(lp_matrix_long$Material, levels = material_order)
-
-p2 <- ggplot(lp_matrix_long, aes(x = Blend, y = Material, fill = Amount)) +
-  geom_tile(colour = "white") +
-  scale_fill_gradient(low = "white", high = "steelblue") +
-  labs(title = "LP Solution Heatmap: Material Usage Matrix",
-       x = "Blend", y = "Material", fill = "Amount (Kgs)") +
-  theme_minimal() +
-  scale_y_discrete(limits = rev(material_order))  # Reverse so R1 is at top
-
-print(p2)
-```
+The Linear Programming solution achieves an **optimal total cost of £9,087.69**, utilising exactly **555,000 kg** of raw materials to meet the total demand requirement. The solution employs **52 out of 60 available raw materials**, demonstrating that the optimal strategy does not require the full material portfolio. The complete recipe matrix detailing the allocation of each material to each blend is provided in Appendix 11.1.
 
 # 5 Approach 2: Cost Minimisation using Simulated Annealing
 
@@ -798,21 +586,6 @@ p4 <- ggplot(sa_result$history, aes(x = iteration, y = temperature)) +
   theme_minimal()
 
 print(p4)
-
-# Compare LP and SA solutions
-comparison_data <- data.frame(
-  Approach = c("Linear Programming", "Simulated Annealing"),
-  Cost = c(lp_objective, sa_objective)
-)
-
-p5 <- ggplot(comparison_data, aes(x = Approach, y = Cost, fill = Approach)) +
-  geom_bar(stat = "identity") +
-  labs(title = "Cost Comparison: LP vs SA",
-       x = "Approach", y = "Total Cost (£)") +
-  theme_minimal() +
-  theme(legend.position = "none")
-
-print(p5)
 ```
 
 # 6 Approach 3: Multi-objective Optimisation using Chebyshev Goal Programming
@@ -934,56 +707,7 @@ print_table(chebyshev_quality_df, caption = "Quality deviations (minimised in wo
 
 The Chebyshev Goal Programming model was successfully solved, achieving a **worst-case deviation (z) of 39,945.03**. The solution yields a **total cost of £10,375.59**, representing a **14.17% increase** over the Linear Programming optimal cost. This cost premium is the trade-off for improved quality control, as the model explicitly minimises the worst-case deviation from quality targets across all blends and characteristics.
 
-The cost deviation from the target (set at 110% of LP optimal cost) is **£379.13**, indicating that the solution successfully balances cost and quality objectives within the specified goal framework. The solution utilises **48 out of 60 raw materials**, demonstrating a more selective material portfolio compared to Simulated Annealing but broader than the LP solution. The materials used include R2, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R16, R17, R18, R19, R20, R21, R22, R23, R24, R25, R27, R29, R32, R33, R35, R36, R38, R39, R40, R42, R43, R44, R45, R46, R47, R48, R49, R50, R51, R52, R54, R55, R56, R58, R59, and R60. The complete recipe matrix is provided in Appendix 11.3.
-
-## 6.3 Visualisation
-
-```{r chebyshev-visualisation, echo=FALSE}
-# Trade-off analysis
-tradeoff_data <- data.frame(
-  Approach = c("LP (Cost Min)", "Chebyshev GP"),
-  Cost = c(lp_objective, chebyshev_cost),
-  Avg_Quality_Dev = c(mean(lp_quality_deviations), mean(chebyshev_quality_deviations)),
-  Max_Quality_Dev = c(max(lp_quality_deviations), max(chebyshev_quality_deviations))
-)
-
-p6 <- ggplot(tradeoff_data, aes(x = Cost, y = Avg_Quality_Dev, color = Approach, size = Max_Quality_Dev)) +
-  geom_point(alpha = 0.7) +
-  labs(title = "Trade-off Analysis: Cost vs Quality",
-       x = "Total Cost (£)", y = "Average Quality Deviation",
-       size = "Max Quality\nDeviation", color = "Approach") +
-  theme_minimal() +
-  theme(legend.position = "right")
-
-print(p6)
-
-# Goal achievement visualisation
-goal_data <- data.frame(
-  Goal = c("Cost", rep("Quality", n_blends * n_characteristics)),
-  Target = c(cost_target, as.vector(s)),
-  Actual = c(chebyshev_cost, 
-             as.vector(sapply(1:n_blends, function(j) {
-               total <- sum(chebyshev_x_matrix[, j])
-               if (total > 0) {
-                 sapply(1:n_characteristics, function(k) {
-                   sum(g[, k] * chebyshev_x_matrix[, j]) / total
-                 })
-               } else {
-                 rep(0, n_characteristics)
-               }
-             }))),
-  Deviation = c(abs(chebyshev_cost - cost_target), as.vector(chebyshev_quality_deviations))
-)
-
-p7 <- ggplot(goal_data[1:10, ], aes(x = Goal, y = Deviation)) +
-  geom_bar(stat = "identity", fill = "steelblue", alpha = 0.7) +
-  labs(title = "Chebyshev GP: Goal Achievement (Sample)",
-       x = "Goal", y = "Deviation") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-print(p7)
-```
+The cost deviation from the target (set at 110% of LP optimal cost) is **£379.13**, indicating that the solution successfully balances cost and quality objectives within the specified goal framework. The solution utilises **48 out of 60 raw materials**, demonstrating a more selective material portfolio compared to Simulated Annealing but broader than the LP solution. The complete recipe matrix is provided in Appendix 11.3.
 
 # 7 Approach 4: Genetic Algorithms
 
@@ -1214,27 +938,6 @@ p8 <- ggplot(ga_history, aes(x = Generation)) +
   theme(legend.position = "right")
 
 print(p8)
-
-# Plot GA solution
-# Create proper ordering for materials (R1, R2, R3, ..., R60 instead of R1, R10, R11, ...)
-material_order <- raw_materials$Material_ID[order(as.numeric(sub("R", "", raw_materials$Material_ID)))]
-ga_solution_long <- data.frame(
-  Material = rep(raw_materials$Material_ID, n_blends),
-  Blend = rep(blends$Blend_ID, each = n_materials),
-  Amount = as.vector(ga_x_matrix)
-)
-# Convert Material to factor with proper ordering
-ga_solution_long$Material <- factor(ga_solution_long$Material, levels = material_order)
-
-p9 <- ggplot(ga_solution_long, aes(x = Blend, y = Amount, fill = Material)) +
-  geom_bar(stat = "identity", position = "stack") +
-  labs(title = "GA Solution: Material Usage by Blend",
-       x = "Blend", y = "Amount (Kgs)", fill = "Material") +
-  theme_minimal() +
-  theme(legend.position = "right") +
-  scale_fill_discrete(breaks = material_order)  # Ensure legend follows numeric order
-
-print(p9)
 ```
 
 # 8 Summary of Results and Comparative Analysis
@@ -1301,27 +1004,6 @@ Linear Programming achieves the best average quality deviation at **0.3325**, de
 **3. Recommendation:**
 
 Linear Programming provides the best cost-performance trade-off for this problem instance. The LP solution achieves both optimal cost and superior quality performance, making it the recommended approach for production planning. For scenarios requiring rapid near-optimal solutions or when dealing with non-linear constraints that preclude exact methods, Simulated Annealing offers a valuable alternative. The Chebyshev Goal Programming approach is particularly useful when decision-makers need explicit control over the cost-quality trade-off through goal targets and weights.
-
-## 8.3 Solution Matrices Comparison
-
-The following table provides a detailed comparison of material allocations for Blend 1 across all four optimisation approaches, illustrating the differences in solution strategies:
-
-```{r solution-comparison, echo=FALSE}
-# Create a summary of solution differences
-# Create proper ordering for materials
-material_order <- raw_materials$Material_ID[order(as.numeric(sub("R", "", raw_materials$Material_ID)))]
-blend1_comparison <- data.frame(
-  Material = raw_materials$Material_ID,
-  LP = lp_x_matrix[, 1],
-  SA = sa_x_matrix[, 1],
-  Chebyshev_GP = chebyshev_x_matrix[, 1],
-  GA = ga_x_matrix[, 1]
-)
-# Reorder by material number
-blend1_comparison <- blend1_comparison[order(as.numeric(sub("R", "", blend1_comparison$Material))), ]
-
-print_table(blend1_comparison, caption = "Material allocation for Blend 1 across all approaches")
-```
 
 # 9 Conclusion
 
