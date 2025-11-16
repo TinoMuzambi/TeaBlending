@@ -53,9 +53,9 @@ print_table <- function(data, caption = "") {
 ```
 
 # 1 Introduction
-Blending problems are a classic challenge in operations research, arising in diverse fields such as food processing, metallurgy, and energy. In the tea industry, blending is crucial to achieve consistent product quality, balance raw material costs, and adapt to fluctuating supplies. Every cup of tea on the supermarket shelf is the result of a carefully orchestrated process: different grades and types of tea leaves from various origins are combined to meet precise targets for taste, color, aroma, and other quality parameters, all while minimising production costs and ensuring supply constraints are not violated.
+Blending problems are a classic challenge in operations research, arising in diverse fields such as food processing, metallurgy, and energy. In the tea industry, blending is crucial to achieve consistent product quality, balance raw material costs, and adapt to fluctuating supplies. Every cup of tea on the supermarket shelf is the result of a carefully orchestrated process. Different grades and types of tea leaves from various origins are combined to meet precise targets for taste, colour, aroma and other quality parameters, all while minimising production costs and ensuring supply constraints are not violated.
 
-In the context of tea manufacturing, the blending optimisation problem involves selecting the optimal composition of raw teas (inputs) to satisfy desired blend qualities for multiple final blends. This not only impacts the sensory profile and brand identity of each product, but also has substantial operational and economic implications. By applying advanced computational techniques, such as mathematical programming and metaheuristics, producers can automate and enhance the blending decision-making process, yielding better margins, consistent quality, and greater responsiveness to market demands.
+In the context of tea manufacturing, the blending optimisation problem involves selecting the optimal composition of raw teas to satisfy desired blend qualities for multiple final blends. This not only impacts the sensory profile and brand identity of each product, but also has substantial operational and economic implications. By applying advanced computational techniques, such as mathematical programming and metaheuristics, producers can automate and enhance the blending decision-making process, yielding better margins, consistent quality and greater responsiveness to market demands.
 
 Below, we formally define the tea blending optimisation problem and systematically explore several approaches for solving it. The problem requires determining the least-cost combination of raw materials to produce final blends that meet specific quality characteristics, as formalised by Fomeni [@fomeni].
 
@@ -85,114 +85,306 @@ The primary objectives are:
 - **Decision Variables**:
   - $x_{ij}$: Amount (in Kgs) of raw material $i$ to be used in final blend $j$
 
-## 2.2 Sample Data Generation
+## 2.2 Data Source
 
-Based on the structure described in Fomeni [@fomeni], we generate sample data for raw materials and blends.
+This project uses the real-world data from Fomeni [@fomeni], extracted from tables 2 and 3 of the paper. These data represent actual tea blending scenarios from a UK-based tea company. The data are loaded and prepared in section 3 below.
 
-```{r data-generation}
-# Set seed for reproducibility
-set.seed(2025)
+# 3 Data Implementation (Fomeni 2018)
 
-# Define number of raw materials, blends, and quality characteristics
-n_materials <- 6
-n_blends <- 4
-n_characteristics <- 3
+This section implements the tea blending optimisation problem using the actual data provided in Fomeni [@fomeni]. The data consist of 60 raw materials and 10 final blends, each with 6 quality characteristics.
 
-# Quality characteristic names
-char_names <- c("Brightness", "Colour", "Thickness")
+## 3.1 Data Loading
 
-# Generate raw materials data
-raw_materials <- data.frame(
-  Material_ID = paste0("RM", 1:n_materials),
-  Cost = round(runif(n_materials, 2.5, 8.0), 2),
-  Availability = round(runif(n_materials, 150, 400), 0),
+```{r fomeni-data}
+# Real data from Fomeni (2018) - Table 2: Raw Materials
+# Note: Prices are in £0.01/kg, so we convert to £/kg by dividing by 100
+# Quality characteristics: C1, C2, C3, C4, C5, C6
+
+raw_materials_fomeni <- data.frame(
+  Material_ID = paste0("R", 1:60),
+  C1 = c(5.0, 5.0, 5.0, 5.0, 5.0, 7.0, 7.0, 8.0, 8.0, 8.0, 2.0, 2.0, 2.0, 3.0, 4.0, 4.0, 7.0, 4.0, 4.0, 5.0, 5.0, 5.0, 5.0, 6.0, 6.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 9.0, 2.0, 5.0, 5.0, 5.0, 5.0, 2.0, 4.0, 5.0, 5.0, 2.0, 5.0, 5.0, 5.0, 6.0, 6.0, 7.0, 8.0, 8.0, 5.0, 5.0, 5.0, 7.0, 8.0, 8.0, 2.0, 4.0, 6.0, 6.0),
+  C2 = c(4.0, 3.0, 4.0, 3.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 2.0, 2.0, 0.5, 0.5, 0.5, 2.0, 0.5, 8.0, 8.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 0.5, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 3.0, 3.0, 2.0, 2.0, 0.5, 1.0, 1.0, 1.0, 2.0, 8.0, 5.0, 5.0),
+  C3 = c(9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 3.0, 3.0, 1.0, 1.0, 1.0, 3.0, 1.0, 5.0, 5.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 6.0, 6.0, 7.0, 6.0, 6.0, 6.0, 1.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 2.0, 3.0, 5.0, 4.0, 4.0, 4.0, 4.0, 4.0, 3.0, 3.0, 3.0, 2.0, 2.0, 1.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0),
+  C4 = c(6.0, 4.0, 6.0, 4.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 2.0, 2.0, 5.0, 5.0, 5.0, 2.0, 5.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 5.0, 3.0, 3.0, 3.0, 3.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0),
+  C5 = c(5.0, 5.0, 5.0, 5.0, 5.0, 7.0, 7.0, 8.0, 8.0, 8.0, 2.0, 2.0, 2.0, 3.0, 4.0, 4.0, 7.0, 4.0, 4.0, 5.0, 5.0, 5.0, 5.0, 6.0, 6.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 9.0, 2.0, 5.0, 5.0, 5.0, 5.0, 2.0, 4.0, 5.0, 5.0, 2.0, 5.0, 5.0, 5.0, 6.0, 6.0, 7.0, 8.0, 8.0, 5.0, 5.0, 5.0, 7.0, 8.0, 8.0, 2.0, 4.0, 6.0, 6.0),
+  C6 = c(5.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 5.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 9.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 5.0, 1.0, 5.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 5.0, 1.0, 5.0, 1.0, 5.0, 5.0, 1.0, 5.0, 1.0, 1.0, 5.0, 5.0, 1.0, 1.0, 1.0, 1.0, 5.0),
+  Price_001_per_kg = c(2.40, 1.67, 2.35, 1.70, 2.30, 2.65, 2.65, 2.94, 2.84, 2.84, 1.30, 1.30, 1.20, 1.70, 1.50, 2.50, 1.80, 1.30, 1.30, 1.80, 1.90, 1.80, 1.50, 1.90, 1.80, 2.60, 2.00, 2.00, 2.10, 2.00, 1.70, 2.40, 1.40, 1.60, 1.60, 1.60, 1.60, 1.30, 2.50, 1.60, 1.70, 2.10, 2.40, 2.50, 2.50, 2.70, 2.80, 3.30, 3.40, 3.60, 1.80, 1.70, 2.10, 2.90, 4.70, 4.20, 1.30, 1.60, 1.70, 4.00),
+  Availability_kg = c(5000, 1000, 25000, 1000, 25000, 20000, 20000, 1000, 15000, 15000, 40000, 80000, 60000, 5000, 5000, 20000, 20000, 20000, 20000, 40000, 40000, 20000, 5000, 1000, 500, 1000, 40000, 40000, 25000, 30000, 5000, 5000, 10000, 10000, 10000, 10000, 10000, 20000, 15000, 2000, 5000, 1000, 5000, 5000, 5000, 2000, 2000, 1000, 1000, 1000, 1000, 5000, 5000, 1000, 1000, 1000, 5000, 40000, 5000, 1000),
   stringsAsFactors = FALSE
 )
 
-# Generate quality characteristics for raw materials (g_ik)
-quality_matrix <- matrix(
-  round(runif(n_materials * n_characteristics, 1, 10), 2),
-  nrow = n_materials,
-  ncol = n_characteristics
-)
-colnames(quality_matrix) <- char_names
-raw_materials <- cbind(raw_materials, quality_matrix)
+# Convert price from £0.01/kg to £/kg
+raw_materials_fomeni$Cost <- raw_materials_fomeni$Price_001_per_kg / 100
+raw_materials_fomeni$Availability <- raw_materials_fomeni$Availability_kg
 
-# Generate blends
-blends <- data.frame(
-  Blend_ID = paste0("Blend", 1:n_blends),
-  Demand = round(runif(n_blends, 50, 200), 0),
+# Extract quality characteristics matrix
+char_names_fomeni <- c("C1", "C2", "C3", "C4", "C5", "C6")
+quality_matrix_fomeni <- as.matrix(raw_materials_fomeni[, char_names_fomeni])
+
+# Table 3: Blends data
+blends_fomeni <- data.frame(
+  Blend_ID = paste0("B", 1:10),
+  C1 = c(2.30, 3.80, 6.60, 6.20, 4.70, 8.40, 4.00, 5.90, 7.00, 4.00),
+  C2 = c(3.00, 4.70, 5.20, 5.20, 5.10, 4.70, 0.50, 0.50, 3.90, 2.00),
+  C3 = c(3.00, 2.90, 6.10, 5.30, 4.50, 6.70, 1.00, 1.00, 9.00, 3.00),
+  C4 = c(2.00, 3.00, 6.90, 6.40, 5.00, 7.30, 5.00, 3.90, 5.90, 2.00),
+  C5 = c(2.32, 3.80, 6.60, 6.20, 4.70, 8.40, 4.00, 5.90, 7.00, 4.00),
+  C6 = c(1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 9.00),
+  Demand_kg = c(100000, 100000, 60000, 100000, 100000, 50000, 10000, 5000, 10000, 20000),
   stringsAsFactors = FALSE
 )
 
-# Generate target quality scores for blends (s_jk)
-# Ensure targets are achievable by setting them within the range of raw material qualities
-quality_mins <- apply(quality_matrix, 2, min)
-quality_maxs <- apply(quality_matrix, 2, max)
-quality_means <- apply(quality_matrix, 2, mean)
+blends_fomeni$Demand <- blends_fomeni$Demand_kg
 
-target_matrix <- matrix(0, nrow = n_blends, ncol = n_characteristics)
-for (j in 1:n_blends) {
-  for (k in 1:n_characteristics) {
-    # Generate target within the range of available qualities, biased toward the mean
-    target_matrix[j, k] <- round(
-      quality_means[k] + runif(1, -0.3, 0.3) * (quality_maxs[k] - quality_mins[k]),
-      2
-    )
-    # Ensure it's within bounds
-    target_matrix[j, k] <- max(quality_mins[k], min(quality_maxs[k], target_matrix[j, k]))
-  }
-}
-colnames(target_matrix) <- char_names
-blends <- cbind(blends, target_matrix)
+# Extract target quality matrix
+target_matrix_fomeni <- as.matrix(blends_fomeni[, char_names_fomeni])
 
-# Set tolerance parameter (epsilon) - increased to ensure feasibility
-epsilon <- 2.0
+# Display summary statistics
+cat("=== Data Summary ===\n")
+cat(sprintf("Number of raw materials: %d\n", nrow(raw_materials_fomeni)))
+cat(sprintf("Number of blends: %d\n", nrow(blends_fomeni)))
+cat(sprintf("Number of quality characteristics: %d\n", length(char_names_fomeni)))
+cat(sprintf("Price range: £%.4f - £%.4f per kg\n", 
+            min(raw_materials_fomeni$Cost), max(raw_materials_fomeni$Cost)))
 
-# Basic feasibility check: ensure total availability exceeds total demand
-total_availability <- sum(raw_materials$Availability)
-total_demand <- sum(blends$Demand)
-if (total_availability < total_demand) {
-  # Scale up availability proportionally to meet demand
-  scale_factor <- total_demand / total_availability * 1.1  # 10% buffer
-  raw_materials$Availability <- round(raw_materials$Availability * scale_factor, 0)
-}
+# Display first few rows of raw materials
+cat("=== Raw Materials Data (Fomeni Table 2 - First 10 rows) ===\n")
+print_table(raw_materials_fomeni[1:10, c("Material_ID", "Cost", "Availability", char_names_fomeni)], 
+            caption = "Raw Materials: Costs (£/kg), Availability (kg), and Quality Characteristics (First 10)")
 
-# Display the data
-cat("=== Raw Materials Data (Table 2) ===\n")
-print_table(raw_materials, caption = "Raw Materials: Costs, Availability, and Quality Characteristics")
+# Display all blends
+cat("=== Blends Data (Fomeni Table 3) ===\n")
+print_table(blends_fomeni[, c("Blend_ID", "Demand", char_names_fomeni)], 
+            caption = "Blends: Demand (kg) and Target Quality Scores")
 
-cat("\n=== Blends Data (Table 3) ===\n")
-print_table(blends, caption = "Blends: Demand and Target Quality Scores")
+# Prepare data vectors for optimisation models
+n_materials_fomeni <- nrow(raw_materials_fomeni)
+n_blends_fomeni <- nrow(blends_fomeni)
+n_characteristics_fomeni <- length(char_names_fomeni)
 
-# Store data in convenient format for later use
-# For ompr, we need numeric-indexed vectors (not named vectors)
-P <- as.numeric(raw_materials$Cost)  # Cost vector indexed by i = 1:n_materials
-a <- as.numeric(raw_materials$Availability)  # Availability vector indexed by i = 1:n_materials
-D <- as.numeric(blends$Demand)  # Demand vector indexed by j = 1:n_blends
+# Cost vector P[i]
+P_fomeni <- raw_materials_fomeni$Cost
 
-# Quality matrices: g[i,k] and s[j,k] indexed numerically
-g <- as.matrix(raw_materials[, char_names])  # g[i,k] where i = 1:n_materials, k = 1:n_characteristics
-s <- as.matrix(blends[, char_names])  # s[j,k] where j = 1:n_blends, k = 1:n_characteristics
+# Availability vector a[i]
+a_fomeni <- raw_materials_fomeni$Availability
 
-# Keep named versions for display purposes
-P_named <- raw_materials$Cost
-names(P_named) <- raw_materials$Material_ID
-a_named <- raw_materials$Availability
-names(a_named) <- raw_materials$Material_ID
-D_named <- blends$Demand
-names(D_named) <- blends$Blend_ID
-g_named <- as.matrix(raw_materials[, char_names])
-rownames(g_named) <- raw_materials$Material_ID
-s_named <- as.matrix(blends[, char_names])
-rownames(s_named) <- blends$Blend_ID
+# Demand vector D[j]
+D_fomeni <- blends_fomeni$Demand
+
+# Quality matrices
+g_fomeni <- quality_matrix_fomeni  # g[i,k]
+s_fomeni <- target_matrix_fomeni   # s[j,k]
+
+# Set tolerance parameter (epsilon) - may need adjustment for real data
+epsilon_fomeni <- 0.5  # Start with a reasonable tolerance
+
+# Feasibility check
+total_availability_fomeni <- sum(a_fomeni)
+total_demand_fomeni <- sum(D_fomeni)
+cat(sprintf("=== Feasibility Check ===\n"))
+cat(sprintf("Total availability: %d kg\n", total_availability_fomeni))
+cat(sprintf("Total demand: %d kg\n", total_demand_fomeni))
+cat(sprintf("Surplus availability: %d kg (%.2f%%)\n", 
+            total_availability_fomeni - total_demand_fomeni,
+            (total_availability_fomeni - total_demand_fomeni) / total_demand_fomeni * 100))
+
+# Create standard variable names for use in optimisation models
+# (These will be used by all subsequent optimisation approaches)
+n_materials <- n_materials_fomeni
+n_blends <- n_blends_fomeni
+n_characteristics <- n_characteristics_fomeni
+char_names <- char_names_fomeni
+P <- P_fomeni
+a <- a_fomeni
+D <- D_fomeni
+g <- g_fomeni
+s <- s_fomeni
+epsilon <- epsilon_fomeni
+raw_materials <- raw_materials_fomeni
+blends <- blends_fomeni
+
+# Create named versions for display
+P_named <- P_fomeni
+names(P_named) <- raw_materials_fomeni$Material_ID
+a_named <- a_fomeni
+names(a_named) <- raw_materials_fomeni$Material_ID
+D_named <- D_fomeni
+names(D_named) <- blends_fomeni$Blend_ID
+g_named <- g_fomeni
+rownames(g_named) <- raw_materials_fomeni$Material_ID
+s_named <- s_fomeni
+rownames(s_named) <- blends_fomeni$Blend_ID
 ```
 
-# 3 Approach 1: Cost Minimisation using Linear Programming
+## 3.2 Data Characteristics
+
+```{r fomeni-data-analysis}
+# Analyse the data characteristics and create summary tables and visualisations
+
+# Create summary statistics table for raw materials
+price_stats <- data.frame(
+  Statistic = c("Mean", "Median", "Minimum", "Maximum", "Standard Deviation"),
+  Value = c(
+    sprintf("£%.4f", mean(P_fomeni)),
+    sprintf("£%.4f", median(P_fomeni)),
+    sprintf("£%.4f", min(P_fomeni)),
+    sprintf("£%.4f", max(P_fomeni)),
+    sprintf("£%.4f", sd(P_fomeni))
+  )
+)
+
+availability_stats <- data.frame(
+  Statistic = c("Mean", "Median", "Minimum", "Maximum", "Total"),
+  Value_kg = c(
+    sprintf("%.0f", mean(a_fomeni)),
+    sprintf("%.0f", median(a_fomeni)),
+    sprintf("%.0f", min(a_fomeni)),
+    sprintf("%.0f", max(a_fomeni)),
+    sprintf("%.0f", sum(a_fomeni))
+  )
+)
+
+# Quality characteristics summary
+quality_summary <- data.frame(
+  Characteristic = char_names_fomeni,
+  Minimum = apply(g_fomeni, 2, min),
+  Maximum = apply(g_fomeni, 2, max),
+  Mean = apply(g_fomeni, 2, mean),
+  Median = apply(g_fomeni, 2, median),
+  Std_Dev = apply(g_fomeni, 2, sd)
+)
+
+# Blend demand summary
+demand_stats <- data.frame(
+  Statistic = c("Mean", "Median", "Minimum", "Maximum", "Total"),
+  Value_kg = c(
+    sprintf("%.0f", mean(D_fomeni)),
+    sprintf("%.0f", median(D_fomeni)),
+    sprintf("%.0f", min(D_fomeni)),
+    sprintf("%.0f", max(D_fomeni)),
+    sprintf("%.0f", sum(D_fomeni))
+  )
+)
+
+# Display summary tables
+cat("=== Summary Statistics ===\n\n")
+cat("Raw Material Prices (£/kg):\n")
+print_table(price_stats, caption = "Price Distribution Statistics")
+
+cat("Raw Material Availability:\n")
+print_table(availability_stats, caption = "Availability Distribution Statistics (kg)")
+
+cat("Quality Characteristics:\n")
+print_table(quality_summary, caption = "Quality Characteristics Summary Statistics")
+
+cat("Blend Demands:\n")
+print_table(demand_stats, caption = "Blend Demand Statistics (kg)")
+```
+
+```{r fomeni-data-visualisations}
+# Create visualisations of data characteristics
+
+# 1. Price distribution histogram
+p_price <- ggplot(data.frame(Price = P_fomeni), aes(x = Price)) +
+  geom_histogram(bins = 20, fill = "steelblue", alpha = 0.7, colour = "white") +
+  geom_vline(aes(xintercept = mean(Price)), linetype = "dashed", colour = "red", size = 1) +
+  labs(title = "Distribution of Raw Material Prices",
+       x = "Price (£/kg)", y = "Frequency") +
+  theme_minimal()
+
+print(p_price)
+
+# 2. Availability distribution (log scale due to wide range)
+p_avail <- ggplot(data.frame(Availability = a_fomeni), aes(x = Availability)) +
+  geom_histogram(bins = 30, fill = "darkgreen", alpha = 0.7, colour = "white") +
+  scale_x_log10(labels = scales::comma) +
+  geom_vline(aes(xintercept = median(Availability)), linetype = "dashed", colour = "red", size = 1) +
+  labs(title = "Distribution of Raw Material Availability",
+       x = "Availability (kg, log scale)", y = "Frequency") +
+  theme_minimal()
+
+print(p_avail)
+
+# 3. Quality characteristics boxplot
+quality_long <- data.frame(
+  Characteristic = rep(char_names_fomeni, each = n_materials_fomeni),
+  Value = as.vector(g_fomeni)
+)
+
+p_quality <- ggplot(quality_long, aes(x = Characteristic, y = Value, fill = Characteristic)) +
+  geom_boxplot(alpha = 0.7) +
+  geom_jitter(width = 0.2, alpha = 0.3, size = 0.5) +
+  labs(title = "Distribution of Quality Characteristics Across Raw Materials",
+       x = "Quality Characteristic", y = "Score") +
+  theme_minimal() +
+  theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1))
+
+print(p_quality)
+
+# 4. Blend demand bar chart
+blend_demand_df <- data.frame(
+  Blend = blends_fomeni$Blend_ID,
+  Demand = D_fomeni
+)
+
+p_demand <- ggplot(blend_demand_df, aes(x = reorder(Blend, Demand), y = Demand, fill = Demand)) +
+  geom_bar(stat = "identity", alpha = 0.8) +
+  scale_fill_gradient(low = "lightblue", high = "darkblue") +
+  scale_y_continuous(labels = scales::comma) +
+  labs(title = "Demand by Blend",
+       x = "Blend", y = "Demand (kg)") +
+  theme_minimal() +
+  theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1)) +
+  coord_flip()
+
+print(p_demand)
+
+# 5. Price vs Availability scatter plot
+price_avail_df <- data.frame(
+  Price = P_fomeni,
+  Availability = a_fomeni,
+  Material = raw_materials_fomeni$Material_ID
+)
+
+p_price_avail <- ggplot(price_avail_df, aes(x = Availability, y = Price)) +
+  geom_point(alpha = 0.6, size = 2, colour = "steelblue") +
+  scale_x_log10(labels = scales::comma) +
+  scale_y_continuous(labels = scales::dollar_format(prefix = "£")) +
+  labs(title = "Price vs Availability of Raw Materials",
+       x = "Availability (kg, log scale)", y = "Price (£/kg)") +
+  theme_minimal()
+
+print(p_price_avail)
+
+# 6. Quality characteristics heatmap (sample of materials)
+# Show first 20 materials for readability
+sample_materials <- 1:min(20, n_materials_fomeni)
+quality_sample <- g_fomeni[sample_materials, ]
+rownames(quality_sample) <- raw_materials_fomeni$Material_ID[sample_materials]
+
+# Convert to long format for heatmap
+quality_melt <- data.frame(
+  Material = rep(rownames(quality_sample), ncol(quality_sample)),
+  Characteristic = rep(colnames(quality_sample), each = nrow(quality_sample)),
+  Value = as.vector(quality_sample)
+)
+
+p_heatmap <- ggplot(quality_melt, aes(x = Characteristic, y = Material, fill = Value)) +
+  geom_tile(colour = "white") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 5) +
+  labs(title = "Quality Characteristics Heatmap (First 20 Materials)",
+       x = "Quality Characteristic", y = "Raw Material", fill = "Score") +
+  theme_minimal() +
+  theme(axis.text.y = element_text(size = 8))
+
+print(p_heatmap)
+```
+
+# 4 Approach 1: Cost Minimisation using Linear Programming
 
 This section implements the cost-minimisation model using Linear Programming with parametric relaxation of the characteristic-matching constraints. This involves implementing a cost-minimisation LP model that finds the optimal combination of raw materials to produce blends meeting demand and quality constraints. This implementation uses Rglpk which provides a straightforward matrix-based formulation that is well-suited for this problem type.
 
-## 3.1 Model Formulation
+## 4.1 Model Formulation
 
 **Objective Function**: Minimise total cost
 $$\min \sum_{i} \sum_{j} P_i x_{ij}$$
@@ -206,7 +398,7 @@ $$\min \sum_{i} \sum_{j} P_i x_{ij}$$
    - $\sum_{i} (g_{ik} - (s_{jk} - \epsilon_{jk})) x_{ij} \ge 0 \quad \forall j, k$
 4. Non-negativity: $x_{ij} \ge 0 \quad \forall i, j$
 
-## 3.2 Implementation
+## 4.2 Implementation
 
 ```{r lp-implementation}
 # Implementation using Rglpk
@@ -214,7 +406,7 @@ $$\min \sum_{i} \sum_{j} P_i x_{ij}$$
 # Number of decision variables: n_materials * n_blends (x[i,j] for all i,j)
 n_vars <- n_materials * n_blends
 
-# Objective function: minimize cost
+# Objective function: minimise cost
 # Objective coefficients: P[i] for each x[i,j]
 # Variable ordering: x[1,1], x[1,2], ..., x[1,n_blends], x[2,1], ..., x[n_materials,n_blends]
 obj_coef <- rep(P, n_blends)  # Repeat P for each blend
@@ -325,13 +517,13 @@ lp_x_matrix <- matrix(lp_solution_vector, nrow = n_materials, ncol = n_blends, b
 rownames(lp_x_matrix) <- raw_materials$Material_ID
 colnames(lp_x_matrix) <- blends$Blend_ID
 
-cat(sprintf("\n=== LP Solution Results ===\n"))
+cat(sprintf("=== LP Solution Results ===\n"))
 cat(sprintf("Solver Status: %d (0 = optimal)\n", result$status))
 cat(sprintf("Optimal Total Cost: £%.2f\n", lp_objective))
 cat(sprintf("Total material used: %.2f Kgs\n", sum(lp_x_matrix)))
 cat(sprintf("Total demand required: %.2f Kgs\n", sum(D)))
 
-cat("\n=== Optimal Recipe Matrix (x_ij in Kgs) ===\n")
+cat("=== Optimal Recipe Matrix (x_ij in Kgs) ===\n")
 print_table(as.data.frame(lp_x_matrix), caption = "LP Solution: Amount of Each Material in Each Blend")
 
 # Calculate quality deviations for LP solution
@@ -348,11 +540,11 @@ for (j in 1:n_blends) {
 rownames(lp_quality_deviations) <- blends$Blend_ID
 colnames(lp_quality_deviations) <- char_names
 
-cat("\n=== Quality Deviations from Targets ===\n")
+cat("=== Quality Deviations from Targets ===\n")
 print_table(as.data.frame(lp_quality_deviations), caption = "Absolute deviations from target quality scores")
 ```
 
-## 3.3 Visualisation
+## 4.3 Visualisation
 
 ```{r lp-visualisation}
 # Visualise the solution
@@ -387,11 +579,11 @@ p2 <- ggplot(lp_matrix_long, aes(x = Blend, y = Material, fill = Amount)) +
 print(p2)
 ```
 
-# 4 Approach 2: Cost Minimisation using Simulated Annealing
+# 5 Approach 2: Cost Minimisation using Simulated Annealing
 
 Simulated Annealing is a metaheuristic that explores the solution space probabilistically, accepting worse solutions with decreasing probability as the algorithm "cools down."
 
-## 4.1 Implementation
+## 5.1 Implementation
 
 ```{r sa-implementation}
 # Simulated Annealing implementation
@@ -549,12 +741,12 @@ rownames(sa_x_matrix) <- raw_materials$Material_ID
 colnames(sa_x_matrix) <- blends$Blend_ID
 sa_objective <- sa_result$objective
 
-cat("\n=== SA Solution Results ===\n")
+cat("=== SA Solution Results ===\n")
 cat(sprintf("Best Total Cost: £%.2f\n", sa_objective))
 cat(sprintf("Difference from LP: %.2f%%\n", 
             (sa_objective - lp_objective) / lp_objective * 100))
 
-cat("\n=== SA Recipe Matrix (x_ij in Kgs) ===\n")
+cat("=== SA Recipe Matrix (x_ij in Kgs) ===\n")
 print_table(as.data.frame(sa_x_matrix), caption = "SA Solution: Amount of Each Material in Each Blend")
 
 # Calculate quality deviations for SA solution
@@ -571,11 +763,11 @@ for (j in 1:n_blends) {
 rownames(sa_quality_deviations) <- blends$Blend_ID
 colnames(sa_quality_deviations) <- char_names
 
-cat("\n=== Quality Deviations from Targets ===\n")
+cat("=== Quality Deviations from Targets ===\n")
 print_table(as.data.frame(sa_quality_deviations), caption = "Absolute deviations from target quality scores")
 ```
 
-## 4.2 Visualisation
+## 5.2 Visualisation
 
 ```{r sa-visualisation}
 # Convergence plot
@@ -616,11 +808,11 @@ p5 <- ggplot(comparison_data, aes(x = Approach, y = Cost, fill = Approach)) +
 print(p5)
 ```
 
-# 5 Approach 3: Multi-objective Optimisation using Chebyshev Goal Programming
+# 6 Approach 3: Multi-objective Optimisation using Chebyshev Goal Programming
 
 Chebyshev Goal Programming minimises the worst-case deviation from multiple goals, providing a balanced solution that trades off cost for quality control.
 
-## 5.1 Model Formulation
+## 6.1 Model Formulation
 
 **Objective Function**: Minimise worst-case deviation
 $$\min \max\{w_0 \cdot d_0, w_{jk} \cdot d_{jk}\}$$
@@ -633,7 +825,7 @@ Where:
 - All LP constraints
 - Goal constraints for cost and quality
 
-## 5.2 Implementation
+## 6.2 Implementation
 
 ```{r chebyshev-implementation}
 # Chebyshev Goal Programming implementation
@@ -722,19 +914,19 @@ rownames(chebyshev_quality_deviations) <- blends$Blend_ID
 colnames(chebyshev_quality_deviations) <- char_names
 
 # Display results
-cat("\n=== Chebyshev GP Solution Results ===\n")
+cat("=== Chebyshev GP Solution Results ===\n")
 cat(sprintf("Worst-case Deviation (z): %.4f\n", chebyshev_objective))
 cat(sprintf("Total Cost: £%.2f\n", chebyshev_cost))
 cat(sprintf("Cost Deviation from Target: £%.2f\n", abs(chebyshev_cost - cost_target)))
 
-cat("\n=== Chebyshev GP Recipe Matrix (x_ij in Kgs) ===\n")
+cat("=== Chebyshev GP Recipe Matrix (x_ij in Kgs) ===\n")
 print_table(as.data.frame(chebyshev_x_matrix), caption = "Chebyshev GP Solution: Amount of Each Material in Each Blend")
 
-cat("\n=== Quality Deviations from Targets ===\n")
+cat("=== Quality Deviations from Targets ===\n")
 print_table(as.data.frame(chebyshev_quality_deviations), caption = "Quality deviations (minimised in worst-case sense)")
 ```
 
-## 5.3 Visualisation
+## 6.3 Visualisation
 
 ```{r chebyshev-visualisation}
 # Trade-off analysis
@@ -783,11 +975,11 @@ p7 <- ggplot(goal_data[1:10, ], aes(x = Goal, y = Deviation)) +
 print(p7)
 ```
 
-# 6 Approach 4: Genetic Algorithms
+# 7 Approach 4: Genetic Algorithms
 
 Genetic Algorithms use evolutionary principles to evolve a population of solutions toward better fitness.
 
-## 6.1 Implementation
+## 7.1 Implementation
 
 ```{r ga-implementation}
 # Genetic Algorithm implementation
@@ -906,18 +1098,18 @@ rownames(ga_quality_deviations) <- blends$Blend_ID
 colnames(ga_quality_deviations) <- char_names
 
 # Display results
-cat("\n=== GA Solution Results ===\n")
+cat("=== GA Solution Results ===\n")
 cat(sprintf("Best Total Cost: £%.2f\n", ga_cost))
 cat(sprintf("Average Quality Deviation: %.4f\n", mean(ga_quality_deviations)))
 
-cat("\n=== GA Recipe Matrix (x_ij in Kgs) ===\n")
+cat("=== GA Recipe Matrix (x_ij in Kgs) ===\n")
 print_table(as.data.frame(ga_x_matrix), caption = "GA Solution: Amount of Each Material in Each Blend")
 
-cat("\n=== Quality Deviations from Targets ===\n")
+cat("=== Quality Deviations from Targets ===\n")
 print_table(as.data.frame(ga_quality_deviations), caption = "Absolute deviations from target quality scores")
 ```
 
-## 6.2 Visualisation
+## 7.2 Visualisation
 
 ```{r ga-visualisation}
 # Evolution plot
@@ -1026,11 +1218,11 @@ p9 <- ggplot(ga_solution_long, aes(x = Blend, y = Amount, fill = Material)) +
 print(p9)
 ```
 
-# 7 Summary of Results and Comparative Analysis
+# 8 Summary of Results and Comparative Analysis
 
 This section consolidates results from all approaches for comprehensive comparison.
 
-## 7.1 Comparative Metrics
+## 8.1 Comparative Metrics
 
 ```{r comparison}
 # Compile comparison metrics
@@ -1076,10 +1268,10 @@ p11 <- ggplot(comparison_metrics, aes(x = Avg_Quality_Dev, y = Total_Cost, color
 print(p11)
 ```
 
-## 7.2 Key Findings
+## 8.2 Key Findings
 
 ```{r findings}
-cat("\n=== Key Findings ===\n\n")
+cat("=== Key Findings ===\n\n")
 
 cat("1. COST PERFORMANCE:\n")
 cat(sprintf("   - LP provides the optimal cost baseline: £%.2f\n", lp_objective))
@@ -1088,13 +1280,13 @@ cat(sprintf("   - Chebyshev GP trades %.2f%% cost increase for better quality co
             comparison_metrics$Cost_vs_LP_pct[3]))
 cat(sprintf("   - GA achieves %.2f%% of LP cost\n", (ga_cost / lp_objective) * 100))
 
-cat("\n2. QUALITY PERFORMANCE:\n")
+cat("2. QUALITY PERFORMANCE:\n")
 best_quality_idx <- which.min(comparison_metrics$Avg_Quality_Dev)
 cat(sprintf("   - Best average quality: %s (deviation: %.4f)\n", 
             comparison_metrics$Approach[best_quality_idx],
             comparison_metrics$Avg_Quality_Dev[best_quality_idx]))
 
-cat("\n3. RECOMMENDATION:\n")
+cat("3. RECOMMENDATION:\n")
 if (comparison_metrics$Avg_Quality_Dev[3] < comparison_metrics$Avg_Quality_Dev[1] * 0.8) {
   cat("   - Chebyshev Goal Programming is recommended for balancing cost and quality.\n")
   cat("   - It provides superior quality control with acceptable cost increase.\n")
@@ -1104,11 +1296,11 @@ if (comparison_metrics$Avg_Quality_Dev[3] < comparison_metrics$Avg_Quality_Dev[1
 }
 ```
 
-## 7.3 Solution Matrices Comparison
+## 8.3 Solution Matrices Comparison
 
 ```{r solution-comparison}
 # Create a summary of solution differences
-cat("\n=== Solution Matrix Comparison (Sample: Blend 1) ===\n")
+cat("=== Solution Matrix Comparison (Sample: Blend 1) ===\n")
 blend1_comparison <- data.frame(
   Material = raw_materials$Material_ID,
   LP = lp_x_matrix[, 1],
@@ -1120,7 +1312,7 @@ blend1_comparison <- data.frame(
 print_table(blend1_comparison, caption = "Material allocation for Blend 1 across all approaches")
 ```
 
-# 8 Conclusion
+# 9 Conclusion
 
 This analysis has successfully implemented and compared four distinct optimisation approaches for the tea blending problem:
 
@@ -1134,9 +1326,9 @@ This analysis has successfully implemented and compared four distinct optimisati
 
 The comparative analysis reveals that while LP provides the lowest cost, multi-objective approaches like Chebyshev Goal Programming are better aligned with business realities where maintaining brand integrity through consistent quality characteristics is as important as minimising cost.
 
-# 9 Appendix: Code Execution Notes
+# 10 Appendix: Code Execution Notes
 
-## 9.1 Required Libraries
+## 10.1 Required Libraries
 
 All required R packages can be installed using:
 ```r
@@ -1144,14 +1336,14 @@ install.packages(c("dplyr", "Rglpk", "ompr", "ompr.roi", "ROI", "ROI.plugin.glpk
                    "lpSolveAPI", "ggplot2", "GA", "knitr", "flextable", "tidyr"))
 ```
 
-## 9.2 Reproducibility
+## 10.2 Reproducibility
 
-This document uses a fixed random seed (2025) for data generation and stochastic algorithms to ensure reproducibility. Results may vary slightly if the seed is changed or if different solver parameters are used.
+This document uses real-world data from Fomeni [@fomeni], ensuring consistent results across runs. Stochastic algorithms (Simulated Annealing and Genetic Algorithms) may produce slightly different results on each run due to their probabilistic nature, but the underlying data and deterministic algorithms (Linear Programming and Goal Programming) will produce identical results.
 
-## 9.3 Parameter Tuning
+## 10.3 Parameter Tuning
 
 Key parameters that can be adjusted:
-- **$\epsilon$ (epsilon)**: Tolerance for quality constraints (default: 2)
+- **$\epsilon$ (epsilon)**: Tolerance for quality constraints (default: 0.5 for Fomeni data)
 - **SA parameters**: Initial temperature, cooling rate, iterations
 - **GA parameters**: Population size, generations, mutation/crossover rates
 - **Goal Programming weights**: Cost vs quality priorities
