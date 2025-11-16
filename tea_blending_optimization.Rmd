@@ -93,6 +93,8 @@ table {
 }
 </style>
 
+\newpage
+
 # 1 Introduction
 Blending problems are a classic challenge in operations research, arising in diverse fields such as food processing, metallurgy, and energy. In the tea industry, blending is crucial to achieve consistent product quality, balance raw material costs, and adapt to fluctuating supplies. Every cup of tea on the supermarket shelf is the result of a carefully orchestrated process. Different grades and types of tea leaves from various origins are combined to meet precise targets for taste, colour, aroma and other quality parameters, all while minimising production costs and ensuring supply constraints are not violated.
 
