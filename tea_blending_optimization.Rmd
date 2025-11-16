@@ -362,12 +362,19 @@ sample_materials <- 1:min(20, n_materials_fomeni)
 quality_sample <- g_fomeni[sample_materials, ]
 rownames(quality_sample) <- raw_materials_fomeni$Material_ID[sample_materials]
 
+# Create proper ordering for materials (R1, R2, R3, ..., R20 instead of R1, R10, R11, ...)
+sample_material_order <- raw_materials_fomeni$Material_ID[sample_materials][
+  order(as.numeric(sub("R", "", raw_materials_fomeni$Material_ID[sample_materials])))
+]
+
 # Convert to long format for heatmap
 quality_melt <- data.frame(
   Material = rep(rownames(quality_sample), ncol(quality_sample)),
   Characteristic = rep(colnames(quality_sample), each = nrow(quality_sample)),
   Value = as.vector(quality_sample)
 )
+# Convert Material to factor with proper ordering
+quality_melt$Material <- factor(quality_melt$Material, levels = sample_material_order)
 
 p_heatmap <- ggplot(quality_melt, aes(x = Characteristic, y = Material, fill = Value)) +
   geom_tile(colour = "white") +
@@ -375,7 +382,8 @@ p_heatmap <- ggplot(quality_melt, aes(x = Characteristic, y = Material, fill = V
   labs(title = "Quality Characteristics Heatmap (First 20 Materials)",
        x = "Quality Characteristic", y = "Raw Material", fill = "Score") +
   theme_minimal() +
-  theme(axis.text.y = element_text(size = 8))
+  theme(axis.text.y = element_text(size = 8)) +
+  scale_y_discrete(limits = rev(sample_material_order))  # Reverse so R1 is at top
 
 print(p_heatmap)
 ```
@@ -524,7 +532,10 @@ cat(sprintf("Total material used: %.2f Kgs\n", sum(lp_x_matrix)))
 cat(sprintf("Total demand required: %.2f Kgs\n", sum(D)))
 
 cat("=== Optimal Recipe Matrix (x_ij in Kgs) ===\n")
-print_table(as.data.frame(lp_x_matrix), caption = "LP Solution: Amount of Each Material in Each Blend")
+lp_x_df <- as.data.frame(lp_x_matrix)
+lp_x_df$Material <- rownames(lp_x_df)
+lp_x_df <- lp_x_df[, c("Material", colnames(lp_x_matrix))]
+print_table(lp_x_df, caption = "LP Solution: Amount of Each Material in Each Blend")
 
 # Calculate quality deviations for LP solution
 lp_quality_deviations <- matrix(0, nrow = n_blends, ncol = n_characteristics)
@@ -541,7 +552,10 @@ rownames(lp_quality_deviations) <- blends$Blend_ID
 colnames(lp_quality_deviations) <- char_names
 
 cat("=== Quality Deviations from Targets ===\n")
-print_table(as.data.frame(lp_quality_deviations), caption = "Absolute deviations from target quality scores")
+lp_quality_df <- as.data.frame(lp_quality_deviations)
+lp_quality_df$Blend <- rownames(lp_quality_df)
+lp_quality_df <- lp_quality_df[, c("Blend", colnames(lp_quality_deviations))]
+print_table(lp_quality_df, caption = "Absolute deviations from target quality scores")
 ```
 
 ## 4.3 Visualisation
@@ -549,18 +563,23 @@ print_table(as.data.frame(lp_quality_deviations), caption = "Absolute deviations
 ```{r lp-visualisation}
 # Visualise the solution
 # Convert matrix to long format for plotting
+# Create proper ordering for materials (R1, R2, R3, ..., R60 instead of R1, R10, R11, ...)
+material_order <- raw_materials$Material_ID[order(as.numeric(sub("R", "", raw_materials$Material_ID)))]
 lp_solution_long <- data.frame(
   Material = rep(raw_materials$Material_ID, n_blends),
   Blend = rep(blends$Blend_ID, each = n_materials),
   value = as.vector(lp_x_matrix)
 )
+# Convert Material to factor with proper ordering
+lp_solution_long$Material <- factor(lp_solution_long$Material, levels = material_order)
 
 p1 <- ggplot(lp_solution_long, aes(x = Blend, y = value, fill = Material)) +
   geom_bar(stat = "identity", position = "stack") +
   labs(title = "LP Solution: Material Usage by Blend",
        x = "Blend", y = "Amount (Kgs)", fill = "Material") +
   theme_minimal() +
-  theme(legend.position = "right")
+  theme(legend.position = "right") +
+  scale_fill_discrete(breaks = material_order)  # Ensure legend follows numeric order
 
 print(p1)
 
@@ -568,13 +587,16 @@ print(p1)
 lp_matrix_df <- as.data.frame(lp_x_matrix)
 lp_matrix_df$Material <- rownames(lp_matrix_df)
 lp_matrix_long <- pivot_longer(lp_matrix_df, cols = -Material, names_to = "Blend", values_to = "Amount")
+# Convert Material to factor with proper ordering
+lp_matrix_long$Material <- factor(lp_matrix_long$Material, levels = material_order)
 
 p2 <- ggplot(lp_matrix_long, aes(x = Blend, y = Material, fill = Amount)) +
-  geom_tile(color = "white") +
+  geom_tile(colour = "white") +
   scale_fill_gradient(low = "white", high = "steelblue") +
   labs(title = "LP Solution Heatmap: Material Usage Matrix",
        x = "Blend", y = "Material", fill = "Amount (Kgs)") +
-  theme_minimal()
+  theme_minimal() +
+  scale_y_discrete(limits = rev(material_order))  # Reverse so R1 is at top
 
 print(p2)
 ```
@@ -747,7 +769,10 @@ cat(sprintf("Difference from LP: %.2f%%\n",
             (sa_objective - lp_objective) / lp_objective * 100))
 
 cat("=== SA Recipe Matrix (x_ij in Kgs) ===\n")
-print_table(as.data.frame(sa_x_matrix), caption = "SA Solution: Amount of Each Material in Each Blend")
+sa_x_df <- as.data.frame(sa_x_matrix)
+sa_x_df$Material <- rownames(sa_x_df)
+sa_x_df <- sa_x_df[, c("Material", colnames(sa_x_matrix))]
+print_table(sa_x_df, caption = "SA Solution: Amount of Each Material in Each Blend")
 
 # Calculate quality deviations for SA solution
 sa_quality_deviations <- matrix(0, nrow = n_blends, ncol = n_characteristics)
@@ -764,7 +789,10 @@ rownames(sa_quality_deviations) <- blends$Blend_ID
 colnames(sa_quality_deviations) <- char_names
 
 cat("=== Quality Deviations from Targets ===\n")
-print_table(as.data.frame(sa_quality_deviations), caption = "Absolute deviations from target quality scores")
+sa_quality_df <- as.data.frame(sa_quality_deviations)
+sa_quality_df$Blend <- rownames(sa_quality_df)
+sa_quality_df <- sa_quality_df[, c("Blend", colnames(sa_quality_deviations))]
+print_table(sa_quality_df, caption = "Absolute deviations from target quality scores")
 ```
 
 ## 5.2 Visualisation
@@ -920,10 +948,16 @@ cat(sprintf("Total Cost: £%.2f\n", chebyshev_cost))
 cat(sprintf("Cost Deviation from Target: £%.2f\n", abs(chebyshev_cost - cost_target)))
 
 cat("=== Chebyshev GP Recipe Matrix (x_ij in Kgs) ===\n")
-print_table(as.data.frame(chebyshev_x_matrix), caption = "Chebyshev GP Solution: Amount of Each Material in Each Blend")
+chebyshev_x_df <- as.data.frame(chebyshev_x_matrix)
+chebyshev_x_df$Material <- rownames(chebyshev_x_df)
+chebyshev_x_df <- chebyshev_x_df[, c("Material", colnames(chebyshev_x_matrix))]
+print_table(chebyshev_x_df, caption = "Chebyshev GP Solution: Amount of Each Material in Each Blend")
 
 cat("=== Quality Deviations from Targets ===\n")
-print_table(as.data.frame(chebyshev_quality_deviations), caption = "Quality deviations (minimised in worst-case sense)")
+chebyshev_quality_df <- as.data.frame(chebyshev_quality_deviations)
+chebyshev_quality_df$Blend <- rownames(chebyshev_quality_df)
+chebyshev_quality_df <- chebyshev_quality_df[, c("Blend", colnames(chebyshev_quality_deviations))]
+print_table(chebyshev_quality_df, caption = "Quality deviations (minimised in worst-case sense)")
 ```
 
 ## 6.3 Visualisation
@@ -1103,10 +1137,16 @@ cat(sprintf("Best Total Cost: £%.2f\n", ga_cost))
 cat(sprintf("Average Quality Deviation: %.4f\n", mean(ga_quality_deviations)))
 
 cat("=== GA Recipe Matrix (x_ij in Kgs) ===\n")
-print_table(as.data.frame(ga_x_matrix), caption = "GA Solution: Amount of Each Material in Each Blend")
+ga_x_df <- as.data.frame(ga_x_matrix)
+ga_x_df$Material <- rownames(ga_x_df)
+ga_x_df <- ga_x_df[, c("Material", colnames(ga_x_matrix))]
+print_table(ga_x_df, caption = "GA Solution: Amount of Each Material in Each Blend")
 
 cat("=== Quality Deviations from Targets ===\n")
-print_table(as.data.frame(ga_quality_deviations), caption = "Absolute deviations from target quality scores")
+ga_quality_df <- as.data.frame(ga_quality_deviations)
+ga_quality_df$Blend <- rownames(ga_quality_df)
+ga_quality_df <- ga_quality_df[, c("Blend", colnames(ga_quality_deviations))]
+print_table(ga_quality_df, caption = "Absolute deviations from target quality scores")
 ```
 
 ## 7.2 Visualisation
@@ -1202,18 +1242,23 @@ p8 <- ggplot(ga_history, aes(x = Generation)) +
 print(p8)
 
 # Plot GA solution
+# Create proper ordering for materials (R1, R2, R3, ..., R60 instead of R1, R10, R11, ...)
+material_order <- raw_materials$Material_ID[order(as.numeric(sub("R", "", raw_materials$Material_ID)))]
 ga_solution_long <- data.frame(
   Material = rep(raw_materials$Material_ID, n_blends),
   Blend = rep(blends$Blend_ID, each = n_materials),
   Amount = as.vector(ga_x_matrix)
 )
+# Convert Material to factor with proper ordering
+ga_solution_long$Material <- factor(ga_solution_long$Material, levels = material_order)
 
 p9 <- ggplot(ga_solution_long, aes(x = Blend, y = Amount, fill = Material)) +
   geom_bar(stat = "identity", position = "stack") +
   labs(title = "GA Solution: Material Usage by Blend",
        x = "Blend", y = "Amount (Kgs)", fill = "Material") +
   theme_minimal() +
-  theme(legend.position = "right")
+  theme(legend.position = "right") +
+  scale_fill_discrete(breaks = material_order)  # Ensure legend follows numeric order
 
 print(p9)
 ```
@@ -1301,6 +1346,8 @@ if (comparison_metrics$Avg_Quality_Dev[3] < comparison_metrics$Avg_Quality_Dev[1
 ```{r solution-comparison}
 # Create a summary of solution differences
 cat("=== Solution Matrix Comparison (Sample: Blend 1) ===\n")
+# Create proper ordering for materials
+material_order <- raw_materials$Material_ID[order(as.numeric(sub("R", "", raw_materials$Material_ID)))]
 blend1_comparison <- data.frame(
   Material = raw_materials$Material_ID,
   LP = lp_x_matrix[, 1],
@@ -1308,6 +1355,8 @@ blend1_comparison <- data.frame(
   Chebyshev_GP = chebyshev_x_matrix[, 1],
   GA = ga_x_matrix[, 1]
 )
+# Reorder by material number
+blend1_comparison <- blend1_comparison[order(as.numeric(sub("R", "", blend1_comparison$Material))), ]
 
 print_table(blend1_comparison, caption = "Material allocation for Blend 1 across all approaches")
 ```
