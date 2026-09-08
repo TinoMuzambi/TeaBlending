@@ -78,7 +78,9 @@ for (start in chunk_starts) {
 
 inline_matches <- gregexpr("`r[[:space:]]+[^`]+`", lines, perl = TRUE)
 for (line_number in seq_along(lines)) {
-  matches <- regmatches(lines[[line_number]], inline_matches[[line_number]])
+  matches <- regmatches(
+    lines[line_number], inline_matches[line_number]
+  )[[1]]
   for (expression in matches) {
     expression <- sub("^`r[[:space:]]+", "", expression)
     expression <- sub("`$", "", expression)
