@@ -35,6 +35,20 @@ Rscript -e 'rmarkdown::render("tea_blending_optimization.Rmd", output_format = "
 
 Generated reports are intentionally not committed. This keeps the repository reviewable and prevents rendered documents from drifting away from their source.
 
+## Source validation
+
+The dependency-free validation pass checks YAML metadata references,
+bibliography citations, chunk labels, generated-file hygiene, and parses every
+R chunk and inline expression:
+
+```bash
+Rscript scripts/validate_report.R
+```
+
+GitHub Actions runs this check on every pull request. A complete render remains
+the end-to-end reproducibility check because it additionally exercises the
+document packages, Pandoc, GLPK, and the selected output toolchain.
+
 ## Reproducibility notes
 
 - The stochastic methods use a fixed seed so repeated renders begin from the same random state.
