@@ -1,8 +1,8 @@
 ---
 title: "Tea Blending Optimisation"
 subtitle: "STA5074Z Prescriptive Analytics"
-author: "Tinotenda Muzambi - MZMTIN002"
-date: "`r Sys.Date()`"
+author: "Tinotenda Muzambi"
+date: "2025-11-16"
 bibliography: references.bib
 csl: apa-numeric-superscript-brackets.csl
 output:
@@ -20,6 +20,9 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, 
                       fig.width = 5, fig.height = 3, fig.align = "center")
+
+# Keep the stochastic approaches reproducible across renders.
+set.seed(5074)
 
 # Load required libraries
 library(dplyr)
@@ -1115,5 +1118,10 @@ print.table(ga.x.df, caption = "GA Solution: Amount of Each Material in Each Ble
 
 ---
 
-# References
+## 11.6 Session information
 
+```{r session-info, echo=FALSE}
+sessionInfo()
+```
+
+# References
